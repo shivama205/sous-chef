@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 
 interface PreferencesFormProps {
   onSubmit: (preferences: any) => void;
@@ -13,10 +13,10 @@ interface PreferencesFormProps {
 export const PreferencesForm = ({ onSubmit }: PreferencesFormProps) => {
   const [preferences, setPreferences] = useState({
     days: "7",
-    dietaryRestrictions: [] as string[],
+    dietaryRestrictions: "",
     proteinGoal: "",
     carbGoal: "",
-    cuisinePreference: "",
+    cuisinePreferences: [] as string[],
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -24,12 +24,16 @@ export const PreferencesForm = ({ onSubmit }: PreferencesFormProps) => {
     onSubmit(preferences);
   };
 
-  const dietaryOptions = [
-    { id: "vegetarian", label: "Vegetarian" },
-    { id: "vegan", label: "Vegan" },
-    { id: "gluten-free", label: "Gluten Free" },
-    { id: "dairy-free", label: "Dairy Free" },
-  ];
+  const cuisineOptions = ["Italian", "Asian", "Mexican", "Mediterranean", "Indian"];
+
+  const toggleCuisine = (cuisine: string) => {
+    setPreferences(prev => ({
+      ...prev,
+      cuisinePreferences: prev.cuisinePreferences.includes(cuisine)
+        ? prev.cuisinePreferences.filter(c => c !== cuisine)
+        : [...prev.cuisinePreferences, cuisine]
+    }));
+  };
 
   return (
     <Card className="w-full max-w-md p-6 animate-fade-in">
@@ -54,26 +58,14 @@ export const PreferencesForm = ({ onSubmit }: PreferencesFormProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label>Dietary Restrictions</Label>
-          <div className="grid grid-cols-2 gap-4">
-            {dietaryOptions.map((option) => (
-              <div key={option.id} className="flex items-center space-x-2">
-                <Checkbox
-                  id={option.id}
-                  checked={preferences.dietaryRestrictions.includes(option.id)}
-                  onCheckedChange={(checked) => {
-                    setPreferences({
-                      ...preferences,
-                      dietaryRestrictions: checked
-                        ? [...preferences.dietaryRestrictions, option.id]
-                        : preferences.dietaryRestrictions.filter((id) => id !== option.id),
-                    });
-                  }}
-                />
-                <Label htmlFor={option.id}>{option.label}</Label>
-              </div>
-            ))}
-          </div>
+          <Label htmlFor="dietaryRestrictions">Dietary Restrictions</Label>
+          <Textarea
+            id="dietaryRestrictions"
+            placeholder="Enter any dietary restrictions (e.g., gluten-free, dairy-free, allergies)"
+            value={preferences.dietaryRestrictions}
+            onChange={(e) => setPreferences({ ...preferences, dietaryRestrictions: e.target.value })}
+            className="min-h-[80px]"
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -100,22 +92,20 @@ export const PreferencesForm = ({ onSubmit }: PreferencesFormProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="cuisine">Preferred Cuisine</Label>
-          <Select
-            value={preferences.cuisinePreference}
-            onValueChange={(value) => setPreferences({ ...preferences, cuisinePreference: value })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select cuisine" />
-            </SelectTrigger>
-            <SelectContent>
-              {["Italian", "Asian", "Mexican", "Mediterranean", "Indian"].map((cuisine) => (
-                <SelectItem key={cuisine} value={cuisine.toLowerCase()}>
-                  {cuisine}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label>Preferred Cuisines (Select multiple)</Label>
+          <div className="grid grid-cols-2 gap-2">
+            {cuisineOptions.map((cuisine) => (
+              <Button
+                key={cuisine}
+                type="button"
+                variant={preferences.cuisinePreferences.includes(cuisine) ? "default" : "outline"}
+                onClick={() => toggleCuisine(cuisine)}
+                className="w-full"
+              >
+                {cuisine}
+              </Button>
+            ))}
+          </div>
         </div>
 
         <Button type="submit" className="w-full">
