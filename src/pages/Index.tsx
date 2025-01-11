@@ -1,10 +1,6 @@
 import { PreferencesForm } from "@/components/PreferencesForm";
 
 const Index = () => {
-  const handlePreferencesSubmit = (preferences: any) => {
-    console.log("Preferences submitted:", preferences);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
       <div className="container mx-auto px-4 py-16 md:py-24">
@@ -20,7 +16,7 @@ const Index = () => {
         
         <div className="flex justify-center">
           <div className="w-full max-w-2xl">
-            <PreferencesForm onSubmit={handlePreferencesSubmit} />
+            <PreferencesForm />
           </div>
         </div>
       </div>

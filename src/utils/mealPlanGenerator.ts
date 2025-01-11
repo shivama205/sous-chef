@@ -1,11 +1,13 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { MealPlan } from "@/types/mealPlan";
+import type { Preferences } from "@/types/preferences";
 
-const createPrompt = (preferences: any) => {
+const createPrompt = (preferences: Preferences): string => {
   return `Create a ${preferences.days}-day meal plan with the following requirements:
 ${preferences.dietaryRestrictions ? `Dietary restrictions: ${preferences.dietaryRestrictions}` : ''}
 ${preferences.proteinGoal ? `Daily protein goal: ${preferences.proteinGoal}g` : ''}
 ${preferences.carbGoal ? `Daily carb goal: ${preferences.carbGoal}g` : ''}
-Preferred cuisines: ${preferences.cuisinePreferences.join(', ')}
+${preferences.cuisinePreferences?.length ? `Preferred cuisines: ${preferences.cuisinePreferences.join(', ')}` : ''}
 
 For each meal, provide:
 - Name of the meal
@@ -34,39 +36,20 @@ Format the response as a JSON object with the following structure:
 }`;
 };
 
-export const generateMealPlan = async (preferences: any): Promise<MealPlan> => {
+export const generateMealPlan = async (preferences: Preferences): Promise<MealPlan> => {
   console.log("Generating meal plan with preferences:", preferences);
   
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content: "You are a nutritionist and meal planning expert. Generate detailed meal plans with accurate nutritional information.",
-          },
-          {
-            role: "user",
-            content: createPrompt(preferences),
-          },
-        ],
-        temperature: 0.7,
-      }),
-    });
+    const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    if (!response.ok) {
-      throw new Error("Failed to generate meal plan");
-    }
-
-    const data = await response.json();
-    const mealPlan = JSON.parse(data.choices[0].message.content);
-    console.log("Generated meal plan:", mealPlan);
+    const result = await model.generateContent(createPrompt(preferences));
+    const response = await result.response;
+    const text = response.text();
+    
+    console.log("Generated response:", text);
+    const mealPlan = JSON.parse(text);
+    
     return mealPlan;
   } catch (error) {
     console.error("Error generating meal plan:", error);

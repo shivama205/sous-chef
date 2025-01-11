@@ -8,17 +8,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { generateMealPlan } from "@/utils/mealPlanGenerator";
+import { Preferences } from "@/types/preferences";
 
 export const PreferencesForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [preferences, setPreferences] = useState({
+  const [preferences, setPreferences] = useState<Preferences>({
     days: "7",
     dietaryRestrictions: "",
     proteinGoal: "",
     carbGoal: "",
-    cuisinePreferences: [] as string[],
+    cuisinePreferences: [],
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,6 +30,7 @@ export const PreferencesForm = () => {
       const mealPlan = await generateMealPlan(preferences);
       navigate("/meal-plan", { state: { preferences, mealPlan } });
     } catch (error) {
+      console.error("Error generating meal plan:", error);
       toast({
         title: "Error",
         description: "Failed to generate meal plan. Please try again.",
