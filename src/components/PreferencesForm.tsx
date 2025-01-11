@@ -51,15 +51,15 @@ export const PreferencesForm = () => {
   };
 
   return (
-    <Card className="w-full max-w-md p-6 animate-fade-in">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="days">Days to Plan</Label>
+    <Card className="w-full backdrop-blur-sm bg-white/80 border-0 shadow-xl rounded-2xl p-8 animate-fade-in">
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="space-y-4">
+          <Label htmlFor="days" className="text-lg font-semibold">Days to Plan</Label>
           <Select
             value={preferences.days}
             onValueChange={(value) => setPreferences({ ...preferences, days: value })}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-full h-12 text-base">
               <SelectValue placeholder="Select days" />
             </SelectTrigger>
             <SelectContent>
@@ -72,50 +72,52 @@ export const PreferencesForm = () => {
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="dietaryRestrictions">Dietary Restrictions</Label>
+        <div className="space-y-4">
+          <Label htmlFor="dietaryRestrictions" className="text-lg font-semibold">Dietary Restrictions</Label>
           <Textarea
             id="dietaryRestrictions"
             placeholder="Enter any dietary restrictions (e.g., gluten-free, dairy-free, allergies)"
             value={preferences.dietaryRestrictions}
             onChange={(e) => setPreferences({ ...preferences, dietaryRestrictions: e.target.value })}
-            className="min-h-[80px]"
+            className="min-h-[100px] text-base resize-none"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="proteinGoal">Protein Goal (g)</Label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <Label htmlFor="proteinGoal" className="text-lg font-semibold">Protein Goal (g)</Label>
             <Input
               id="proteinGoal"
               type="number"
               value={preferences.proteinGoal}
               onChange={(e) => setPreferences({ ...preferences, proteinGoal: e.target.value })}
               placeholder="e.g., 150"
+              className="h-12 text-base"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="carbGoal">Carb Goal (g)</Label>
+          <div className="space-y-4">
+            <Label htmlFor="carbGoal" className="text-lg font-semibold">Carb Goal (g)</Label>
             <Input
               id="carbGoal"
               type="number"
               value={preferences.carbGoal}
               onChange={(e) => setPreferences({ ...preferences, carbGoal: e.target.value })}
               placeholder="e.g., 200"
+              className="h-12 text-base"
             />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label>Preferred Cuisines (Select multiple)</Label>
-          <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-4">
+          <Label className="text-lg font-semibold">Preferred Cuisines</Label>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {cuisineOptions.map((cuisine) => (
               <Button
                 key={cuisine}
                 type="button"
                 variant={preferences.cuisinePreferences.includes(cuisine) ? "default" : "outline"}
                 onClick={() => toggleCuisine(cuisine)}
-                className="w-full"
+                className="w-full h-12 text-base font-medium transition-all duration-200 hover:scale-105"
               >
                 {cuisine}
               </Button>
@@ -123,7 +125,11 @@ export const PreferencesForm = () => {
           </div>
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button 
+          type="submit" 
+          className="w-full h-14 text-lg font-semibold transition-all duration-200 hover:scale-105" 
+          disabled={isLoading}
+        >
           {isLoading ? "Creating Meal Plan..." : "Create Meal Plan"}
         </Button>
       </form>
