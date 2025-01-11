@@ -1,16 +1,18 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
+import { generateMealPlan } from "@/utils/mealPlanGenerator";
 
-interface PreferencesFormProps {
-  onSubmit: (preferences: any) => void;
-}
-
-export const PreferencesForm = ({ onSubmit }: PreferencesFormProps) => {
+export const PreferencesForm = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
   const [preferences, setPreferences] = useState({
     days: "7",
     dietaryRestrictions: "",
@@ -19,9 +21,22 @@ export const PreferencesForm = ({ onSubmit }: PreferencesFormProps) => {
     cuisinePreferences: [] as string[],
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(preferences);
+    setIsLoading(true);
+
+    try {
+      const mealPlan = await generateMealPlan(preferences);
+      navigate("/meal-plan", { state: { preferences, mealPlan } });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate meal plan. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const cuisineOptions = ["Italian", "Asian", "Mexican", "Mediterranean", "Indian"];
@@ -108,8 +123,8 @@ export const PreferencesForm = ({ onSubmit }: PreferencesFormProps) => {
           </div>
         </div>
 
-        <Button type="submit" className="w-full">
-          Create Meal Plan
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? "Creating Meal Plan..." : "Create Meal Plan"}
         </Button>
       </form>
     </Card>
