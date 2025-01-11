@@ -10,8 +10,14 @@ ${preferences.carbGoal ? `Daily carb goal: ${preferences.carbGoal}g` : ''}
 ${preferences.cuisinePreferences?.length ? `Preferred cuisines: ${preferences.cuisinePreferences.join(', ')}` : ''}
 
 For each meal, provide:
-- Name of the meal
+- Name of the meal (a descriptive name of the meal)
+- Time of the meal (Breakfast, Lunch, Dinner, Snack)
+- Recipe link (a google search link with search query for the recipe)
 - Nutritional information including calories, protein, carbs, fat, fiber, and sugar
+
+Always suggest meal plan with 4 meals with daily calories between 1500 and 2000 calories.
+Consider output token limits when generating the meal plan. Meal plan has to always be 8000 tokens or less.
+Do not add any other text or comments to the response.
 
 Format the response as a JSON object with the following structure:
 {
@@ -21,6 +27,8 @@ Format the response as a JSON object with the following structure:
       "meals": [
         {
           "name": "Meal name",
+          "time": "breakfast",
+          "recipeLink": "https://www.example.com/recipes/chicken-alfredo",
           "nutritionInfo": {
             "calories": 500,
             "protein": 30,
@@ -41,14 +49,22 @@ export const generateMealPlan = async (preferences: Preferences): Promise<MealPl
   
   try {
     const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const result = await model.generateContent(createPrompt(preferences));
     const response = await result.response;
     const text = response.text();
     
     console.log("Generated response:", text);
-    const mealPlan = JSON.parse(text);
+    
+    // Extract JSON content from the response
+    const jsonMatch = text.match(/```json([\s\S]*?)```/);
+    if (!jsonMatch) {
+      throw new Error("Invalid response format");
+    }
+    const jsonString = jsonMatch[1].trim();
+    
+    const mealPlan = JSON.parse(jsonString);
     
     return mealPlan;
   } catch (error) {

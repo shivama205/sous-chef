@@ -1,5 +1,7 @@
 export interface Meal {
   name: string;
+  time: string;
+  recipeLink: string;
   nutritionInfo: {
     calories: number;
     protein: number;
