@@ -15,7 +15,7 @@ For each meal, provide:
 - Recipe link (a google search link with search query for the recipe)
 - Nutritional information including calories, protein, carbs, fat, fiber, and sugar
 
-Always suggest meal plan with 4 meals with daily calories between 1500 and 2000 calories.
+Always suggest meal plan with 4 meals with about 200 daily calories.
 Consider output token limits when generating the meal plan. Meal plan has to always be 8000 tokens or less.
 Do not add any other text or comments to the response.
 
@@ -42,6 +42,63 @@ Format the response as a JSON object with the following structure:
     }
   ]
 }`;
+};
+
+const createNewMealPrompt = (mealPlan: MealPlan, dayIndex: number, mealIndex: number): string => {
+  const day = mealPlan.days[dayIndex];
+  const meal = day.meals[mealIndex];
+  return `Based on the current meal plan, suggest a different meal for ${day.day} at ${meal.time}. 
+  Current meal: ${meal.name}. 
+  Please provide a new meal with a recipe link and nutritional information.
+  
+  Format the response as a JSON object with the following structure:
+  {
+    "name": "New meal name",
+    "time": "breakfast",
+    "recipeLink": "https://www.example.com/recipes/chicken-alfredo",
+    "nutritionInfo": {
+      "calories": 500,
+      "protein": 30,
+      "carbs": 50,
+      "fat": 20,
+      "fiber": 5,
+      "sugar": 10
+    }
+  }
+  `;
+};
+
+export const generateNewMeal = async (mealPlan: MealPlan, dayIndex: number, mealIndex: number): Promise<MealPlan> => {
+  console.log("Generating new meal for day:", dayIndex, "meal:", mealIndex);
+  
+  try {
+    const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const result = await model.generateContent(createNewMealPrompt(mealPlan, dayIndex, mealIndex));
+    const response = await result.response;
+    const text = response.text();
+    
+    console.log("Generated response for new meal:", text);
+    
+    // Extract JSON content from the response
+    const jsonMatch = text.match(/```json([\s\S]*?)```/);
+    if (!jsonMatch) {
+      throw new Error("Invalid response format");
+    }
+    const jsonString = jsonMatch[1].trim();
+    
+    const newMeal = JSON.parse(jsonString);
+    
+    // Update the meal plan with the new meal
+    const updatedMealPlan = { ...mealPlan };
+    updatedMealPlan.days[dayIndex].meals[mealIndex] = newMeal;
+    
+    return updatedMealPlan;
+  } catch (error) {
+    console.error("Error generating new meal:", error);
+    throw error;
+  }
 };
 
 export const generateMealPlan = async (preferences: Preferences): Promise<MealPlan> => {
