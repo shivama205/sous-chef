@@ -15,7 +15,7 @@ For each meal, provide:
 - Recipe link (a google search link with search query for the recipe)
 - Nutritional information including calories, protein, carbs, fat, fiber, and sugar
 
-Always suggest meal plan with 4 meals with about 200 daily calories.
+Always suggest meal plan with 4 meals with about 2000 daily calories.
 Consider output token limits when generating the meal plan. Meal plan has to always be 8000 tokens or less.
 Do not add any other text or comments to the response.
 

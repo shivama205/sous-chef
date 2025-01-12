@@ -7,12 +7,14 @@ import { useToast } from "@/components/ui/use-toast";
 import type { MealPlan } from "@/types/mealPlan";
 import { generateMealPlan, generateNewMeal } from "@/utils/mealPlanGenerator";
 import NavigationBar from "@/components/NavigationBar";
+import { FaRedo } from 'react-icons/fa';
 
 const MealPlan = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [regeneratingMeal, setRegeneratingMeal] = useState<{ dayIndex: number, mealIndex: number } | null>(null);
   const [mealPlan, setMealPlan] = useState<MealPlan>(location.state?.mealPlan);
   const preferences = location.state?.preferences;
 
@@ -53,7 +55,7 @@ const MealPlan = () => {
 
   const handleTrySomethingDifferent = async (dayIndex, mealIndex) => {
     try {
-      setIsRegenerating(true);
+      setRegeneratingMeal({ dayIndex, mealIndex });
       const newMealPlan = await generateNewMeal(mealPlan, dayIndex, mealIndex);
       setMealPlan(newMealPlan);
       toast({
@@ -67,7 +69,7 @@ const MealPlan = () => {
         variant: "destructive",
       });
     } finally {
-      setIsRegenerating(false);
+      setRegeneratingMeal(null);
     }
   };
 
@@ -78,7 +80,7 @@ const MealPlan = () => {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Your Weekly Meal Plan</h1>
           <Button onClick={handleRegenerate} disabled={isRegenerating}>
-            {isRegenerating ? "Regenerating..." : "Regenerate Plan"}
+            {isRegenerating ? "Regenerating..." : <><FaRedo /> Regenerate Meal Plan</>}
           </Button>
         </div>
 
@@ -141,38 +143,23 @@ const MealPlan = () => {
                           <TableCell>
                             <Button 
                               onClick={() => handleTrySomethingDifferent(index, mealIndex)} 
-                              disabled={isRegenerating}
+                              disabled={regeneratingMeal?.dayIndex === index && regeneratingMeal?.mealIndex === mealIndex}
                             >
-                              {isRegenerating ? "Loading..." : (
-                                <svg 
-                                  xmlns="http://www.w3.org/2000/svg" 
-                                  fill="none" 
-                                  viewBox="0 0 24 24" 
-                                  stroke="currentColor" 
-                                  className="w-5 h-5"
-                                >
-                                  <path 
-                                    strokeLinecap="round" 
-                                    strokeLinejoin="round" 
-                                    strokeWidth={2} 
-                                    d="M4 4v5h.582M4 9a9 9 0 103.582-7.418L4 4m0 0v5h5"
-                                  />
-                                </svg>
-                              )}
+                              {regeneratingMeal?.dayIndex === index && regeneratingMeal?.mealIndex === mealIndex ? "Loading..." : <FaRedo />}
                             </Button>
                           </TableCell>
                         </TableRow>
                       ))}
-                      {/* Add totals row */}
-                      <TableRow>
-                        <TableCell className="font-light">Total</TableCell>
+                      <TableRow className="bg-gray-100 font-semibold">
+                        <TableCell>Total</TableCell>
                         <TableCell className="text-right"></TableCell>
-                        <TableCell className="text-right font-light">{totalNutrition.calories}</TableCell>
-                        <TableCell className="text-right font-light">{totalNutrition.protein}g</TableCell>
-                        <TableCell className="text-right font-light">{totalNutrition.carbs}g</TableCell>
-                        <TableCell className="text-right font-light">{totalNutrition.fat}g</TableCell>
-                        <TableCell className="text-right font-light">{totalNutrition.fiber}g</TableCell>
-                        <TableCell className="text-right font-light">{totalNutrition.sugar}g</TableCell>
+                        <TableCell className="text-right">{totalNutrition.calories}</TableCell>
+                        <TableCell className="text-right">{totalNutrition.protein}g</TableCell>
+                        <TableCell className="text-right">{totalNutrition.carbs}g</TableCell>
+                        <TableCell className="text-right">{totalNutrition.fat}g</TableCell>
+                        <TableCell className="text-right">{totalNutrition.fiber}g</TableCell>
+                        <TableCell className="text-right">{totalNutrition.sugar}g</TableCell>
+                        <TableCell></TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>

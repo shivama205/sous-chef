@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { generateMealPlan } from "@/utils/mealPlanGenerator";
-import { Preferences } from "@/types/preferences";
+import { Preferences, Cuisine } from "@/types/preferences";
 
 export const PreferencesForm = () => {
   const navigate = useNavigate();
@@ -41,14 +41,14 @@ export const PreferencesForm = () => {
     }
   };
 
-  const cuisineOptions = ["Italian", "Asian", "Mexican", "Mediterranean", "Indian"];
+  const cuisineOptions = Object.values(Cuisine);
 
-  const toggleCuisine = (cuisine: string) => {
+  const toggleCuisine = (cuisine: Cuisine) => {
     setPreferences(prev => ({
       ...prev,
       cuisinePreferences: prev.cuisinePreferences.includes(cuisine)
         ? prev.cuisinePreferences.filter(c => c !== cuisine)
-        : [...prev.cuisinePreferences, cuisine]
+        : [...prev.cuisinePreferences, cuisine as Cuisine]
     }));
   };
 
