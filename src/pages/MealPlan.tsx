@@ -77,10 +77,10 @@ const MealPlan = () => {
     <div>
       <NavigationBar />
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Your Weekly Meal Plan</h1>
-          <Button onClick={handleRegenerate} disabled={isRegenerating}>
-            {isRegenerating ? "Regenerating..." : <><FaRedo /> Regenerate Meal Plan</>}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold mb-4 md:mb-0">Your Weekly Meal Plan</h1>
+          <Button onClick={handleRegenerate} disabled={isRegenerating} className="flex items-center">
+            {isRegenerating ? "Regenerating..." : <><FaRedo className="mr-2" /> Regenerate</>}
           </Button>
         </div>
 
@@ -106,17 +106,17 @@ const MealPlan = () => {
                   <CardTitle>{day.day}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Table>
+                  <Table className="w-full">
                     <TableHeader>
                       <TableRow>
                         <TableHead>Meal Name</TableHead>
-                        <TableHead className="text-right">Meal Time</TableHead>
-                        <TableHead className="text-right">Calories</TableHead>
-                        <TableHead className="text-right">Protein</TableHead>
-                        <TableHead className="text-right">Carbs</TableHead>
-                        <TableHead className="text-right">Fat</TableHead>
-                        <TableHead className="text-right">Fiber</TableHead>
-                        <TableHead className="text-right">Sugar</TableHead>
+                        <TableHead className="text-right hidden md:table-cell">Meal Time</TableHead>
+                        <TableHead className="text-right hidden md:table-cell">Calories</TableHead>
+                        <TableHead className="text-right hidden md:table-cell">Protein</TableHead>
+                        <TableHead className="text-right hidden md:table-cell">Carbs</TableHead>
+                        <TableHead className="text-right hidden md:table-cell">Fat</TableHead>
+                        <TableHead className="text-right hidden md:table-cell">Fiber</TableHead>
+                        <TableHead className="text-right hidden md:table-cell">Sugar</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -133,32 +133,33 @@ const MealPlan = () => {
                               {meal.name}
                             </a>
                           </TableCell>
-                          <TableCell className="text-right">{meal.time}</TableCell>
-                          <TableCell className="text-right">{meal.nutritionInfo.calories}</TableCell>
-                          <TableCell className="text-right">{meal.nutritionInfo.protein}g</TableCell>
-                          <TableCell className="text-right">{meal.nutritionInfo.carbs}g</TableCell>
-                          <TableCell className="text-right">{meal.nutritionInfo.fat}g</TableCell>
-                          <TableCell className="text-right">{meal.nutritionInfo.fiber}g</TableCell>
-                          <TableCell className="text-right">{meal.nutritionInfo.sugar}g</TableCell>
+                          <TableCell className="text-right hidden md:table-cell">{meal.time}</TableCell>
+                          <TableCell className="text-right hidden md:table-cell">{meal.nutritionInfo.calories}</TableCell>
+                          <TableCell className="text-right hidden md:table-cell">{meal.nutritionInfo.protein}g</TableCell>
+                          <TableCell className="text-right hidden md:table-cell">{meal.nutritionInfo.carbs}g</TableCell>
+                          <TableCell className="text-right hidden md:table-cell">{meal.nutritionInfo.fat}g</TableCell>
+                          <TableCell className="text-right hidden md:table-cell">{meal.nutritionInfo.fiber}g</TableCell>
+                          <TableCell className="text-right hidden md:table-cell">{meal.nutritionInfo.sugar}g</TableCell>
                           <TableCell>
                             <Button 
                               onClick={() => handleTrySomethingDifferent(index, mealIndex)} 
                               disabled={regeneratingMeal?.dayIndex === index && regeneratingMeal?.mealIndex === mealIndex}
+                              className="flex items-center"
                             >
-                              {regeneratingMeal?.dayIndex === index && regeneratingMeal?.mealIndex === mealIndex ? "Loading..." : <FaRedo />}
+                              {regeneratingMeal?.dayIndex === index && regeneratingMeal?.mealIndex === mealIndex ? "Loading..." : <FaRedo className="mr-2" />}
                             </Button>
                           </TableCell>
                         </TableRow>
                       ))}
                       <TableRow className="bg-gray-100 font-semibold">
                         <TableCell>Total</TableCell>
-                        <TableCell className="text-right"></TableCell>
-                        <TableCell className="text-right">{totalNutrition.calories}</TableCell>
-                        <TableCell className="text-right">{totalNutrition.protein}g</TableCell>
-                        <TableCell className="text-right">{totalNutrition.carbs}g</TableCell>
-                        <TableCell className="text-right">{totalNutrition.fat}g</TableCell>
-                        <TableCell className="text-right">{totalNutrition.fiber}g</TableCell>
-                        <TableCell className="text-right">{totalNutrition.sugar}g</TableCell>
+                        <TableCell className="text-right hidden md:table-cell"></TableCell>
+                        <TableCell className="text-right hidden md:table-cell">{totalNutrition.calories}</TableCell>
+                        <TableCell className="text-right hidden md:table-cell">{totalNutrition.protein}g</TableCell>
+                        <TableCell className="text-right hidden md:table-cell">{totalNutrition.carbs}g</TableCell>
+                        <TableCell className="text-right hidden md:table-cell">{totalNutrition.fat}g</TableCell>
+                        <TableCell className="text-right hidden md:table-cell">{totalNutrition.fiber}g</TableCell>
+                        <TableCell className="text-right hidden md:table-cell">{totalNutrition.sugar}g</TableCell>
                         <TableCell></TableCell>
                       </TableRow>
                     </TableBody>

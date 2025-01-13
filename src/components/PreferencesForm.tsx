@@ -18,7 +18,7 @@ export const PreferencesForm = () => {
     days: "7",
     dietaryRestrictions: "",
     proteinGoal: "",
-    carbGoal: "",
+    calorieIntakeGoal: "",
     cuisinePreferences: [],
   });
 
@@ -98,13 +98,13 @@ export const PreferencesForm = () => {
             />
           </div>
           <div className="space-y-4">
-            <Label htmlFor="carbGoal" className="text-lg font-semibold">Carb Goal (g)</Label>
+            <Label htmlFor="calorieIntakeGoal" className="text-lg font-semibold">Calorie Intake Goal</Label>
             <Input
-              id="carbGoal"
+              id="calorieIntakeGoal"
               type="number"
-              value={preferences.carbGoal}
-              onChange={(e) => setPreferences({ ...preferences, carbGoal: e.target.value })}
-              placeholder="e.g., 200"
+              value={preferences.calorieIntakeGoal}
+              onChange={(e) => setPreferences({ ...preferences, calorieIntakeGoal: e.target.value })}
+              placeholder="e.g., 2000"
               className="h-12 text-base"
             />
           </div>

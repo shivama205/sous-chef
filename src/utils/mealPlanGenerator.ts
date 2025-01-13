@@ -6,7 +6,7 @@ const createPrompt = (preferences: Preferences): string => {
   return `Create a ${preferences.days}-day meal plan with the following requirements:
 ${preferences.dietaryRestrictions ? `Dietary restrictions: ${preferences.dietaryRestrictions}` : ''}
 ${preferences.proteinGoal ? `Daily protein goal: ${preferences.proteinGoal}g` : ''}
-${preferences.carbGoal ? `Daily carb goal: ${preferences.carbGoal}g` : ''}
+${preferences.calorieIntakeGoal ? `Daily calorie intake goal: ${preferences.calorieIntakeGoal}kcal` : ''}
 ${preferences.cuisinePreferences?.length ? `Preferred cuisines: ${preferences.cuisinePreferences.join(', ')}` : ''}
 
 For each meal, provide:

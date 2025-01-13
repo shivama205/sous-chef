@@ -10,7 +10,8 @@ export enum Cuisine {
   Thai = 'Thai',
   Vietnamese = 'Vietnamese',
   Greek = 'Greek',
-  Spanish = 'Spanish',
+  Mediterranean = 'Mediterranean',
+  American = 'American'
 }
 
 // Update the Preferences interface to use the Cuisine enum
@@ -18,6 +19,6 @@ export interface Preferences {
   days?: string;
   dietaryRestrictions?: string;
   proteinGoal?: string;
-  carbGoal?: string;
+  calorieIntakeGoal?: string;
   cuisinePreferences?: Cuisine[]; // Use the Cuisine enum here
 }
