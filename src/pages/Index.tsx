@@ -52,7 +52,7 @@ const Index = () => {
             >
               <div className="aspect-square rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 p-8">
                 <img
-                  src="/placeholder.svg"
+                  src="/logo-1.jpeg"
                   alt="Healthy Food Illustration"
                   className="w-full h-full object-cover rounded-xl"
                 />

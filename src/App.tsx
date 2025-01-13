@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import MealPlan from "./pages/MealPlan";
 import HealthySwap from "./pages/HealthySwap";
-import Profile from "./pages/Profile";
+import Footer from "@/components/Footer";
 
 const queryClient = new QueryClient();
 
@@ -20,9 +20,9 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/meal-plan" element={<MealPlan />} />
           <Route path="/healthy-swap" element={<HealthySwap />} />
-          <Route path="/profile" element={<Profile />} />
         </Routes>
       </BrowserRouter>
+      <Footer />
     </TooltipProvider>
   </QueryClientProvider>
 );

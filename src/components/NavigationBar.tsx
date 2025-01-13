@@ -1,69 +1,16 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/lib/supabase";
-import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useState } from "react";
 
 const NavigationBar = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [user, setUser] = useState<any>(null);
-  
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    };
-    
-    getUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleLogin = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/profile`
-        }
-      });
-      
-      if (error) throw error;
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      navigate('/');
-      toast({
-        title: "Success",
-        description: "Logged out successfully",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const isActive = (path: string) => {
     return location.pathname === path;
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   return (
@@ -91,27 +38,21 @@ const NavigationBar = () => {
             >
               Healthy Swap
             </Link>
-            {user ? (
-              <div className="flex items-center space-x-4">
-                <Link
-                  to="/profile"
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    isActive("/profile") ? "text-primary" : "text-gray-600"
-                  }`}
-                >
-                  Profile
-                </Link>
-                <Button variant="outline" onClick={handleLogout}>
-                  Logout
-                </Button>
-              </div>
-            ) : (
-              <Button onClick={handleLogin}>Login with Google</Button>
-            )}
           </div>
 
-          {/* Mobile menu */}
-          <div className="md:hidden flex items-center space-x-4">
+          {/* Hamburger Icon for Mobile */}
+          <div className="md:hidden">
+            <button onClick={toggleMobileMenu} className="focus:outline-none">
+              <span className="block w-6 h-0.5 bg-primary mb-1"></span>
+              <span className="block w-6 h-0.5 bg-primary mb-1"></span>
+              <span className="block w-6 h-0.5 bg-primary"></span>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden flex flex-col items-start space-y-4 mt-4 mb-4 p-8 rounded-md shadow-lg">
             <Link
               to="/meal-plan"
               className={`text-sm font-medium ${
@@ -128,25 +69,8 @@ const NavigationBar = () => {
             >
               Healthy Swap
             </Link>
-            {user ? (
-              <>
-                <Link
-                  to="/profile"
-                  className={`text-sm font-medium ${
-                    isActive("/profile") ? "text-primary" : "text-gray-600"
-                  }`}
-                >
-                  Profile
-                </Link>
-                <Button variant="outline" size="sm" onClick={handleLogout}>
-                  Logout
-                </Button>
-              </>
-            ) : (
-              <Button size="sm" onClick={handleLogin}>Login</Button>
-            )}
           </div>
-        </div>
+        )}
       </div>
     </nav>
   );
