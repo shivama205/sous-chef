@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,15 +13,18 @@ const HealthySwap = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [alternatives, setAlternatives] = useState<Recipe[]>([]);
+  const resultsRef = useRef<HTMLDivElement>(null);
   const [request, setRequest] = useState<HealthySwapRequest>({
     mealName: "",
     description: "",
+    dietaryRestrictions: "",
   });
 
   const generatePrompt = (request: HealthySwapRequest): string => {
     return `Suggest 3 healthy alternatives for this meal:
     Meal: ${request.mealName}
-    Description: ${request.description}
+    ${request.description ? `Description: ${request.description}` : ''}
+    ${request.dietaryRestrictions ? `Dietary Restrictions: ${request.dietaryRestrictions}` : ''}
     
     For each alternative, provide:
     - Name of the meal
@@ -52,6 +55,15 @@ const HealthySwap = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!request.mealName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a meal name",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
@@ -62,7 +74,6 @@ const HealthySwap = () => {
       const response = await result.response;
       const text = response.text();
       
-      // Extract JSON content from the response
       const jsonMatch = text.match(/```json([\s\S]*?)```/);
       if (!jsonMatch) {
         throw new Error("Invalid response format");
@@ -76,6 +87,11 @@ const HealthySwap = () => {
         title: "Success",
         description: "Found healthy alternatives for your meal!",
       });
+
+      // Scroll to results
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
     } catch (error) {
       console.error("Error generating alternatives:", error);
       toast({
@@ -97,23 +113,35 @@ const HealthySwap = () => {
         <Card className="w-full max-w-2xl mx-auto backdrop-blur-sm bg-white/80 border-0 shadow-xl rounded-2xl p-8 animate-fade-in">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="mealName">Meal Name</Label>
+              <Label htmlFor="mealName">Meal Name *</Label>
               <Input
                 id="mealName"
                 value={request.mealName}
                 onChange={(e) => setRequest({ ...request, mealName: e.target.value })}
                 placeholder="e.g., Chicken Alfredo"
                 className="h-12"
+                required
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Description (Optional)</Label>
               <Textarea
                 id="description"
                 value={request.description}
                 onChange={(e) => setRequest({ ...request, description: e.target.value })}
                 placeholder="Describe the meal and any specific concerns..."
+                className="min-h-[100px] resize-none"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="dietaryRestrictions">Dietary Restrictions (Optional)</Label>
+              <Textarea
+                id="dietaryRestrictions"
+                value={request.dietaryRestrictions}
+                onChange={(e) => setRequest({ ...request, dietaryRestrictions: e.target.value })}
+                placeholder="Enter any dietary restrictions (e.g., gluten-free, dairy-free, allergies)"
                 className="min-h-[100px] resize-none"
               />
             </div>
@@ -129,7 +157,7 @@ const HealthySwap = () => {
         </Card>
 
         {alternatives.length > 0 && (
-          <div className="mt-12 space-y-8">
+          <div ref={resultsRef} className="mt-12 space-y-8">
             <h2 className="text-2xl font-bold text-primary">Healthy Alternatives</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {alternatives.map((recipe, index) => (

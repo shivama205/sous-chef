@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -16,12 +16,18 @@ const MealPlan = () => {
   const [regeneratingMeal, setRegeneratingMeal] = useState<{ dayIndex: number, mealIndex: number } | null>(null);
   const [mealPlan, setMealPlan] = useState<MealPlanType | null>(null);
   const [preferences, setPreferences] = useState<Preferences | null>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const handlePreferencesSubmit = async (newPreferences: Preferences) => {
     try {
       const generatedMealPlan = await generateMealPlan(newPreferences);
       setMealPlan(generatedMealPlan);
       setPreferences(newPreferences);
+      
+      // Scroll to results
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
     } catch (error) {
       console.error("Error generating meal plan:", error);
       toast({
@@ -84,7 +90,7 @@ const MealPlan = () => {
           <PreferencesForm onSubmit={handlePreferencesSubmit} />
 
           {mealPlan && (
-            <div className="space-y-8">
+            <div ref={resultsRef} className="space-y-8">
               <div className="flex flex-col md:flex-row justify-between items-center mb-8">
                 <h2 className="text-3xl font-bold mb-4 md:mb-0">Your Weekly Meal Plan</h2>
                 <Button onClick={handleRegenerate} disabled={isRegenerating} className="flex items-center">

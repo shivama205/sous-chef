@@ -1,6 +1,7 @@
 export interface HealthySwapRequest {
-  mealName?: string;
+  mealName: string;
   description?: string;
+  dietaryRestrictions?: string;
 }
 
 export interface Recipe {
