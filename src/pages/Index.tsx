@@ -59,51 +59,6 @@ const Index = () => {
               </div>
             </motion.div>
           </div>
-
-          {/* Features Section */}
-          <div className="mt-32 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="p-6 rounded-xl bg-white/80 backdrop-blur-sm shadow-sm"
-            >
-              <h3 className="text-xl font-semibold text-primary mb-3">
-                Personalized Meal Plans
-              </h3>
-              <p className="text-gray-600">
-                Get customized meal plans based on your dietary preferences and nutritional goals.
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="p-6 rounded-xl bg-white/80 backdrop-blur-sm shadow-sm"
-            >
-              <h3 className="text-xl font-semibold text-primary mb-3">
-                Healthy Alternatives
-              </h3>
-              <p className="text-gray-600">
-                Discover healthier versions of your favorite meals without sacrificing taste.
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="p-6 rounded-xl bg-white/80 backdrop-blur-sm shadow-sm"
-            >
-              <h3 className="text-xl font-semibold text-primary mb-3">
-                Nutritional Insights
-              </h3>
-              <p className="text-gray-600">
-                Get detailed nutritional information for every meal recommendation.
-              </p>
-            </motion.div>
-          </div>
         </div>
       </main>
     </div>

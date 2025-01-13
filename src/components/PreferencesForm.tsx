@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,11 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { generateMealPlan } from "@/utils/mealPlanGenerator";
 import { Preferences, Cuisine } from "@/types/preferences";
 
-export const PreferencesForm = () => {
-  const navigate = useNavigate();
+interface PreferencesFormProps {
+  onSubmit: (preferences: Preferences) => Promise<void>;
+}
+
+export const PreferencesForm = ({ onSubmit }: PreferencesFormProps) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [preferences, setPreferences] = useState<Preferences>({
@@ -27,13 +28,12 @@ export const PreferencesForm = () => {
     setIsLoading(true);
 
     try {
-      const mealPlan = await generateMealPlan(preferences);
-      navigate("/meal-plan", { state: { preferences, mealPlan } });
+      await onSubmit(preferences);
     } catch (error) {
-      console.error("Error generating meal plan:", error);
+      console.error("Error submitting preferences:", error);
       toast({
         title: "Error",
-        description: "Failed to generate meal plan. Please try again.",
+        description: "Failed to submit preferences. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -46,9 +46,9 @@ export const PreferencesForm = () => {
   const toggleCuisine = (cuisine: Cuisine) => {
     setPreferences(prev => ({
       ...prev,
-      cuisinePreferences: prev.cuisinePreferences.includes(cuisine)
+      cuisinePreferences: prev.cuisinePreferences?.includes(cuisine)
         ? prev.cuisinePreferences.filter(c => c !== cuisine)
-        : [...prev.cuisinePreferences, cuisine as Cuisine]
+        : [...(prev.cuisinePreferences || []), cuisine]
     }));
   };
 
@@ -117,7 +117,7 @@ export const PreferencesForm = () => {
               <Button
                 key={cuisine}
                 type="button"
-                variant={preferences.cuisinePreferences.includes(cuisine) ? "default" : "outline"}
+                variant={preferences.cuisinePreferences?.includes(cuisine) ? "default" : "outline"}
                 onClick={() => toggleCuisine(cuisine)}
                 className="w-full h-12 text-base font-medium transition-all duration-200 hover:scale-105"
               >
