@@ -2,7 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import NavigationBar from "@/components/NavigationBar";
 import { motion } from "framer-motion";
-import { Leaf, Salad, Apple, CheckCircle2, Sparkles, Users, Star, Package, ArrowRight } from "lucide-react";
+import { Leaf, Salad, Apple, CheckCircle2, Sparkles, Users, Star, Package, ArrowRight, ChartBar, CreditCard } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { User } from "@supabase/supabase-js";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 
 const features = [
   {
@@ -49,8 +54,151 @@ const upcomingFeatures = [
 
 const Index = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [savedPlansCount, setSavedPlansCount] = useState(0);
+  const [creditsUsed, setCreditsUsed] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
-  return (
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        setIsLoading(true);
+        // Fetch saved plans count
+        const { count: plansCount } = await supabase
+          .from('saved_meal_plans')
+          .select('*', { count: 'exact' })
+          .eq('user_id', session.user.id);
+          
+        // Fetch credits used
+        const { data: credits } = await supabase
+          .from('user_credits')
+          .select('credits_used')
+          .eq('user_id', session.user.id)
+          .single();
+          
+        setSavedPlansCount(plansCount ?? 0);
+        setCreditsUsed(credits?.credits_used ?? 0);
+        setIsLoading(false);
+      }
+    };
+
+    getUser();
+  }, []);
+
+  const LoggedInView = () => (
+    <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
+      <NavigationBar />
+      
+      <main className="container mx-auto px-4 py-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+        >
+          {/* Welcome Card */}
+          <Card className="col-span-full bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-2xl">
+                Welcome back, {user?.user_metadata.full_name}! 👋
+              </CardTitle>
+              <CardDescription>
+                Here's an overview of your meal planning journey
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          {/* Stats Cards */}
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="w-5 h-5 text-primary" />
+                Saved Meal Plans
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{savedPlansCount}</div>
+              <Button 
+                variant="link" 
+                onClick={() => navigate('/profile')}
+                className="p-0 h-auto font-normal text-sm text-muted-foreground"
+              >
+                View all plans →
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ChartBar className="w-5 h-5 text-primary" />
+                Credits Used
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{creditsUsed}</div>
+              <Progress value={(creditsUsed / 10) * 100} className="mt-2" />
+              <p className="text-sm text-muted-foreground mt-2">
+                {10 - creditsUsed} credits remaining
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-primary" />
+                Current Plan
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">Free</div>
+              <Button 
+                onClick={() => navigate('/pricing')}
+                className="mt-4 bg-gradient-to-r from-primary to-primary/80"
+              >
+                Upgrade Now
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions */}
+          <Card className="col-span-full bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <Button
+                onClick={() => navigate('/meal-plan')}
+                className="bg-gradient-to-r from-primary to-primary/80"
+              >
+                Create New Meal Plan
+              </Button>
+              <Button
+                onClick={() => navigate('/healthy-swap')}
+                variant="secondary"
+                className="bg-gradient-to-r from-secondary to-secondary/80"
+              >
+                Find Healthy Alternatives
+              </Button>
+              <Button
+                onClick={() => navigate('/pricing')}
+                variant="outline"
+                className="border-primary text-primary hover:bg-primary/10"
+              >
+                View Premium Features
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </main>
+    </div>
+  );
+
+  const LoggedOutView = () => (
     <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
       <NavigationBar />
       
@@ -254,6 +402,8 @@ const Index = () => {
       </section>
     </div>
   );
+
+  return user ? <LoggedInView /> : <LoggedOutView />;
 };
 
 export default Index;
