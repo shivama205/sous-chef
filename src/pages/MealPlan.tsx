@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { PreferencesForm } from "@/components/PreferencesForm";
 import { MealPlan as MealPlanType } from "@/types/mealPlan";
 import { supabase } from "@/lib/supabase";
 import NavigationBar from "@/components/NavigationBar";
+import { RefreshCw, Save } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -18,28 +19,30 @@ import { Label } from "@/components/ui/label";
 import { Preferences } from "@/types/preferences";
 import { generateMealPlan } from "@/utils/mealPlanGenerator";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
+import { motion } from "framer-motion";
 
 const MealPlan = () => {
   const [open, setOpen] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [mealPlan, setMealPlan] = useState<MealPlanType | null>(null);
   const [name, setName] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [currentPreferences, setCurrentPreferences] = useState<Preferences | null>(null);
+  const mealPlanRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   const handleSaveMealPlan = async () => {
     if (!mealPlan) return;
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
       setLoginDialogOpen(true);
       return;
     }
 
-
-    console.log("Saving meal plan:", user.id, name, mealPlan);
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("saved_meal_plans")
-      .insert([{ user_id: user.id, name: name, plan: mealPlan }]);
+      .insert([{ user_id: session.user.id, name: name, plan: mealPlan }]);
 
     if (error) {
       toast({
@@ -58,8 +61,38 @@ const MealPlan = () => {
   };
 
   const handleSubmit = async (preferences: Preferences) => {
-    const mealPlan = await generateMealPlan(preferences);
-    setMealPlan(mealPlan);
+    setIsGenerating(true);
+    setCurrentPreferences(preferences);
+    try {
+      const mealPlan = await generateMealPlan(preferences);
+      setMealPlan(mealPlan);
+      mealPlanRef.current?.scrollIntoView({ behavior: "smooth" });
+    } catch (error) {
+      toast({
+        title: "Error generating meal plan",
+        description: "Failed to generate meal plan. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleRegenerateMealPlan = async () => {
+    if (!currentPreferences) return;
+    setIsGenerating(true);
+    try {
+      const newMealPlan = await generateMealPlan(currentPreferences);
+      setMealPlan(newMealPlan);
+    } catch (error) {
+      toast({
+        title: "Error regenerating meal plan",
+        description: "Failed to regenerate meal plan. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -67,85 +100,117 @@ const MealPlan = () => {
       <NavigationBar />
       
       <main className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-4">Meal Plan</h1>
-        <PreferencesForm onSubmit={handleSubmit} />
-
-        {mealPlan && (
-          <div className="mt-4">
-            <h2 className="text-2xl font-bold mb-2">Generated Meal Plan</h2>
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-                <thead className="bg-primary text-white">
-                  <tr>
-                    <th className="py-2 px-4">Day</th>
-                    <th className="py-2 px-4">Meal</th>
-                    <th className="py-2 px-4">Protein (g)</th>
-                    <th className="py-2 px-4">Fat (g)</th>
-                    <th className="py-2 px-4">Carbs (g)</th>
-                    <th className="py-2 px-4">Fiber (g)</th>
-                    <th className="py-2 px-4">Sugar (g)</th>
-                    <th className="py-2 px-4">Calories</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {mealPlan.days.map((day, dayIndex) => {
-                    const totalNutrients = day.meals.reduce(
-                      (totals, meal) => {
-                        totals.protein += meal.nutritionInfo.protein;
-                        totals.fat += meal.nutritionInfo.fat;
-                        totals.carbs += meal.nutritionInfo.carbs;
-                        totals.fiber += meal.nutritionInfo.fiber;
-                        totals.sugar += meal.nutritionInfo.sugar;
-                        totals.calories += meal.nutritionInfo.calories;
-                        return totals;
-                      },
-                      { protein: 0, fat: 0, carbs: 0, fiber: 0, sugar: 0, calories: 0 }
-                    );
-
-                    return (
-                      <>
-                        {day.meals.map((meal, mealIndex) => (
-                          <tr key={`${dayIndex}-${mealIndex}`} className="border-b">
-                            {mealIndex === 0 && (
-                              <td className="border px-4 py-2" rowSpan={day.meals.length}>
-                                {day.day}
-                              </td>
-                            )}
-                            <td className="border px-4 py-2">{meal.name}</td>
-                            <td className="border px-4 py-2">{meal.nutritionInfo.protein}</td>
-                            <td className="border px-4 py-2">{meal.nutritionInfo.fat}</td>
-                            <td className="border px-4 py-2">{meal.nutritionInfo.carbs}</td>
-                            <td className="border px-4 py-2">{meal.nutritionInfo.fiber}</td>
-                            <td className="border px-4 py-2">{meal.nutritionInfo.sugar}</td>
-                            <td className="border px-4 py-2">{meal.nutritionInfo.calories}</td>
-                          </tr>
-                        ))}
-                        <tr className="bg-gray-100 font-bold">
-                          <td className="border px-4 py-2" colSpan={2}>Total</td>
-                          <td className="border px-4 py-2">{totalNutrients.protein}</td>
-                          <td className="border px-4 py-2">{totalNutrients.fat}</td>
-                          <td className="border px-4 py-2">{totalNutrients.carbs}</td>
-                          <td className="border px-4 py-2">{totalNutrients.fiber}</td>
-                          <td className="border px-4 py-2">{totalNutrients.sugar}</td>
-                          <td className="border px-4 py-2">{totalNutrients.calories}</td>
-                        </tr>
-                      </>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            Create Your Perfect Meal Plan
+          </h1>
+          
+          <div className="max-w-3xl mx-auto">
+            <PreferencesForm 
+              onSubmit={handleSubmit} 
+              disabled={isGenerating}
+            />
           </div>
-        )}
 
-        {mealPlan && (
-          <Button
-            onClick={() => setOpen(true)}
-            className="mt-4"
-          >
-            Save Meal Plan
-          </Button>
-        )}
+          {mealPlan && (
+            <motion.div
+              ref={mealPlanRef}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="mt-12"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  Your Generated Meal Plan
+                </h2>
+                <div className="flex gap-4">
+                  <Button
+                    onClick={handleRegenerateMealPlan}
+                    variant="outline"
+                    disabled={isGenerating}
+                    className="flex items-center gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Regenerate Plan
+                  </Button>
+                  <Button
+                    onClick={() => setOpen(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    Save Plan
+                  </Button>
+                </div>
+              </div>
+
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gradient-to-r from-primary to-primary/80">
+                      <tr>
+                        <th className="py-4 px-6 text-left text-white font-semibold">Day</th>
+                        <th className="py-4 px-6 text-left text-white font-semibold">Meal</th>
+                        <th className="py-4 px-6 text-center text-white font-semibold">Protein (g)</th>
+                        <th className="py-4 px-6 text-center text-white font-semibold">Fat (g)</th>
+                        <th className="py-4 px-6 text-center text-white font-semibold">Carbs (g)</th>
+                        <th className="py-4 px-6 text-center text-white font-semibold">Calories</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {mealPlan.days.map((day, dayIndex) => (
+                        <>
+                          {day.meals.map((meal, mealIndex) => (
+                            <tr 
+                              key={`${dayIndex}-${mealIndex}`}
+                              className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
+                            >
+                              {mealIndex === 0 && (
+                                <td 
+                                  className="py-4 px-6 font-medium"
+                                  rowSpan={day.meals.length}
+                                >
+                                  {day.day}
+                                </td>
+                              )}
+                              <td className="py-4 px-6">
+                                <div className="font-medium">{meal.name}</div>
+                                <div className="text-sm text-gray-500">{meal.time}</div>
+                              </td>
+                              <td className="py-4 px-6 text-center">{meal.nutritionInfo.protein}</td>
+                              <td className="py-4 px-6 text-center">{meal.nutritionInfo.fat}</td>
+                              <td className="py-4 px-6 text-center">{meal.nutritionInfo.carbs}</td>
+                              <td className="py-4 px-6 text-center">{meal.nutritionInfo.calories}</td>
+                            </tr>
+                          ))}
+                          <tr className="bg-gray-50/80 font-semibold">
+                            <td colSpan={2} className="py-3 px-6">Daily Total</td>
+                            <td className="py-3 px-6 text-center">
+                              {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.protein, 0)}g
+                            </td>
+                            <td className="py-3 px-6 text-center">
+                              {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.fat, 0)}g
+                            </td>
+                            <td className="py-3 px-6 text-center">
+                              {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.carbs, 0)}g
+                            </td>
+                            <td className="py-3 px-6 text-center">
+                              {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.calories, 0)}
+                            </td>
+                          </tr>
+                        </>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </motion.div>
 
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent>

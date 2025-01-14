@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import NavigationBar from "@/components/NavigationBar";
 import { MealPlan } from "@/types/mealPlan";
+import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface SavedMealPlan {
   id: string;
@@ -19,27 +21,28 @@ const Profile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [savedMealPlans, setSavedMealPlans] = useState<SavedMealPlan[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
         navigate('/');
         return;
       }
-      setUser(user);
+      setUser(session.user);
       
-      // Fetch latest 5 saved meal plans
+      setIsLoading(true);
       const { data: mealPlans, error } = await supabase
         .from('saved_meal_plans')
         .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(5); // Limit to the latest 5 meal plans
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false });
         
       if (!error && mealPlans) {
         setSavedMealPlans(mealPlans);
       }
+      setIsLoading(false);
     };
 
     getUser();
@@ -57,45 +60,83 @@ const Profile = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Card className="mb-8">
+          <Card className="mb-8 bg-white/80 backdrop-blur-sm border-0 shadow-xl">
             <CardHeader className="flex flex-row items-center gap-4">
               <Avatar className="h-16 w-16">
                 <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name} />
                 <AvatarFallback>{user.user_metadata.full_name?.charAt(0)}</AvatarFallback>
               </Avatar>
               <div>
-                <CardTitle>{user.user_metadata.full_name}</CardTitle>
-                <CardDescription>{user.email}</CardDescription>
+                <CardTitle className="text-2xl">{user.user_metadata.full_name}</CardTitle>
+                <CardDescription className="text-base">{user.email}</CardDescription>
               </div>
             </CardHeader>
           </Card>
 
-          <Card>
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
             <CardHeader>
-              <CardTitle>Saved Meal Plans</CardTitle>
+              <CardTitle className="text-2xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                Saved Meal Plans
+              </CardTitle>
               <CardDescription>Your personalized meal plans</CardDescription>
             </CardHeader>
             <CardContent>
-              {savedMealPlans.length > 0 ? (
+              {isLoading ? (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {savedMealPlans.map((plan) => (
-                    <Card key={plan.id} className="hover:shadow-lg transition-shadow">
+                  {[1, 2, 3].map((i) => (
+                    <Card key={i} className="relative overflow-hidden">
                       <CardHeader>
-                        <CardTitle className="text-lg">{plan.name}</CardTitle>
-                        <CardDescription>
-                          Created on {new Date(plan.created_at).toLocaleDateString()}
-                        </CardDescription>
+                        <Skeleton className="h-6 w-3/4" />
+                        <Skeleton className="h-4 w-1/2" />
                       </CardHeader>
                       <CardContent>
-                        <pre className="text-sm overflow-auto max-h-40">
-                          {JSON.stringify(plan.plan, null, 2)}
-                        </pre>
+                        <Skeleton className="h-[200px] w-full" />
                       </CardContent>
                     </Card>
                   ))}
                 </div>
+              ) : savedMealPlans.length > 0 ? (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {savedMealPlans.map((plan) => (
+                    <motion.div
+                      key={plan.id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Card className="h-full hover:shadow-lg transition-shadow bg-white/90">
+                        <CardHeader>
+                          <CardTitle className="text-lg">{plan.name}</CardTitle>
+                          <CardDescription>
+                            Created on {format(new Date(plan.created_at), 'PPP')}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <div className="text-sm">
+                            <p className="font-medium">Duration: {plan.plan.days.length} days</p>
+                            <p className="text-gray-500">
+                              {plan.plan.days[0].meals.length} meals per day
+                            </p>
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            Average daily calories:{' '}
+                            {Math.round(
+                              plan.plan.days.reduce((acc, day) => 
+                                acc + day.meals.reduce((sum, meal) => 
+                                  sum + meal.nutritionInfo.calories, 0
+                                ), 0
+                              ) / plan.plan.days.length
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
               ) : (
-                <p className="text-muted-foreground">No saved meal plans yet.</p>
+                <p className="text-center text-muted-foreground py-8">
+                  No saved meal plans yet. Create your first meal plan to see it here!
+                </p>
               )}
             </CardContent>
           </Card>

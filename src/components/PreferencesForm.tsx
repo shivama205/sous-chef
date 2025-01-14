@@ -10,9 +10,10 @@ import { Preferences, Cuisine } from "@/types/preferences";
 
 interface PreferencesFormProps {
   onSubmit: (preferences: Preferences) => Promise<void>;
+  disabled?: boolean;
 }
 
-export const PreferencesForm = ({ onSubmit }: PreferencesFormProps) => {
+export const PreferencesForm = ({ onSubmit, disabled }: PreferencesFormProps) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [preferences, setPreferences] = useState<Preferences>({
@@ -60,6 +61,7 @@ export const PreferencesForm = ({ onSubmit }: PreferencesFormProps) => {
           <Select
             value={preferences.days}
             onValueChange={(value) => setPreferences({ ...preferences, days: value })}
+            disabled={disabled}
           >
             <SelectTrigger className="w-full h-12 text-base">
               <SelectValue placeholder="Select days" />
@@ -82,6 +84,7 @@ export const PreferencesForm = ({ onSubmit }: PreferencesFormProps) => {
             value={preferences.dietaryRestrictions}
             onChange={(e) => setPreferences({ ...preferences, dietaryRestrictions: e.target.value })}
             className="min-h-[100px] text-base resize-none"
+            disabled={disabled}
           />
         </div>
 
@@ -95,6 +98,7 @@ export const PreferencesForm = ({ onSubmit }: PreferencesFormProps) => {
               onChange={(e) => setPreferences({ ...preferences, proteinGoal: e.target.value })}
               placeholder="e.g., 150"
               className="h-12 text-base"
+              disabled={disabled}
             />
           </div>
           <div className="space-y-4">
@@ -106,6 +110,7 @@ export const PreferencesForm = ({ onSubmit }: PreferencesFormProps) => {
               onChange={(e) => setPreferences({ ...preferences, calorieIntakeGoal: e.target.value })}
               placeholder="e.g., 2000"
               className="h-12 text-base"
+              disabled={disabled}
             />
           </div>
         </div>
@@ -120,6 +125,7 @@ export const PreferencesForm = ({ onSubmit }: PreferencesFormProps) => {
                 variant={preferences.cuisinePreferences?.includes(cuisine) ? "default" : "outline"}
                 onClick={() => toggleCuisine(cuisine)}
                 className="w-full h-12 text-base font-medium transition-all duration-200 hover:scale-105"
+                disabled={disabled}
               >
                 {cuisine}
               </Button>
@@ -129,8 +135,8 @@ export const PreferencesForm = ({ onSubmit }: PreferencesFormProps) => {
 
         <Button 
           type="submit" 
-          className="w-full h-14 text-lg font-semibold transition-all duration-200 hover:scale-105" 
-          disabled={isLoading}
+          className="w-full h-14 text-lg font-semibold transition-all duration-200 hover:scale-105 bg-gradient-to-r from-primary to-primary/80" 
+          disabled={isLoading || disabled}
         >
           {isLoading ? "Creating Meal Plan..." : "Create Meal Plan"}
         </Button>
