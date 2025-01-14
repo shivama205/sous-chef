@@ -11,6 +11,7 @@ import Pricing from "./pages/Pricing";
 import Billing from "./pages/Billing";
 import FAQ from "./pages/FAQ";
 import Footer from "@/components/Footer";
+import MealPlanDetails from "./pages/MealPlanDetails";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/meal-plan" element={<MealPlan />} />
+          <Route path="/meal-plan/:id" element={<MealPlanDetails />} />
           <Route path="/healthy-swap" element={<HealthySwap />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/pricing" element={<Pricing />} />

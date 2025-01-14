@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import NavigationBar from "@/components/NavigationBar";
 import { motion } from "framer-motion";
-import { Leaf, Salad, Apple, CheckCircle2, Sparkles, Users, Star } from "lucide-react";
+import { Leaf, Salad, Apple, CheckCircle2, Sparkles, Users, Star, Package, ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
@@ -102,6 +102,20 @@ const Index = () => {
     };
 
     getUser();
+
+    // Subscribe to auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (!session?.user) {
+        setSavedPlansCount(0);
+        setCreditsUsed(0);
+        setIsLoading(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const LoggedInView = () => (

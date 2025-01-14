@@ -20,6 +20,7 @@ import { Preferences } from "@/types/preferences";
 import { generateMealPlan } from "@/utils/mealPlanGenerator";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const MealPlan = () => {
   const [open, setOpen] = useState(false);
@@ -30,6 +31,7 @@ const MealPlan = () => {
   const [currentPreferences, setCurrentPreferences] = useState<Preferences | null>(null);
   const mealPlanRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSaveMealPlan = async () => {
     if (!mealPlan) return;
@@ -66,7 +68,7 @@ const MealPlan = () => {
     try {
       const mealPlan = await generateMealPlan(preferences);
       setMealPlan(mealPlan);
-      mealPlanRef.current?.scrollIntoView({ behavior: "smooth" });
+      navigate('/meal-plan/new', { state: { mealPlan } });
     } catch (error) {
       toast({
         title: "Error generating meal plan",

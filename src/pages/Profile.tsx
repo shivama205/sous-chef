@@ -102,33 +102,23 @@ const Profile = () => {
                   {savedMealPlans.map((plan) => (
                     <motion.div
                       key={plan.id}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <Card className="h-full hover:shadow-lg transition-shadow bg-white/90">
+                      <Card 
+                        className="relative overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                        onClick={() => navigate(`/meal-plan/${plan.id}`)}
+                      >
                         <CardHeader>
-                          <CardTitle className="text-lg">{plan.name}</CardTitle>
+                          <CardTitle>{plan.name}</CardTitle>
                           <CardDescription>
-                            Created on {format(new Date(plan.created_at), 'PPP')}
+                            Created {format(new Date(plan.created_at), 'PPP')}
                           </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-2">
-                          <div className="text-sm">
-                            <p className="font-medium">Duration: {plan.plan.days.length} days</p>
-                            <p className="text-gray-500">
-                              {plan.plan.days[0].meals.length} meals per day
-                            </p>
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            Average daily calories:{' '}
-                            {Math.round(
-                              plan.plan.days.reduce((acc, day) => 
-                                acc + day.meals.reduce((sum, meal) => 
-                                  sum + meal.nutritionInfo.calories, 0
-                                ), 0
-                              ) / plan.plan.days.length
-                            )}
+                        <CardContent>
+                          <div className="text-sm text-muted-foreground">
+                            {plan.plan.days.length} days meal plan
                           </div>
                         </CardContent>
                       </Card>
