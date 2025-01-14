@@ -17,7 +17,7 @@ const Index = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.7, ease: "easeOut" }}
               className="space-y-6"
             >
               <h1 className="text-4xl md:text-6xl font-bold text-primary tracking-tight">
@@ -45,54 +45,21 @@ const Index = () => {
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
+              transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
               className="relative flex justify-center items-center"
             >
               <div className="relative w-72 h-72">
-                <motion.div
-                  animate={{
-                    rotate: [0, 360],
-                    y: [0, -10, 0]
-                  }}
-                  transition={{
-                    duration: 8,
-                    repeat: Infinity,
-                    ease: "linear"
-                  }}
-                  className="absolute inset-0 flex items-center justify-center"
-                >
-                  <Utensils className="w-16 h-16 text-primary" />
-                </motion.div>
-                <motion.div
-                  animate={{
-                    rotate: [360, 0],
-                    y: [0, 10, 0]
-                  }}
-                  transition={{
-                    duration: 6,
-                    repeat: Infinity,
-                    ease: "linear"
-                  }}
-                  className="absolute inset-0 flex items-center justify-center"
-                >
-                  <Salad className="w-20 h-20 text-secondary" />
-                </motion.div>
-                <motion.div
-                  animate={{
-                    scale: [1, 1.1, 1],
-                    rotate: [0, -360]
-                  }}
-                  transition={{
-                    duration: 10,
-                    repeat: Infinity,
-                    ease: "linear"
-                  }}
-                  className="absolute inset-0 flex items-center justify-center"
-                >
-                  <Apple className="w-14 h-14 text-accent" />
-                </motion.div>
+                <div className="absolute top-0 left-0 flex items-center justify-center">
+                  <Utensils className="w-20 h-20 text-primary" />
+                </div>
+                <div className="absolute top-0 right-0 flex items-center justify-center">
+                  <Salad className="w-24 h-24 text-secondary" />
+                </div>
+                <div className="absolute bottom-0 left-1/3 transform -translate-x-1/2 flex items-center justify-center">
+                  <Apple className="w-24 h-24 text-accent" />
+                </div>
               </div>
             </motion.div>
           </div>

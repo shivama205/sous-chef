@@ -31,14 +31,16 @@ const Profile = () => {
         return;
       }
       setUser(session.user);
-      
+      console.log("User:", session.user);
       setIsLoading(true);
+
       const { data: mealPlans, error } = await supabase
         .from('saved_meal_plans')
         .select('*')
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: false });
         
+      console.log("Meal plans:", mealPlans);
       if (!error && mealPlans) {
         setSavedMealPlans(mealPlans);
       }
@@ -76,7 +78,7 @@ const Profile = () => {
           <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
             <CardHeader>
               <CardTitle className="text-2xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Saved Meal Plans
+                Your Meal Plans
               </CardTitle>
               <CardDescription>Your personalized meal plans</CardDescription>
             </CardHeader>
