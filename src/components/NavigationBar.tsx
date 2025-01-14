@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
@@ -13,11 +13,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
+import GoogleSignInButton from "./GoogleSignInButton";
+
 
 const NavigationBar = () => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const navigate = useNavigate();
   
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -31,17 +34,9 @@ const NavigationBar = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleLogin = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/profile`
-      }
-    });
-  };
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    navigate('/');
   };
 
   const isActive = (path: string) => location.pathname === path;
@@ -121,9 +116,7 @@ const NavigationBar = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button onClick={handleLogin} variant="secondary">
-                Sign in
-              </Button>
+              <GoogleSignInButton />
             )}
           </div>
 
@@ -197,9 +190,7 @@ const NavigationBar = () => {
                 </Button>
               </>
             ) : (
-              <Button onClick={handleLogin} variant="secondary">
-                Sign in
-              </Button>
+              <GoogleSignInButton />
             )}
           </motion.div>
         )}

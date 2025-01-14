@@ -9,15 +9,15 @@ ${preferences.proteinGoal ? `Daily protein goal: ${preferences.proteinGoal}g` : 
 ${preferences.calorieIntakeGoal ? `Daily calorie intake goal: ${preferences.calorieIntakeGoal}kcal` : ''}
 ${preferences.cuisinePreferences?.length ? `Preferred cuisines: ${preferences.cuisinePreferences.join(', ')}` : ''}
 
+Always suggest meal plan with 4 meals with about 2000 daily calories.
+Consider output token limits when generating the meal plan. Meal plan has to always be 8000 tokens or less.
+Do not add any other text or comments to the response.
+
 For each meal, provide:
 - Name of the meal (a descriptive name of the meal)
 - Time of the meal (Breakfast, Lunch, Dinner, Snack)
 - Recipe link (a google search link with search query for the recipe)
 - Nutritional information including calories, protein, carbs, fat, fiber, and sugar
-
-Always suggest meal plan with 4 meals with about 2000 daily calories.
-Consider output token limits when generating the meal plan. Meal plan has to always be 8000 tokens or less.
-Do not add any other text or comments to the response.
 
 Format the response as a JSON object with the following structure:
 {
