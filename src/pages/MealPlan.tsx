@@ -35,9 +35,11 @@ const MealPlan = () => {
       return;
     }
 
+
+    console.log("Saving meal plan:", user.id, name, mealPlan);
     const { data, error } = await supabase
       .from("saved_meal_plans")
-      .insert([{ user_id: user.id, name, plan: mealPlan }]);
+      .insert([{ user_id: user.id, name: name, plan: mealPlan }]);
 
     if (error) {
       toast({

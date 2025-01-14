@@ -6,11 +6,12 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import NavigationBar from "@/components/NavigationBar";
+import { MealPlan } from "@/types/mealPlan";
 
 interface SavedMealPlan {
   id: string;
   name: string;
-  plan: any;
+  plan: MealPlan;
   created_at: string;
 }
 
@@ -28,12 +29,13 @@ const Profile = () => {
       }
       setUser(user);
       
-      // Fetch saved meal plans
+      // Fetch latest 5 saved meal plans
       const { data: mealPlans, error } = await supabase
         .from('saved_meal_plans')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(5); // Limit to the latest 5 meal plans
         
       if (!error && mealPlans) {
         setSavedMealPlans(mealPlans);
