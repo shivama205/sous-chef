@@ -1,13 +1,15 @@
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import NavigationBar from "@/components/NavigationBar";
 import { motion } from "framer-motion";
-import { Leaf, Salad, Apple, CheckCircle2, Sparkles, Users, Star, Package, ArrowRight, ChartBar, CreditCard } from "lucide-react";
+import { Leaf, Salad, Apple, CheckCircle2, Sparkles, Users, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { DashboardStats } from "@/components/dashboard/DashboardStats";
+import { QuickActions } from "@/components/dashboard/QuickActions";
+import { RecentActivity } from "@/components/dashboard/RecentActivity";
 
 const features = [
   {
@@ -58,6 +60,20 @@ const Index = () => {
   const [savedPlansCount, setSavedPlansCount] = useState(0);
   const [creditsUsed, setCreditsUsed] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [recentActivities, setRecentActivities] = useState([
+    {
+      id: 1,
+      type: "meal_plan" as const,
+      description: "Created a new meal plan",
+      date: "2 hours ago"
+    },
+    {
+      id: 2,
+      type: "healthy_swap" as const,
+      description: "Found alternative for pasta",
+      date: "Yesterday"
+    }
+  ]);
 
   useEffect(() => {
     const getUser = async () => {
@@ -97,13 +113,14 @@ const Index = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+          className="space-y-6"
         >
           {/* Welcome Card */}
           <Card className="col-span-full bg-white/80 backdrop-blur-sm border-0 shadow-xl">
             <CardHeader>
-              <CardTitle className="text-2xl">
-                Welcome back, {user?.user_metadata.full_name}! 👋
+              <CardTitle className="text-2xl flex items-center gap-2">
+                <Leaf className="w-6 h-6 text-primary" />
+                Welcome back, {user?.user_metadata.full_name}!
               </CardTitle>
               <CardDescription>
                 Here's an overview of your meal planning journey
@@ -111,86 +128,45 @@ const Index = () => {
             </CardHeader>
           </Card>
 
-          {/* Stats Cards */}
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="w-5 h-5 text-primary" />
-                Saved Meal Plans
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{savedPlansCount}</div>
-              <Button 
-                variant="link" 
-                onClick={() => navigate('/profile')}
-                className="p-0 h-auto font-normal text-sm text-muted-foreground"
-              >
-                View all plans →
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ChartBar className="w-5 h-5 text-primary" />
-                Credits Used
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{creditsUsed}</div>
-              <Progress value={(creditsUsed / 10) * 100} className="mt-2" />
-              <p className="text-sm text-muted-foreground mt-2">
-                {10 - creditsUsed} credits remaining
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-primary" />
-                Current Plan
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">Free</div>
-              <Button 
-                onClick={() => navigate('/pricing')}
-                className="mt-4 bg-gradient-to-r from-primary to-primary/80"
-              >
-                Upgrade Now
-              </Button>
-            </CardContent>
-          </Card>
+          {/* Stats */}
+          <DashboardStats 
+            savedPlansCount={savedPlansCount}
+            creditsUsed={creditsUsed}
+            maxCredits={10}
+          />
 
           {/* Quick Actions */}
-          <Card className="col-span-full bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+          <QuickActions />
+
+          {/* Recent Activity */}
+          <RecentActivity activities={recentActivities} />
+
+          {/* Recommendations */}
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
             <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
+              <CardTitle>Personalized Recommendations</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <Button
-                onClick={() => navigate('/meal-plan')}
-                className="bg-gradient-to-r from-primary to-primary/80"
-              >
-                Create New Meal Plan
-              </Button>
-              <Button
-                onClick={() => navigate('/healthy-swap')}
-                variant="secondary"
-                className="bg-gradient-to-r from-secondary to-secondary/80"
-              >
-                Find Healthy Alternatives
-              </Button>
-              <Button
-                onClick={() => navigate('/pricing')}
-                variant="outline"
-                className="border-primary text-primary hover:bg-primary/10"
-              >
-                View Premium Features
-              </Button>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
+                  <h3 className="font-semibold mb-2 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    Try Premium Features
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Unlock advanced meal planning features and unlimited healthy swaps
+                  </p>
+                </div>
+                <div className="p-4 rounded-lg bg-secondary/5 border border-secondary/10">
+                  <h3 className="font-semibold mb-2 flex items-center gap-2">
+                    <Apple className="w-4 h-4 text-green-500" />
+                    Explore Healthy Swaps
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Discover healthier alternatives for your favorite meals
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </motion.div>

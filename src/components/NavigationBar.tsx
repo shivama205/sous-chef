@@ -13,8 +13,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
+import { Leaf, ChefHat, Apple, Sparkles } from "lucide-react";
 import GoogleSignInButton from "./GoogleSignInButton";
-
 
 const NavigationBar = () => {
   const location = useLocation();
@@ -41,49 +41,37 @@ const NavigationBar = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  const menuItems = [
+    { path: "/meal-plan", label: "Create Plan", icon: <ChefHat className="w-4 h-4" /> },
+    { path: "/healthy-swap", label: "Healthy Swap", icon: <Apple className="w-4 h-4" /> },
+    { path: "/pricing", label: "Pricing", icon: <Sparkles className="w-4 h-4" /> },
+    { path: "/faq", label: "FAQ", icon: <Leaf className="w-4 h-4" /> },
+  ];
+
   return (
-    <nav className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md shadow-sm">
+    <nav className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gray-100">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
+            <ChefHat className="w-8 h-8 text-primary" />
             <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               SousChef
             </span>
           </Link>
           
-          <div className="hidden md:flex items-center space-x-8">
-            <Link
-              to="/meal-plan"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive("/meal-plan") ? "text-primary" : "text-gray-600"
-              }`}
-            >
-              Meal Plan
-            </Link>
-            <Link
-              to="/healthy-swap"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive("/healthy-swap") ? "text-primary" : "text-gray-600"
-              }`}
-            >
-              Healthy Swap
-            </Link>
-            <Link
-              to="/pricing"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive("/pricing") ? "text-primary" : "text-gray-600"
-              }`}
-            >
-              Pricing
-            </Link>
-            <Link
-              to="/faq"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive("/faq") ? "text-primary" : "text-gray-600"
-              }`}
-            >
-              FAQ
-            </Link>
+          <div className="hidden md:flex items-center space-x-6">
+            {menuItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex items-center space-x-1 text-sm font-medium transition-colors hover:text-primary ${
+                  isActive(item.path) ? "text-primary" : "text-gray-600"
+                }`}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </Link>
+            ))}
             
             {user ? (
               <DropdownMenu>
@@ -139,49 +127,32 @@ const NavigationBar = () => {
             exit={{ opacity: 0, y: -20 }}
             className="md:hidden flex flex-col space-y-4 py-4"
           >
-            <Link
-              to="/meal-plan"
-              className={`text-sm font-medium ${
-                isActive("/meal-plan") ? "text-primary" : "text-gray-600"
-              }`}
-            >
-              Meal Plan
-            </Link>
-            <Link
-              to="/healthy-swap"
-              className={`text-sm font-medium ${
-                isActive("/healthy-swap") ? "text-primary" : "text-gray-600"
-              }`}
-            >
-              Healthy Swap
-            </Link>
-            <Link
-              to="/pricing"
-              className={`text-sm font-medium ${
-                isActive("/pricing") ? "text-primary" : "text-gray-600"
-              }`}
-            >
-              Pricing
-            </Link>
-            <Link
-              to="/faq"
-              className={`text-sm font-medium ${
-                isActive("/faq") ? "text-primary" : "text-gray-600"
-              }`}
-            >
-              FAQ
-            </Link>
+            {menuItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex items-center space-x-2 text-sm font-medium ${
+                  isActive(item.path) ? "text-primary" : "text-gray-600"
+                }`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </Link>
+            ))}
             {user ? (
               <>
                 <Link
                   to="/profile"
                   className="text-sm font-medium text-gray-600"
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Profile
                 </Link>
                 <Link
                   to="/billing"
                   className="text-sm font-medium text-gray-600"
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Billing
                 </Link>
