@@ -22,6 +22,7 @@ import { generateMealPlan } from "@/utils/mealPlanGenerator";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import html2canvas from 'html2canvas';
 import { OutOfCreditDialog } from "@/components/OutOfCreditDialog";
+import { LoginDialog } from "@/components/LoginDialog";
 
 const loadingMessages = [
   "Cooking up your perfect meal plan... 🍳",
@@ -318,7 +319,7 @@ export const MealPlanDetails = () => {
           className="space-y-6"
         >
           {isRegenerating && (
-            <div className="fixed inset-0 bg-white/50 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-50">
+            <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-10">
               <div className="flex items-center gap-3">
                 <Loader2 className="w-6 h-6 animate-spin text-primary" />
                 <p className="text-lg font-medium text-primary">{loadingMessages[loadingMessageIndex]}</p>
@@ -344,6 +345,7 @@ export const MealPlanDetails = () => {
                   </Button>
                   <Button
                     onClick={() => setOpen(true)}
+                    disabled={isRegenerating}
                     className="flex-1 sm:flex-none flex items-center justify-center gap-2"
                   >
                     <Save className="w-4 h-4" />
@@ -383,8 +385,20 @@ export const MealPlanDetails = () => {
 
           <motion.div
             ref={mealPlanRef}
-            className="overflow-x-auto rounded-xl border border-gray-100 bg-white/80 backdrop-blur-sm shadow-xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="relative"
           >
+            {isRegenerating && (
+              <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-10">
+                <div className="flex items-center gap-3">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  <p className="text-lg font-medium text-primary">{loadingMessages[loadingMessageIndex]}</p>
+                </div>
+              </div>
+            )}
+            
             <table className="w-full">
               <thead className="bg-gradient-to-r from-primary to-primary/80">
                 <tr>
@@ -492,19 +506,10 @@ export const MealPlanDetails = () => {
           </DialogContent>
         </Dialog>
 
-        <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Sign in required</DialogTitle>
-              <DialogDescription>
-                Please sign in to continue.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="mt-4">
-              <GoogleSignInButton />
-            </div>
-          </DialogContent>
-        </Dialog>
+        <LoginDialog 
+          open={loginDialogOpen} 
+          onOpenChange={setLoginDialogOpen} 
+        />
 
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <DialogContent>

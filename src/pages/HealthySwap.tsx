@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { OutOfCreditDialog } from "@/components/OutOfCreditDialog";
+import { LoginDialog } from "@/components/LoginDialog";
 
 const HealthySwap = () => {
   const { toast } = useToast();
@@ -244,20 +245,11 @@ const HealthySwap = () => {
         )}
       </div>
 
-      {/* Login Dialog */}
-      <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Sign in required</DialogTitle>
-            <DialogDescription>
-              Please sign in to use the healthy swap feature.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-4">
-            <GoogleSignInButton />
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Replace the old login dialog with the shared component */}
+      <LoginDialog 
+        open={loginDialogOpen} 
+        onOpenChange={setLoginDialogOpen} 
+      />
 
       {/* Replace the old credit dialog with the shared component */}
       <OutOfCreditDialog 

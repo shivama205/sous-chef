@@ -155,8 +155,6 @@ Do not add any other text or comments to the response.
 
 `;
 
-  console.log("Generating meal plan with preferences:", preferences);
-  
   try {
     const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -164,9 +162,7 @@ Do not add any other text or comments to the response.
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
-    
     console.log("Generated response:", text);
-    
     // Extract JSON content from the response
     const jsonMatch = text.match(/```json([\s\S]*?)```/);
     if (!jsonMatch) {

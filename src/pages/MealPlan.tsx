@@ -22,6 +22,7 @@ import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { OutOfCreditDialog } from "@/components/OutOfCreditDialog";
+import { LoginDialog } from "@/components/LoginDialog";
 
 const MealPlan = () => {
   const [open, setOpen] = useState(false);
@@ -282,22 +283,10 @@ const MealPlan = () => {
           </DialogContent>
         </Dialog>
 
-        <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Login Required</DialogTitle>
-              <DialogDescription>
-                You need to log in to save your meal plan.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button variant="secondary" onClick={() => setLoginDialogOpen(false)}>
-                Cancel
-              </Button>
-              <GoogleSignInButton />
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <LoginDialog 
+          open={loginDialogOpen} 
+          onOpenChange={setLoginDialogOpen} 
+        />
 
         <OutOfCreditDialog 
           open={showCreditDialog} 
