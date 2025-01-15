@@ -45,6 +45,7 @@ export const MealPlanDetails = () => {
   const [showCreditDialog, setShowCreditDialog] = useState(false);
   const downloadRef = useRef<HTMLDivElement>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
 
   // If the meal plan is passed through location state, use it
   useEffect(() => {
@@ -325,7 +326,7 @@ export const MealPlanDetails = () => {
           <LoadingOverlay isLoading={isRegenerating} useRotatingMessages={true} />
 
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <h2 className="text-2xl font-bold text-primary">
               {isSaved ? name || "Your Meal Plan" : "Your Generated Meal Plan"}
             </h2>
             <div className="flex flex-wrap gap-2 sm:gap-4 w-full sm:w-auto">
@@ -352,32 +353,25 @@ export const MealPlanDetails = () => {
               ) : (
                 <>
                   <Button
-                    onClick={handleShare}
                     variant="outline"
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2"
-                  >
-                    <Share2 className="w-4 h-4" />
-                    Share
-                  </Button>
-                  <Button
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 text-primary border-primary/20 hover:border-primary/30"
                     onClick={() => setPreviewOpen(true)}
-                    variant="outline"
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2"
                   >
                     <Download className="w-4 h-4" />
                     Download
                   </Button>
                   <Button
-                    onClick={() => navigate('/')}
-                    variant="secondary"
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2"
+                    variant="outline"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 text-primary border-primary/20 hover:border-primary/30"
+                    onClick={handleShare}
                   >
-                    Back
+                    <Share2 className="w-4 h-4" />
+                    Share
                   </Button>
                   <Button
                     onClick={() => setDeleteDialogOpen(true)}
                     variant="ghost"
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 hover:text-destructive"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 hover:bg-destructive/5 text-muted-foreground hover:text-destructive/70"
                     disabled={isDeleting}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -416,34 +410,34 @@ export const MealPlanDetails = () => {
                       >
                         {mealIndex === 0 && (
                           <td 
-                            className="py-4 px-6 font-medium"
+                            className="py-4 px-6 font-medium text-gray-900"
                             rowSpan={day.meals.length}
                           >
                             {day.day}
                           </td>
                         )}
                         <td className="py-4 px-6">
-                          <div className="font-medium">{meal.name}</div>
+                          <div className="font-medium text-gray-900">{meal.name}</div>
                           <div className="text-sm text-gray-500">{meal.time}</div>
                         </td>
-                        <td className="py-4 px-6 text-center">{meal.nutritionInfo.protein}</td>
-                        <td className="py-4 px-6 text-center">{meal.nutritionInfo.fat}</td>
-                        <td className="py-4 px-6 text-center">{meal.nutritionInfo.carbs}</td>
-                        <td className="py-4 px-6 text-center">{meal.nutritionInfo.calories}</td>
+                        <td className="py-4 px-6 text-center text-gray-700">{meal.nutritionInfo.protein}</td>
+                        <td className="py-4 px-6 text-center text-gray-700">{meal.nutritionInfo.fat}</td>
+                        <td className="py-4 px-6 text-center text-gray-700">{meal.nutritionInfo.carbs}</td>
+                        <td className="py-4 px-6 text-center text-gray-700">{meal.nutritionInfo.calories}</td>
                       </tr>
                     ))}
                     <tr className="bg-gray-50/80 font-semibold">
-                      <td colSpan={2} className="py-3 px-6">Daily Total</td>
-                      <td className="py-3 px-6 text-center">
+                      <td colSpan={2} className="py-3 px-6 text-gray-900">Daily Total</td>
+                      <td className="py-3 px-6 text-center text-gray-900">
                         {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.protein, 0)}g
                       </td>
-                      <td className="py-3 px-6 text-center">
+                      <td className="py-3 px-6 text-center text-gray-900">
                         {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.fat, 0)}g
                       </td>
-                      <td className="py-3 px-6 text-center">
+                      <td className="py-3 px-6 text-center text-gray-900">
                         {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.carbs, 0)}g
                       </td>
-                      <td className="py-3 px-6 text-center">
+                      <td className="py-3 px-6 text-center text-gray-900">
                         {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.calories, 0)}
                       </td>
                     </tr>
@@ -543,14 +537,37 @@ export const MealPlanDetails = () => {
           />
         </div>
 
-        <MealPlanPreviewDialog
-          open={previewOpen}
-          onOpenChange={setPreviewOpen}
-          mealPlan={mealPlan}
-          planName={name || "Your Meal Plan"}
-          onDownload={handleDownload}
-          previewRef={downloadRef}
-        />
+        <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+          <DialogContent className="max-w-[95vw] w-full lg:max-w-[900px] p-4 sm:p-6 bg-gradient-to-br from-primary/[0.02] to-transparent overflow-y-auto max-h-[90vh]">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-primary">Preview Download</DialogTitle>
+              <DialogDescription className="text-muted-foreground">
+                Review how your meal plan will look when downloaded
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div ref={previewRef} className="my-4 overflow-x-auto">
+              <MealPlanDownloadView mealPlan={mealPlan} planName={name || "Your Meal Plan"} />
+            </div>
+
+            <DialogFooter className="gap-2 mt-4">
+              <Button
+                variant="outline"
+                onClick={() => setPreviewOpen(false)}
+                className="flex items-center gap-2 border-primary/20 hover:border-primary/30 text-primary"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDownload}
+                className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70"
+              >
+                <Download className="w-4 h-4" />
+                Download Image
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );

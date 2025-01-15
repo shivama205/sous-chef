@@ -2,16 +2,18 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Share2, Download } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
-import { MealPlan } from "@/types/meal-plan";
+import { MealPlan } from "@/types/mealPlan";
 
 interface MealPlanShareProps {
   mealPlanId: string;
   mealPlanData: MealPlan;
+  planName: string;
 }
 
 export const MealPlanShare: React.FC<MealPlanShareProps> = ({
   mealPlanId,
   mealPlanData,
+  planName,
 }) => {
   const handleShare = async () => {
     const shareUrl = `https://sous-chef.in/shared/meal-plan/${mealPlanId}`;
@@ -19,8 +21,8 @@ export const MealPlanShare: React.FC<MealPlanShareProps> = ({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${mealPlanData.title} - SousChef Meal Plan`,
-          text: `Check out this healthy meal plan I created using SousChef AI: ${mealPlanData.description}`,
+          title: `${planName} - SousChef Meal Plan`,
+          text: "Check out this personalized meal plan I created using SousChef AI!",
           url: shareUrl,
         });
       } catch (error) {
@@ -51,28 +53,66 @@ export const MealPlanShare: React.FC<MealPlanShareProps> = ({
 
   const handleDownload = async () => {
     try {
+      // Calculate total nutrition values
+      const totalNutrition = mealPlanData.days.reduce((total, day) => {
+        const dayTotal = day.meals.reduce((mealTotal, meal) => ({
+          calories: mealTotal.calories + meal.nutritionInfo.calories,
+          protein: mealTotal.protein + meal.nutritionInfo.protein,
+          carbs: mealTotal.carbs + meal.nutritionInfo.carbs,
+          fat: mealTotal.fat + meal.nutritionInfo.fat,
+          fiber: mealTotal.fiber + meal.nutritionInfo.fiber,
+          sugar: mealTotal.sugar + meal.nutritionInfo.sugar,
+        }), {
+          calories: 0,
+          protein: 0,
+          carbs: 0,
+          fat: 0,
+          fiber: 0,
+          sugar: 0,
+        });
+        return {
+          calories: total.calories + dayTotal.calories,
+          protein: total.protein + dayTotal.protein,
+          carbs: total.carbs + dayTotal.carbs,
+          fat: total.fat + dayTotal.fat,
+          fiber: total.fiber + dayTotal.fiber,
+          sugar: total.sugar + dayTotal.sugar,
+        };
+      }, {
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+        fiber: 0,
+        sugar: 0,
+      });
+
       // Format the meal plan data for better readability
       const formattedData = {
-        title: mealPlanData.title,
-        description: mealPlanData.description,
-        createdAt: new Date(mealPlanData.created_at).toLocaleDateString(),
-        nutritionalSummary: {
-          calories: mealPlanData.metadata.calories,
-          protein: `${mealPlanData.metadata.protein}g`,
-          carbs: `${mealPlanData.metadata.carbs}g`,
-          fat: `${mealPlanData.metadata.fat}g`,
+        name: planName,
+        totalNutrition: {
+          calories: totalNutrition.calories,
+          protein: `${totalNutrition.protein}g`,
+          carbs: `${totalNutrition.carbs}g`,
+          fat: `${totalNutrition.fat}g`,
+          fiber: `${totalNutrition.fiber}g`,
+          sugar: `${totalNutrition.sugar}g`,
         },
-        meals: mealPlanData.meals.map(meal => ({
-          name: meal.name,
-          description: meal.description,
-          ingredients: meal.ingredients,
-          instructions: meal.instructions,
-          nutritionalInfo: {
-            calories: meal.nutritionalInfo.calories,
-            protein: `${meal.nutritionalInfo.protein}g`,
-            carbs: `${meal.nutritionalInfo.carbs}g`,
-            fat: `${meal.nutritionalInfo.fat}g`,
-          }
+        days: mealPlanData.days.map(day => ({
+          day: day.day,
+          meals: day.meals.map(meal => ({
+            name: meal.name,
+            time: meal.time,
+            recipeLink: meal.recipeLink,
+            nutritionInfo: {
+              calories: meal.nutritionInfo.calories,
+              protein: `${meal.nutritionInfo.protein}g`,
+              carbs: `${meal.nutritionInfo.carbs}g`,
+              fat: `${meal.nutritionInfo.fat}g`,
+              fiber: `${meal.nutritionInfo.fiber}g`,
+              sugar: `${meal.nutritionInfo.sugar}g`,
+            }
+          }))
         }))
       };
 
