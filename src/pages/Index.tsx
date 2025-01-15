@@ -32,12 +32,12 @@ const features = [
 
 const testimonials = [
   {
-    name: "Tasya Z.",
+    name: "Sarah J.",
     role: "Fitness Enthusiast",
     content: "This app has transformed how I plan my meals. The AI suggestions are spot-on!"
   },
   {
-    name: "Vivek N.",
+    name: "Mike R.",
     role: "Busy Professional",
     content: "Finally, an app that makes healthy eating simple and achievable."
   },
@@ -197,17 +197,6 @@ export function Index() {
     };
   }, []);
 
-  const getNextTier = (currentTier: string) => {
-    switch (currentTier) {
-      case 'free':
-        return { name: 'Pro', features: 'unlimited meal plans' };
-      case 'pro':
-        return { name: 'Premium', features: 'advanced customization' };
-      default:
-        return null;
-    }
-  };
-
   const LoggedInView = () => (
     <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
       <NavigationBar />
@@ -288,67 +277,6 @@ export function Index() {
                       </div>
                       <span className="font-medium">{creditsAvailable}</span>
                     </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Announcements */}
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-xl flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-secondary" />
-                Coming Soon
-              </CardTitle>
-              <CardDescription>
-                Exciting new features on the horizon
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-primary/5 to-secondary/5 border border-primary/10">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Package className="w-4 h-4 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-sm">Recipe Customization</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Customize meal plans based on available ingredients in your kitchen
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-secondary/5 to-primary/5 border border-secondary/10">
-                  <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0">
-                    <Users className="w-4 h-4 text-secondary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-sm">Community Features</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Share and discover recipes with our growing community
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-primary/5 to-secondary/5 border border-primary/10">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Salad className="w-4 h-4 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-sm">Smart Grocery Lists</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Automatically generate shopping lists from your meal plans
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-secondary/5 to-primary/5 border border-secondary/10">
-                  <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0">
-                    <Star className="w-4 h-4 text-secondary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-sm">Premium Features</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Advanced customization options coming to Pro users
-                    </p>
                   </div>
                 </div>
               </div>
@@ -570,8 +498,8 @@ export function Index() {
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.2 }}
             >
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Leaf className="w-6 h-6 text-primary" />
+              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                <Leaf className="w-6 h-6 text-green-500" />
               </div>
               <p className="text-sm font-medium text-gray-600">Nutritional Tracking</p>
             </motion.div>
@@ -675,84 +603,24 @@ export function Index() {
               Coming Soon
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Exciting new features on the horizon
+              We're constantly working on new features to make your healthy eating journey even better
             </p>
           </motion.div>
 
-          <div className="max-w-5xl mx-auto">
-            <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {upcomingFeatures.map((feature, index) => (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-primary/5 to-secondary/5 border border-primary/10"
+                className="flex items-center gap-4 p-4 rounded-xl bg-white/80 backdrop-blur-sm shadow-lg"
               >
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Package className="w-4 h-4 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-sm">Recipe Customization</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Customize meal plans based on available ingredients in your kitchen
-                  </p>
-                </div>
+                <Sparkles className="w-6 h-6 text-secondary flex-shrink-0" />
+                <span>{feature}</span>
               </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                viewport={{ once: true }}
-                className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-secondary/5 to-primary/5 border border-secondary/10"
-              >
-                <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0">
-                  <Users className="w-4 h-4 text-secondary" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-sm">Community Features</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Share and discover recipes with our growing community
-                  </p>
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                viewport={{ once: true }}
-                className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-primary/5 to-secondary/5 border border-primary/10"
-              >
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Salad className="w-4 h-4 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-sm">Smart Grocery Lists</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Automatically generate shopping lists from your meal plans
-                  </p>
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                viewport={{ once: true }}
-                className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-secondary/5 to-primary/5 border border-secondary/10"
-              >
-                <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0">
-                  <Star className="w-4 h-4 text-secondary" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-sm">Premium Features</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Advanced customization options coming to Pro users
-                  </p>
-                </div>
-              </motion.div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
