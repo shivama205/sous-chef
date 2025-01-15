@@ -22,25 +22,41 @@ export function SharedMealPlan() {
 
   useEffect(() => {
     const fetchMealPlan = async () => {
-        console.log("Fetching meal plan with ID:", id);
+      console.log("Fetching shared meal plan with ID:", id);
       try {
-        const { data, error } = await supabase
-          .from("saved_meal_plans")
-          .select("*")
+        // First try to get the shared meal plan record
+        const { data: sharedPlan, error: sharedError } = await supabase
+          .from("shared_meal_plans")
+          .select("meal_plan_id")
           .eq("id", id)
           .single();
 
-        if (error) {
-          console.log("Error fetching meal plan:", error);
+        if (sharedError) {
+          console.error("Error fetching shared meal plan:", sharedError);
+          setIsLoading(false);
+          return;
+        }
+
+        // Then get the actual meal plan using the meal_plan_id
+        const { data: mealPlanData, error: mealPlanError } = await supabase
+          .from("saved_meal_plans")
+          .select("*")
+          .eq("id", sharedPlan.meal_plan_id)
+          .single();
+
+        if (mealPlanError) {
+          console.error("Error fetching meal plan:", mealPlanError);
           toast({
             title: "Error",
             description: "Failed to load meal plan. Please try again.",
             variant: "destructive",
           });
+          setIsLoading(false);
+          return;
         }
         
-        setMealPlan(data.plan);
-        setPlanName(data.name || "Meal Plan");
+        setMealPlan(mealPlanData.plan);
+        setPlanName(mealPlanData.name || "Meal Plan");
 
         // Generate preview image after meal plan is loaded
         if (previewRef.current) {
@@ -54,7 +70,7 @@ export function SharedMealPlan() {
           setPreviewImageUrl(imageUrl);
         }
       } catch (error) {
-        console.error("Error fetching meal plan:", error);
+        console.error("Error in meal plan fetch process:", error);
         toast({
           title: "Error",
           description: "Failed to load meal plan. Please try again.",

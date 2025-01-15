@@ -231,31 +231,44 @@ export const MealPlanDetails = () => {
   };
 
   const handleDownload = async () => {
-    if (!downloadRef.current) return;
+    if (!previewRef.current) return;
 
     try {
-      const canvas = await html2canvas(downloadRef.current, {
-        scale: 2, // Higher quality
+      const canvas = await html2canvas(previewRef.current, {
+        scale: 2,
         backgroundColor: '#ffffff',
         useCORS: true,
         logging: false,
-        windowWidth: downloadRef.current.scrollWidth,
-        windowHeight: downloadRef.current.scrollHeight,
+        width: previewRef.current.offsetWidth,
+        height: previewRef.current.offsetHeight,
+        windowWidth: previewRef.current.offsetWidth,
+        windowHeight: previewRef.current.offsetHeight,
       });
       
       const imageUrl = canvas.toDataURL('image/png', 1.0);
-      const link = document.createElement('a');
-      link.href = imageUrl;
-      link.download = `${name || 'meal-plan'}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setPreviewOpen(false);
-
-      toast({
-        title: "Download successful",
-        description: "Your meal plan has been downloaded as an image.",
-      });
+      
+      // For mobile devices, open in new tab
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        window.open(imageUrl);
+        setPreviewOpen(false);
+        toast({
+          title: "Image ready",
+          description: "Long press the image to save it to your device.",
+        });
+      } else {
+        // For desktop, trigger download
+        const link = document.createElement('a');
+        link.href = imageUrl;
+        link.download = `${name || 'meal-plan'}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setPreviewOpen(false);
+        toast({
+          title: "Download successful",
+          description: "Your meal plan has been downloaded as an image.",
+        });
+      }
     } catch (error) {
       console.error('Error downloading:', error);
       toast({
@@ -267,27 +280,117 @@ export const MealPlanDetails = () => {
   };
 
   const handleShare = async () => {
-    if (!mealPlanRef.current) return;
+    if (!id) return;
 
     try {
-      const shareUrl = `https://sous-chef.in/shared/meal-plan/${id}`;
-      
-      if (navigator.share) {
-        await navigator.share({
-          title: `${name || 'My Meal Plan'} - SousChef`,
-          text: "Check out my personalized meal plan created with SousChef!",
-          url: shareUrl,
-        });
-      } else {
-        // Fallback to copying to clipboard
-        await navigator.clipboard.writeText(shareUrl);
+      // First, create a shared link entry in the database
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        setLoginDialogOpen(true);
+        return;
+      }
+
+      // check if there is a shared link for this meal plan
+      const { data: existingShare, error: existingShareError } = await supabase
+        .from('shared_meal_plans')
+        .select('*')
+        .eq('meal_plan_id', id)
+        .maybeSingle();
+
+      if (existingShare) {
+        const shareUrl = `https://sous-chef.in/shared/meal-plan/${existingShare.id}`;
+        try {
+          if (navigator.share) {
+            await navigator.share({
+              title: `${name || 'My Meal Plan'} - SousChef`,
+              text: "Check out my personalized meal plan created with SousChef!",
+              url: shareUrl,
+            });
+            toast({
+              title: "Shared successfully!",
+              description: "Your meal plan has been shared.",
+            });
+          } else {
+            await navigator.clipboard.writeText(shareUrl);
+            toast({
+              title: "Link copied!",
+              description: "Share link has been copied to your clipboard.",
+            });
+          }
+        } catch (error) {
+          // Only show error if it's not a user cancellation
+          if (error instanceof Error && error.name !== 'AbortError') {
+            console.error('Error sharing:', error);
+            toast({
+              title: "Error sharing",
+              description: "Failed to share meal plan. Please try again.",
+              variant: "destructive",
+            });
+          }
+        }
+        return;
+      }
+
+      // Create a shared link record
+      const { data: newShare, error: createShareError } = await supabase
+        .from('shared_meal_plans')
+        .insert([{ 
+          meal_plan_id: id,
+          user_id: session.user.id,
+          is_public: true,
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+        }])
+        .select()
+        .single();
+
+      if (createShareError) {
+        console.error('Error creating share link:', createShareError);
         toast({
-          title: "Link copied!",
-          description: "Share link has been copied to your clipboard.",
+          title: "Error sharing meal plan",
+          description: "Failed to create share link. Please try again.",
+          variant: "destructive",
         });
+        return;
+      }
+
+      const shareUrl = `https://sous-chef.in/shared/meal-plan/${newShare.id}`;
+      
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: `${name || 'My Meal Plan'} - SousChef`,
+            text: "Check out my personalized meal plan created with SousChef!",
+            url: shareUrl,
+          });
+          toast({
+            title: "Shared successfully!",
+            description: "Your meal plan has been shared.",
+          });
+        } else {
+          await navigator.clipboard.writeText(shareUrl);
+          toast({
+            title: "Link copied!",
+            description: "Share link has been copied to your clipboard.",
+          });
+        }
+      } catch (error) {
+        // Only show error if it's not a user cancellation
+        if (error instanceof Error && error.name !== 'AbortError') {
+          console.error('Error sharing:', error);
+          toast({
+            title: "Error sharing",
+            description: "Failed to share meal plan. Please try again.",
+            variant: "destructive",
+          });
+        }
       }
     } catch (error) {
-      console.error('Error sharing:', error);
+      console.error('Error in share process:', error);
+      toast({
+        title: "Error sharing",
+        description: "Failed to share meal plan. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -538,29 +641,31 @@ export const MealPlanDetails = () => {
         </div>
 
         <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-          <DialogContent className="max-w-[95vw] w-full lg:max-w-[900px] p-4 sm:p-6 bg-gradient-to-br from-primary/[0.02] to-transparent overflow-y-auto max-h-[90vh]">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-bold text-primary">Preview Download</DialogTitle>
-              <DialogDescription className="text-muted-foreground">
+          <DialogContent className="max-w-[95vw] w-full lg:max-w-[900px] p-2 sm:p-6 bg-gradient-to-br from-primary/[0.02] to-transparent overflow-y-auto max-h-[95vh]">
+            <DialogHeader className="space-y-2">
+              <DialogTitle className="text-lg sm:text-xl font-bold text-primary">Preview Download</DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground">
                 Review how your meal plan will look when downloaded
               </DialogDescription>
             </DialogHeader>
             
-            <div ref={previewRef} className="my-4 overflow-x-auto">
-              <MealPlanDownloadView mealPlan={mealPlan} planName={name || "Your Meal Plan"} />
+            <div className="my-2 sm:my-4 overflow-x-auto">
+              <div ref={previewRef} className="min-w-[320px] w-full">
+                <MealPlanDownloadView mealPlan={mealPlan} planName={name || "Your Meal Plan"} />
+              </div>
             </div>
 
-            <DialogFooter className="gap-2 mt-4">
+            <DialogFooter className="flex-col sm:flex-row gap-2 mt-2 sm:mt-4">
               <Button
                 variant="outline"
                 onClick={() => setPreviewOpen(false)}
-                className="flex items-center gap-2 border-primary/20 hover:border-primary/30 text-primary"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 border-primary/20 hover:border-primary/30 text-primary"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleDownload}
-                className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70"
               >
                 <Download className="w-4 h-4" />
                 Download Image
