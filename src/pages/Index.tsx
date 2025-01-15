@@ -7,9 +7,6 @@ import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DashboardStats } from "@/components/dashboard/DashboardStats";
-import { RecentActivity } from "@/components/dashboard/RecentActivity";
-import { toast } from "@/components/ui/use-toast";
 
 const features = [
   {
@@ -31,12 +28,12 @@ const features = [
 
 const testimonials = [
   {
-    name: "Sarah J.",
+    name: "Tasya Z.",
     role: "Fitness Enthusiast",
     content: "This app has transformed how I plan my meals. The AI suggestions are spot-on!"
   },
   {
-    name: "Mike R.",
+    name: "Vivek N.",
     role: "Busy Professional",
     content: "Finally, an app that makes healthy eating simple and achievable."
   },
@@ -59,6 +56,12 @@ const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [savedPlansCount, setSavedPlansCount] = useState(0);
   const [creditsUsed, setCreditsUsed] = useState(0);
+  const [creditsAvailable, setCreditsAvailable] = useState(0);
+  const [subscriptionTier, setSubscriptionTier] = useState<string>('free');
+  const [weeklyStats, setWeeklyStats] = useState({
+    plansCreated: 0,
+    healthySwaps: 0
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [recentActivities, setRecentActivities] = useState([
     {
@@ -82,42 +85,48 @@ const Index = () => {
       
       if (session?.user) {
         setIsLoading(true);
-        // Fetch saved plans count
-        const { count: plansCount } = await supabase
+        
+        // Get the date 7 days ago
+        const lastWeek = new Date();
+        lastWeek.setDate(lastWeek.getDate() - 7);
+        
+        // Fetch weekly meal plans count
+        const { count: weeklyPlans } = await supabase
+          .from('saved_meal_plans')
+          .select('*', { count: 'exact' })
+          .eq('user_id', session.user.id)
+          .gte('created_at', lastWeek.toISOString());
+
+        // Fetch weekly healthy swaps count
+        const { count: weeklySwaps } = await supabase
+          .from('healthy_swaps')
+          .select('*', { count: 'exact' })
+          .eq('user_id', session.user.id)
+          .gte('created_at', lastWeek.toISOString());
+          
+        // Fetch total saved plans count
+        const { count: totalPlans } = await supabase
           .from('saved_meal_plans')
           .select('*', { count: 'exact' })
           .eq('user_id', session.user.id);
           
-        // Fetch credits and create if doesn't exist
+        // Fetch credits and subscription
         const { data: credits } = await supabase
           .from('user_credits')
-          .select('*')
-          .eq('user_id', session.user.id);
+          .select('credits_available, credits_used')
+          .eq('user_id', session.user.id)
+          .single();
 
-        if (!credits?.length) {
-          // New user - give them 10 credits
-          const { error: insertError } = await supabase
-            .from('user_credits')
-            .insert([
-              { 
-                user_id: session.user.id, 
-                credits_available: 10,
-                credits_used: 0
-              }
-            ]);
-
-          if (!insertError) {
-            toast({
-              title: "Welcome!",
-              description: "You've received 10 free credits to get started.",
-            });
-            setCreditsUsed(0);
-          }
-        } else {
-          setCreditsUsed(credits[0].credits_used ?? 0);
+        if (credits) {
+          setCreditsUsed(credits.credits_used);
+          setCreditsAvailable(credits.credits_available);
         }
 
-        setSavedPlansCount(plansCount ?? 0);
+        setSavedPlansCount(totalPlans ?? 0);
+        setWeeklyStats({
+          plansCreated: weeklyPlans ?? 0,
+          healthySwaps: weeklySwaps ?? 0
+        });
         setIsLoading(false);
       }
     };
@@ -139,6 +148,17 @@ const Index = () => {
     };
   }, []);
 
+  const getNextTier = (currentTier: string) => {
+    switch (currentTier) {
+      case 'free':
+        return { name: 'Pro', features: 'unlimited meal plans' };
+      case 'pro':
+        return { name: 'Premium', features: 'advanced customization' };
+      default:
+        return null;
+    }
+  };
+
   const LoggedInView = () => (
     <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
       <NavigationBar />
@@ -150,53 +170,231 @@ const Index = () => {
           transition={{ duration: 0.5 }}
           className="space-y-6"
         >
-          {/* Welcome Card */}
-          <Card className="col-span-full bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-2">
-                <Leaf className="w-6 h-6 text-primary" />
-                Welcome back, {user?.user_metadata.full_name}!
-              </CardTitle>
-              <CardDescription>
-                Here's an overview of your meal planning journey
-              </CardDescription>
+          {/* Welcome Section */}
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+            <CardHeader className="pb-4">
+              <div className="flex flex-col space-y-4">
+                <div>
+                  <CardTitle className="text-2xl flex items-center gap-2">
+                    <ChefHat className="w-6 h-6 text-secondary" />
+                    Welcome back, {user?.user_metadata.full_name}!
+                  </CardTitle>
+                  <CardDescription className="mt-1">
+                    Your personal AI chef is ready to help you eat healthier
+                  </CardDescription>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground bg-primary/5 p-3 rounded-lg border border-primary/10">
+                    <Package className="w-4 h-4 text-primary flex-shrink-0" />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span>
+                          <span className="font-medium text-primary">Current Plan: </span>
+                          <span className="capitalize">{subscriptionTier}</span>
+                        </span>
+                        {getNextTier(subscriptionTier) && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate("/pricing")}
+                            className="h-7 text-xs text-secondary hover:text-secondary/80"
+                          >
+                            Upgrade
+                            <ArrowRight className="w-3 h-3 ml-1" />
+                          </Button>
+                        )}
+                      </div>
+                      {getNextTier(subscriptionTier) && (
+                        <div className="text-xs mt-0.5">
+                          Upgrade to {getNextTier(subscriptionTier)?.name} for {getNextTier(subscriptionTier)?.features}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/5 p-3 rounded-lg border border-secondary/10">
+                    <Sparkles className="w-4 h-4 text-secondary flex-shrink-0" />
+                    <div>
+                      <span>
+                        <span className="font-medium text-primary">{creditsAvailable} credits</span> available
+                      </span>
+                      <div className="text-xs mt-0.5">
+                        Each meal plan or healthy swap uses 1 credit
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </CardHeader>
           </Card>
 
-          {/* Stats */}
-          <DashboardStats 
-            savedPlansCount={savedPlansCount}
-            creditsUsed={creditsUsed}
-            maxCredits={10}
-          />
+          {/* Key Metrics */}
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Credit Status */}
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-secondary" />
+                  Your Credit Balance
+                </CardTitle>
+                <div className="grid grid-cols-2 gap-6 mt-4">
+                  <div>
+                    <div className="text-3xl font-bold text-primary">{creditsAvailable}</div>
+                    <p className="text-sm text-muted-foreground">Available Credits</p>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-bold text-secondary">{creditsUsed}</div>
+                    <p className="text-sm text-muted-foreground">Credits Used</p>
+                  </div>
+                </div>
+              </CardHeader>
+            </Card>
 
-          {/* Recent Activity */}
-          <RecentActivity activities={recentActivities} />
+            {/* Weekly Activity */}
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-secondary" />
+                  This Week's Activity
+                </CardTitle>
+                <div className="grid grid-cols-2 gap-6 mt-4">
+                  <div>
+                    <div className="text-3xl font-bold text-primary">{weeklyStats.plansCreated}</div>
+                    <p className="text-sm text-muted-foreground">Meal Plans Created</p>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-bold text-secondary">
+                      {weeklyStats.healthySwaps}
+                    </div>
+                    <p className="text-sm text-muted-foreground">Healthy Alternatives</p>
+                  </div>
+                </div>
+              </CardHeader>
+            </Card>
+          </div>
 
-          {/* Recommendations */}
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-            <CardHeader>
-              <CardTitle>Personalized Recommendations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-2">
+          {/* Quick Actions and Tips */}
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Quick Actions */}
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-secondary" />
+                  Quick Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-4">
+                <Button
+                  onClick={() => navigate("/meal-plan")}
+                  className="w-full h-11 justify-start bg-gradient-to-r from-primary to-primary/80 text-white hover:opacity-90"
+                >
+                  <ChefHat className="w-4 h-4 mr-2" />
+                  Generate New Meal Plan
+                </Button>
+                <Button
+                  onClick={() => navigate("/healthy-swap")}
+                  className="w-full h-11 justify-start bg-gradient-to-r from-secondary to-secondary/80 text-primary hover:opacity-90"
+                >
+                  <Apple className="w-4 h-4 mr-2" />
+                  Find Healthy Alternatives
+                </Button>
+                <Button
+                  onClick={() => navigate("/meal-plans")}
+                  variant="outline"
+                  className="w-full h-11 justify-start border-primary text-primary hover:bg-primary/5"
+                >
+                  <Package className="w-4 h-4 mr-2" />
+                  View My Meal Plans
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Tips and Recommendations */}
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <Leaf className="w-5 h-5 text-secondary" />
+                  Healthy Tips
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
-                  <h3 className="font-semibold mb-2 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-primary" />
-                    Try Premium Features
+                  <h3 className="font-medium mb-2 flex items-center gap-2">
+                    <Star className="w-4 h-4 text-secondary" />
+                    Meal Planning Tips
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Unlock advanced meal planning features and unlimited healthy swaps
+                    Plan your meals for the week ahead to save time and maintain a balanced diet.
                   </p>
                 </div>
                 <div className="p-4 rounded-lg bg-secondary/5 border border-secondary/10">
-                  <h3 className="font-semibold mb-2 flex items-center gap-2">
-                    <Apple className="w-4 h-4 text-green-500" />
-                    Explore Healthy Swaps
+                  <h3 className="font-medium mb-2 flex items-center gap-2">
+                    <Apple className="w-4 h-4 text-primary" />
+                    Healthy Swaps
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Discover healthier alternatives for your favorite meals
+                    Try replacing refined grains with whole grains for more nutrients and fiber.
                   </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Announcements */}
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-secondary" />
+                Coming Soon
+              </CardTitle>
+              <CardDescription>
+                Exciting new features on the horizon
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-primary/5 to-secondary/5 border border-primary/10">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Package className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-sm">Recipe Customization</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Customize meal plans based on available ingredients in your kitchen
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-secondary/5 to-primary/5 border border-secondary/10">
+                  <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                    <Users className="w-4 h-4 text-secondary" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-sm">Community Features</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Share and discover recipes with our growing community
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-primary/5 to-secondary/5 border border-primary/10">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Salad className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-sm">Smart Grocery Lists</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Automatically generate shopping lists from your meal plans
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-secondary/5 to-primary/5 border border-secondary/10">
+                  <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                    <Star className="w-4 h-4 text-secondary" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-sm">Premium Features</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Advanced customization options coming to Pro users
+                    </p>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -276,8 +474,8 @@ const Index = () => {
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.2 }}
             >
-              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                <Leaf className="w-6 h-6 text-green-500" />
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <Leaf className="w-6 h-6 text-primary" />
               </div>
               <p className="text-sm font-medium text-gray-600">Nutritional Tracking</p>
             </motion.div>
@@ -381,24 +579,84 @@ const Index = () => {
               Coming Soon
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              We're constantly working on new features to make your healthy eating journey even better
+              Exciting new features on the horizon
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {upcomingFeatures.map((feature, index) => (
+          <div className="max-w-5xl mx-auto">
+            <div className="grid gap-4 sm:grid-cols-2">
               <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
                 viewport={{ once: true }}
-                className="flex items-center gap-4 p-4 rounded-xl bg-white/80 backdrop-blur-sm shadow-lg"
+                className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-primary/5 to-secondary/5 border border-primary/10"
               >
-                <Sparkles className="w-6 h-6 text-secondary flex-shrink-0" />
-                <span>{feature}</span>
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Package className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-sm">Recipe Customization</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Customize meal plans based on available ingredients in your kitchen
+                  </p>
+                </div>
               </motion.div>
-            ))}
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                viewport={{ once: true }}
+                className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-secondary/5 to-primary/5 border border-secondary/10"
+              >
+                <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                  <Users className="w-4 h-4 text-secondary" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-sm">Community Features</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Share and discover recipes with our growing community
+                  </p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                viewport={{ once: true }}
+                className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-primary/5 to-secondary/5 border border-primary/10"
+              >
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Salad className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-sm">Smart Grocery Lists</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Automatically generate shopping lists from your meal plans
+                  </p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                viewport={{ once: true }}
+                className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-secondary/5 to-primary/5 border border-secondary/10"
+              >
+                <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                  <Star className="w-4 h-4 text-secondary" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-sm">Premium Features</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Advanced customization options coming to Pro users
+                  </p>
+                </div>
+              </motion.div>
+            </div>
           </div>
         </div>
       </section>
