@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader2, ChefHat } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
-import { MealPlan } from "@/types/meal-plan";
+import { MealPlan } from "@/types/mealPlan";
+
 
 export function SharedMealPlan() {
   const { id } = useParams<{ id: string }>();
@@ -67,19 +68,22 @@ export function SharedMealPlan() {
 
   const seoData = {
     title: `${planName} - SousChef Meal Plan`,
-    description: mealPlan?.description || "A healthy meal plan created with SousChef AI.",
+    description: "A personalized meal plan created with SousChef AI.",
     structuredData: {
       "@context": "https://schema.org",
       "@type": "Recipe",
       "name": planName,
-      "description": mealPlan?.description || "A healthy meal plan created with SousChef AI.",
-      "datePublished": mealPlan?.created_at,
+      "description": "A personalized meal plan created with SousChef AI.",
       "nutrition": {
         "@type": "NutritionInformation",
-        "calories": `${mealPlan?.metadata?.calories || 0} calories`,
-        "proteinContent": `${mealPlan?.metadata?.protein || 0}g`,
-        "carbohydrateContent": `${mealPlan?.metadata?.carbs || 0}g`,
-        "fatContent": `${mealPlan?.metadata?.fat || 0}g`
+        "calories": `${mealPlan.days.reduce((total, day) => 
+          total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionInfo.calories, 0), 0)} calories`,
+        "proteinContent": `${mealPlan.days.reduce((total, day) => 
+          total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionInfo.protein, 0), 0)}g`,
+        "carbohydrateContent": `${mealPlan.days.reduce((total, day) => 
+          total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionInfo.carbs, 0), 0)}g`,
+        "fatContent": `${mealPlan.days.reduce((total, day) => 
+          total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionInfo.fat, 0), 0)}g`
       }
     }
   };
@@ -113,7 +117,7 @@ export function SharedMealPlan() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold">{planName}</h1>
-                <p className="text-gray-600">{mealPlan?.description}</p>
+                <p className="text-gray-600">A personalized meal plan created with SousChef AI</p>
               </div>
             </div>
 
@@ -121,75 +125,70 @@ export function SharedMealPlan() {
             <div className="grid grid-cols-4 gap-4 mb-8">
               <div className="p-4 rounded-lg bg-primary/5">
                 <p className="text-sm text-gray-600">Calories</p>
-                <p className="text-xl font-semibold">{mealPlan.metadata.calories}</p>
+                <p className="text-xl font-semibold">
+                  {mealPlan.days.reduce((total, day) => 
+                    total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionInfo.calories, 0), 0)}
+                </p>
               </div>
               <div className="p-4 rounded-lg bg-primary/5">
                 <p className="text-sm text-gray-600">Protein</p>
-                <p className="text-xl font-semibold">{mealPlan.metadata.protein}g</p>
+                <p className="text-xl font-semibold">
+                  {mealPlan.days.reduce((total, day) => 
+                    total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionInfo.protein, 0), 0)}g
+                </p>
               </div>
               <div className="p-4 rounded-lg bg-primary/5">
                 <p className="text-sm text-gray-600">Carbs</p>
-                <p className="text-xl font-semibold">{mealPlan.metadata.carbs}g</p>
+                <p className="text-xl font-semibold">
+                  {mealPlan.days.reduce((total, day) => 
+                    total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionInfo.carbs, 0), 0)}g
+                </p>
               </div>
               <div className="p-4 rounded-lg bg-primary/5">
                 <p className="text-sm text-gray-600">Fat</p>
-                <p className="text-xl font-semibold">{mealPlan.metadata.fat}g</p>
+                <p className="text-xl font-semibold">
+                  {mealPlan.days.reduce((total, day) => 
+                    total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionInfo.fat, 0), 0)}g
+                </p>
               </div>
             </div>
 
             {/* Meals */}
             <div className="space-y-6">
-              {mealPlan.meals.map((meal, index) => (
-                <div key={meal.id} className="p-6 rounded-lg bg-white shadow-sm">
+              {mealPlan.days.map((day, dayIndex) => (
+                <div key={dayIndex} className="p-6 rounded-lg bg-white shadow-sm">
                   <h2 className="text-xl font-semibold mb-4">
-                    Meal {index + 1}: {meal.name}
+                    {day.day}
                   </h2>
-                  <p className="text-gray-600 mb-4">{meal.description}</p>
-
-                  {/* Ingredients */}
-                  <div className="mb-6">
-                    <h3 className="font-medium mb-2">Ingredients</h3>
-                    <ul className="list-disc list-inside space-y-1">
-                      {meal.ingredients.map((ingredient, i) => (
-                        <li key={i} className="text-gray-600">
-                          {ingredient.amount} {ingredient.unit} {ingredient.name}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Instructions */}
-                  <div>
-                    <h3 className="font-medium mb-2">Instructions</h3>
-                    <ol className="list-decimal list-inside space-y-2">
-                      {meal.instructions.map((instruction, i) => (
-                        <li key={i} className="text-gray-600">{instruction}</li>
-                      ))}
-                    </ol>
-                  </div>
-
-                  {/* Meal Nutrition */}
-                  <div className="mt-4 p-4 rounded-lg bg-primary/5">
-                    <h3 className="font-medium mb-2">Nutrition Information</h3>
-                    <div className="grid grid-cols-4 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-600">Calories</p>
-                        <p className="font-semibold">{meal.nutritionalInfo.calories}</p>
+                  {day.meals.map((meal, mealIndex) => (
+                    <div key={mealIndex} className="mb-6 last:mb-0">
+                      <h3 className="font-medium mb-2">
+                        {meal.time} - {meal.name}
+                      </h3>
+                      <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                        <div>
+                          <p>Calories: {meal.nutritionInfo.calories}</p>
+                          <p>Protein: {meal.nutritionInfo.protein}g</p>
+                          <p>Carbs: {meal.nutritionInfo.carbs}g</p>
+                        </div>
+                        <div>
+                          <p>Fat: {meal.nutritionInfo.fat}g</p>
+                          <p>Fiber: {meal.nutritionInfo.fiber}g</p>
+                          <p>Sugar: {meal.nutritionInfo.sugar}g</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Protein</p>
-                        <p className="font-semibold">{meal.nutritionalInfo.protein}g</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Carbs</p>
-                        <p className="font-semibold">{meal.nutritionalInfo.carbs}g</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Fat</p>
-                        <p className="font-semibold">{meal.nutritionalInfo.fat}g</p>
-                      </div>
+                      {meal.recipeLink && (
+                        <a 
+                          href={meal.recipeLink} 
+                          className="inline-block mt-2 text-sm text-primary hover:underline"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          View Recipe
+                        </a>
+                      )}
                     </div>
-                  </div>
+                  ))}
                 </div>
               ))}
             </div>

@@ -24,6 +24,8 @@ import GoogleSignInButton from "@/components/GoogleSignInButton";
 import html2canvas from 'html2canvas';
 import { OutOfCreditDialog } from "@/components/OutOfCreditDialog";
 import { LoginDialog } from "@/components/LoginDialog";
+import MealPlanDownloadView from "@/components/MealPlanDownloadView";
+import { MealPlanPreviewDialog } from "@/components/MealPlanPreviewDialog";
 
 export const MealPlanDetails = () => {
   const { id } = useParams();
@@ -41,6 +43,8 @@ export const MealPlanDetails = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const mealPlanRef = useRef<HTMLDivElement>(null);
   const [showCreditDialog, setShowCreditDialog] = useState(false);
+  const downloadRef = useRef<HTMLDivElement>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   // If the meal plan is passed through location state, use it
   useEffect(() => {
@@ -226,21 +230,26 @@ export const MealPlanDetails = () => {
   };
 
   const handleDownload = async () => {
-    if (!mealPlanRef.current) return;
+    if (!downloadRef.current) return;
 
     try {
-      const canvas = await html2canvas(mealPlanRef.current, {
+      const canvas = await html2canvas(downloadRef.current, {
         scale: 2, // Higher quality
         backgroundColor: '#ffffff',
+        useCORS: true,
+        logging: false,
+        windowWidth: downloadRef.current.scrollWidth,
+        windowHeight: downloadRef.current.scrollHeight,
       });
-      const imageUrl = canvas.toDataURL('image/png', 1.0); // Using PNG for better quality
       
+      const imageUrl = canvas.toDataURL('image/png', 1.0);
       const link = document.createElement('a');
       link.href = imageUrl;
-      link.download = `meal-plan-${id || 'new'}.png`;
+      link.download = `${name || 'meal-plan'}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      setPreviewOpen(false);
 
       toast({
         title: "Download successful",
@@ -351,7 +360,7 @@ export const MealPlanDetails = () => {
                     Share
                   </Button>
                   <Button
-                    onClick={handleDownload}
+                    onClick={() => setPreviewOpen(true)}
                     variant="outline"
                     className="flex-1 sm:flex-none flex items-center justify-center gap-2"
                   >
@@ -524,6 +533,23 @@ export const MealPlanDetails = () => {
         <OutOfCreditDialog 
           open={showCreditDialog} 
           onOpenChange={setShowCreditDialog} 
+        />
+
+        <div className="hidden">
+          <MealPlanDownloadView
+            ref={downloadRef}
+            mealPlan={mealPlan}
+            planName={name || "Your Meal Plan"}
+          />
+        </div>
+
+        <MealPlanPreviewDialog
+          open={previewOpen}
+          onOpenChange={setPreviewOpen}
+          mealPlan={mealPlan}
+          planName={name || "Your Meal Plan"}
+          onDownload={handleDownload}
+          previewRef={downloadRef}
         />
       </main>
     </div>
