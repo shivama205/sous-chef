@@ -9,16 +9,9 @@ import NavigationBar from "@/components/NavigationBar";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { HealthySwapRequest, HealthySwapResponse, Recipe } from "@/types/healthySwap";
 import { supabase } from "@/lib/supabase";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { OutOfCreditDialog } from "@/components/OutOfCreditDialog";
 import { LoginDialog } from "@/components/LoginDialog";
+import LoadingOverlay from "@/components/LoadingOverlay";
 
 const HealthySwap = () => {
   const { toast } = useToast();
@@ -152,6 +145,8 @@ const HealthySwap = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
       <NavigationBar />
+      <LoadingOverlay isLoading={isLoading} message="Finding healthy alternatives..." />
+      
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-primary mb-8">Find Healthy Alternatives</h1>
         
@@ -196,7 +191,7 @@ const HealthySwap = () => {
               className="w-full h-12 text-lg font-semibold"
               disabled={isLoading}
             >
-              {isLoading ? "Finding Alternatives..." : "Find Healthy Alternatives"}
+              Find Healthy Alternatives
             </Button>
           </form>
         </Card>
@@ -245,13 +240,11 @@ const HealthySwap = () => {
         )}
       </div>
 
-      {/* Replace the old login dialog with the shared component */}
       <LoginDialog 
         open={loginDialogOpen} 
         onOpenChange={setLoginDialogOpen} 
       />
 
-      {/* Replace the old credit dialog with the shared component */}
       <OutOfCreditDialog 
         open={showCreditDialog} 
         onOpenChange={setShowCreditDialog} 

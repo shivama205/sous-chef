@@ -5,8 +5,9 @@ import { MealPlan } from "@/types/mealPlan";
 import NavigationBar from "@/components/NavigationBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Save, Trash2, Share2, Loader2 } from "lucide-react";
+import { RefreshCw, Save, Trash2, Share2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import LoadingOverlay from "@/components/LoadingOverlay";
 import {
   Dialog,
   DialogContent,
@@ -24,17 +25,6 @@ import html2canvas from 'html2canvas';
 import { OutOfCreditDialog } from "@/components/OutOfCreditDialog";
 import { LoginDialog } from "@/components/LoginDialog";
 
-const loadingMessages = [
-  "Cooking up your perfect meal plan... 🍳",
-  "Mixing healthy ingredients... 🥗",
-  "Balancing your macros... 💪",
-  "Sprinkling some nutrition magic... ✨",
-  "Taste-testing your menu... 😋",
-  "Adding a pinch of variety... 🌮",
-  "Making sure everything is delicious... 🍽️",
-  "Almost ready to serve... 🍽️"
-];
-
 export const MealPlanDetails = () => {
   const { id } = useParams();
   const location = useLocation();
@@ -50,8 +40,6 @@ export const MealPlanDetails = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const mealPlanRef = useRef<HTMLDivElement>(null);
-  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
-  const [loadingInterval, setLoadingInterval] = useState<NodeJS.Timeout | null>(null);
   const [showCreditDialog, setShowCreditDialog] = useState(false);
 
   // If the meal plan is passed through location state, use it
@@ -87,29 +75,6 @@ export const MealPlanDetails = () => {
 
     fetchMealPlan();
   }, [id, location.state]);
-
-  // Clear interval on unmount
-  useEffect(() => {
-    return () => {
-      if (loadingInterval) {
-        clearInterval(loadingInterval);
-      }
-    };
-  }, [loadingInterval]);
-
-  const startLoadingMessages = () => {
-    const interval = setInterval(() => {
-      setLoadingMessageIndex((prev) => (prev + 1) % loadingMessages.length);
-    }, 3000);
-    setLoadingInterval(interval);
-  };
-
-  const stopLoadingMessages = () => {
-    if (loadingInterval) {
-      clearInterval(loadingInterval);
-      setLoadingInterval(null);
-    }
-  };
 
   const checkAndConsumeCredit = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -184,7 +149,6 @@ export const MealPlanDetails = () => {
     }
     
     setIsRegenerating(true);
-    startLoadingMessages();
 
     try {
       const newMealPlan = await generateMealPlan({
@@ -200,7 +164,6 @@ export const MealPlanDetails = () => {
       });
     } finally {
       setIsRegenerating(false);
-      stopLoadingMessages();
     }
   };
 
@@ -291,7 +254,7 @@ export const MealPlanDetails = () => {
       <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
         <NavigationBar />
         <main className="container mx-auto px-4 py-8">
-          <div>Loading...</div>
+          <LoadingOverlay isLoading={true} message="Loading meal plan..." useRotatingMessages={false} />
         </main>
       </div>
     );
@@ -318,14 +281,7 @@ export const MealPlanDetails = () => {
           transition={{ duration: 0.5 }}
           className="space-y-6"
         >
-          {isRegenerating && (
-            <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-10">
-              <div className="flex items-center gap-3">
-                <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                <p className="text-lg font-medium text-primary">{loadingMessages[loadingMessageIndex]}</p>
-              </div>
-            </div>
-          )}
+          <LoadingOverlay isLoading={isRegenerating} useRotatingMessages={true} />
 
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
@@ -390,15 +346,6 @@ export const MealPlanDetails = () => {
             transition={{ duration: 0.5 }}
             className="relative"
           >
-            {isRegenerating && (
-              <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-10">
-                <div className="flex items-center gap-3">
-                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                  <p className="text-lg font-medium text-primary">{loadingMessages[loadingMessageIndex]}</p>
-                </div>
-              </div>
-            )}
-            
             <table className="w-full">
               <thead className="bg-gradient-to-r from-primary to-primary/80">
                 <tr>

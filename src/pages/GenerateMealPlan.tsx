@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { toast } from '../components/ui/use-toast';
@@ -6,17 +6,7 @@ import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog';
 import { generateMealPlan } from '../utils/mealPlanGenerator';
 import { Preferences, Cuisine } from '../types/preferences';
-
-const loadingMessages = [
-  "Cooking up your perfect meal plan... 🍳",
-  "Mixing healthy ingredients... 🥗",
-  "Balancing your macros... 💪",
-  "Sprinkling some nutrition magic... ✨",
-  "Taste-testing your menu... 😋",
-  "Adding a pinch of variety... 🌮",
-  "Making sure everything is delicious... 🍽️",
-  "Almost ready to serve... 🍽️"
-];
+import LoadingOverlay from '../components/LoadingOverlay';
 
 const GenerateMealPlan: React.FC = () => {
   const navigate = useNavigate();
@@ -28,35 +18,10 @@ const GenerateMealPlan: React.FC = () => {
     dietaryRestrictions: "",
     cuisinePreferences: [] as Cuisine[]
   });
-  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
-  const [loadingInterval, setLoadingInterval] = useState<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (loadingInterval) {
-        clearInterval(loadingInterval);
-      }
-    };
-  }, [loadingInterval]);
-
-  const startLoadingMessages = () => {
-    const interval = setInterval(() => {
-      setLoadingMessageIndex((prev) => (prev + 1) % loadingMessages.length);
-    }, 3000);
-    setLoadingInterval(interval);
-  };
-
-  const stopLoadingMessages = () => {
-    if (loadingInterval) {
-      clearInterval(loadingInterval);
-      setLoadingInterval(null);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    startLoadingMessages();
 
     try {
       // Check if user is logged in and has credits
@@ -102,12 +67,13 @@ const GenerateMealPlan: React.FC = () => {
       });
     } finally {
       setIsLoading(false);
-      stopLoadingMessages();
     }
   };
 
   return (
     <div>
+      <LoadingOverlay isLoading={isLoading} useRotatingMessages={true} />
+      
       {/* Rest of the component code */}
 
       <Dialog open={showCreditDialog} onOpenChange={setShowCreditDialog}>

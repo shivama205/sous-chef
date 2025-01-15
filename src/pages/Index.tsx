@@ -554,9 +554,34 @@ export function Index() {
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.2 }}
             >
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-primary" />
-              </div>
+              <motion.div 
+                className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center"
+                animate={{ 
+                  boxShadow: [
+                    "0 0 0 0 rgba(63, 100, 62, 0.2)",
+                    "0 0 0 10px rgba(63, 100, 62, 0)",
+                  ],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
+                <motion.div
+                  animate={{ 
+                    rotate: [0, 360],
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                >
+                  <Sparkles className="w-6 h-6 text-primary" />
+                </motion.div>
+              </motion.div>
               <p className="text-sm font-medium text-gray-600">AI-Powered Meal Planning</p>
             </motion.div>
             <motion.div
