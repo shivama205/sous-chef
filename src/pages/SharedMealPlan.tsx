@@ -29,7 +29,7 @@ export function SharedMealPlan() {
           .from("shared_meal_plans")
           .select("meal_plan_id")
           .eq("id", id)
-          .single();
+          .maybeSingle()
 
         if (sharedError) {
           console.error("Error fetching shared meal plan:", sharedError);
