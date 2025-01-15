@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import NavigationBar from "@/components/NavigationBar";
 import { motion } from "framer-motion";
-import { Leaf, Salad, Apple, CheckCircle2, Sparkles, Users, Star, Package, ArrowRight, ChefHat } from "lucide-react";
+import { Leaf, Salad, Apple, CheckCircle2, Sparkles, Users, Star, Package, ArrowRight, ChefHat, Coins, CalendarCheck, Repeat, Save, Lightbulb, Settings, Utensils, CircleDot, Plus, Circle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { toast } from "@/components/ui/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 const features = [
   {
@@ -54,12 +55,21 @@ const upcomingFeatures = [
   "Community recipe sharing platform"
 ];
 
-const Index = () => {
+export function Index() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
-  const [savedPlansCount, setSavedPlansCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [creditsAvailable, setCreditsAvailable] = useState(0);
   const [creditsUsed, setCreditsUsed] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [subscriptionTier, setSubscriptionTier] = useState<'free' | 'pro'>('free');
+  const [savedPlansCount, setSavedPlansCount] = useState(0);
+  const [weeklyStats, setWeeklyStats] = useState<{
+    plansCreated: number;
+    healthySwaps: number;
+  }>({
+    plansCreated: 0,
+    healthySwaps: 0
+  });
   const [recentActivities, setRecentActivities] = useState([
     {
       id: 1,
@@ -82,43 +92,85 @@ const Index = () => {
       
       if (session?.user) {
         setIsLoading(true);
-        // Fetch saved plans count
-        const { count: plansCount } = await supabase
-          .from('saved_meal_plans')
-          .select('*', { count: 'exact' })
-          .eq('user_id', session.user.id);
-          
-        // Fetch credits and create if doesn't exist
-        const { data: credits } = await supabase
-          .from('user_credits')
-          .select('*')
-          .eq('user_id', session.user.id);
 
-        if (!credits?.length) {
-          // New user - give them 10 credits
-          const { error: insertError } = await supabase
+        try {
+          // First check and initialize credits if needed
+          const { data: credits } = await supabase
             .from('user_credits')
-            .insert([
-              { 
-                user_id: session.user.id, 
-                credits_available: 10,
-                credits_used: 0
-              }
-            ]);
+            .select('credits_available, credits_used, subscription_tier')
+            .eq('user_id', session.user.id)
+            .single();
 
-          if (!insertError) {
-            toast({
-              title: "Welcome!",
-              description: "You've received 10 free credits to get started.",
-            });
-            setCreditsUsed(0);
+          if (!credits) {
+            // New user - initialize with 10 credits
+            const { data: newCredits, error: insertError } = await supabase
+              .from('user_credits')
+              .insert([
+                { 
+                  user_id: session.user.id, 
+                  credits_available: 10,
+                  credits_used: 0,
+                  subscription_tier: 'free'
+                }
+              ])
+              .select()
+              .single();
+
+            if (!insertError && newCredits) {
+              setCreditsAvailable(10);
+              setCreditsUsed(0);
+              setSubscriptionTier('free');
+              toast({
+                title: "Welcome to HungryHub! 🎉",
+                description: "You've received 10 free credits to get started.",
+              });
+            } else {
+              throw new Error('Failed to initialize credits');
+            }
+          } else {
+            setCreditsUsed(credits.credits_used);
+            setCreditsAvailable(credits.credits_available);
+            setSubscriptionTier(credits.subscription_tier || 'free');
           }
-        } else {
-          setCreditsUsed(credits[0].credits_used ?? 0);
-        }
 
-        setSavedPlansCount(plansCount ?? 0);
-        setIsLoading(false);
+          // After credits are initialized, fetch other metrics
+          const lastWeek = new Date();
+          lastWeek.setDate(lastWeek.getDate() - 7);
+          
+          const [weeklyPlansResult, weeklySwapsResult, totalPlansResult] = await Promise.all([
+            supabase
+              .from('saved_meal_plans')
+              .select('*', { count: 'exact' })
+              .eq('user_id', session.user.id)
+              .gte('created_at', lastWeek.toISOString()),
+
+            supabase
+              .from('healthy_swaps')
+              .select('*', { count: 'exact' })
+              .eq('user_id', session.user.id)
+              .gte('created_at', lastWeek.toISOString()),
+
+            supabase
+              .from('saved_meal_plans')
+              .select('*', { count: 'exact' })
+              .eq('user_id', session.user.id)
+          ]);
+
+          setSavedPlansCount(totalPlansResult.count ?? 0);
+          setWeeklyStats({
+            plansCreated: weeklyPlansResult.count ?? 0,
+            healthySwaps: weeklySwapsResult.count ?? 0
+          });
+        } catch (error) {
+          console.error('Error:', error);
+          toast({
+            title: "Error",
+            description: "Something went wrong. Please refresh the page.",
+            variant: "destructive"
+          });
+        } finally {
+          setIsLoading(false);
+        }
       }
     };
 
@@ -130,6 +182,12 @@ const Index = () => {
       if (!session?.user) {
         setSavedPlansCount(0);
         setCreditsUsed(0);
+        setCreditsAvailable(0);
+        setSubscriptionTier('free');
+        setWeeklyStats({
+          plansCreated: 0,
+          healthySwaps: 0
+        });
         setIsLoading(false);
       }
     });
@@ -143,64 +201,228 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
       <NavigationBar />
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="space-y-6"
+          className="space-y-4"
         >
-          {/* Welcome Card */}
-          <Card className="col-span-full bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-2">
-                <Leaf className="w-6 h-6 text-primary" />
-                Welcome back, {user?.user_metadata.full_name}!
-              </CardTitle>
-              <CardDescription>
-                Here's an overview of your meal planning journey
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          {/* Stats */}
-          <DashboardStats 
-            savedPlansCount={savedPlansCount}
-            creditsUsed={creditsUsed}
-            maxCredits={10}
-          />
-
-          {/* Recent Activity */}
-          <RecentActivity activities={recentActivities} />
-
-          {/* Recommendations */}
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-            <CardHeader>
-              <CardTitle>Personalized Recommendations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-2">
+          {/* Welcome & Plan Status Card */}
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
+                    <ChefHat className="w-5 h-5 text-secondary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">Welcome back, {user?.user_metadata.full_name}!</CardTitle>
+                    <p className="text-sm text-muted-foreground">Here's your dashboard overview</p>
+                  </div>
+                </div>
+                {subscriptionTier === 'free' && (
+                  <Button
+                    onClick={() => navigate('/pricing')}
+                    variant="secondary"
+                    size="sm"
+                    className="bg-gradient-to-r from-secondary to-secondary/80 hover:opacity-90"
+                  >
+                    Upgrade to Pro <ArrowRight className="w-4 h-4 ml-1" />
+                  </Button>
+                )}
+              </div>
+              <div className="grid md:grid-cols-2 gap-4 mt-4">
                 <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
-                  <h3 className="font-semibold mb-2 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-primary" />
-                    Try Premium Features
+                  <h3 className="text-sm text-muted-foreground flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Star className="w-4 h-4 text-primary" />
+                    </div>
+                    Current Plan
                   </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Unlock advanced meal planning features and unlimited healthy swaps
-                  </p>
+                  <div className="mt-3 flex items-center justify-between">
+                    <p className="text-base font-semibold capitalize">{subscriptionTier} Plan</p>
+                    <Badge variant="outline" className="capitalize">
+                      {subscriptionTier === 'free' ? 'Limited' : 'Unlimited'}
+                    </Badge>
+                  </div>
                 </div>
                 <div className="p-4 rounded-lg bg-secondary/5 border border-secondary/10">
-                  <h3 className="font-semibold mb-2 flex items-center gap-2">
-                    <Apple className="w-4 h-4 text-green-500" />
-                    Explore Healthy Swaps
+                  <h3 className="text-sm text-muted-foreground flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                      <Coins className="w-4 h-4 text-secondary" />
+                    </div>
+                    Credits
                   </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Discover healthier alternatives for your favorite meals
-                  </p>
+                  <div className="mt-3 space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <CircleDot className="w-3 h-3 text-secondary" />
+                        <span className="text-muted-foreground">Used</span>
+                      </div>
+                      <span className="font-medium">{creditsUsed}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-secondary/10 overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-secondary to-secondary/80 rounded-full transition-all duration-500"
+                        style={{ 
+                          width: `${(creditsUsed / (creditsAvailable + creditsUsed)) * 100}%`
+                        }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <Circle className="w-3 h-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">Remaining</span>
+                      </div>
+                      <span className="font-medium">{creditsAvailable}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </CardContent>
+            </CardHeader>
           </Card>
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-2 gap-4">
+            <Button
+              onClick={() => navigate('/meal-plan')}
+              className="relative h-12 bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 overflow-hidden group"
+            >
+              <div className="absolute inset-0 bg-primary/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <Plus className="w-4 h-4" />
+              </div>
+              <div className="flex items-center gap-2">
+                <Utensils className="w-4 h-4" />
+                <span>Create Meal Plan</span>
+              </div>
+            </Button>
+            <Button
+              onClick={() => navigate('/healthy-swap')}
+              className="relative h-12 bg-gradient-to-r from-secondary to-secondary/80 hover:opacity-90 overflow-hidden group"
+            >
+              <div className="absolute inset-0 bg-secondary/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <ArrowRight className="w-4 h-4" />
+              </div>
+              <div className="flex items-center gap-2">
+                <Salad className="w-4 h-4" />
+                <span>Find Alternatives</span>
+              </div>
+            </Button>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg group hover:bg-primary/5 transition-colors duration-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-200">
+                    <CalendarCheck className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm text-muted-foreground">Plans Created</h3>
+                    <p className="text-xl font-semibold">{weeklyStats.plansCreated}</p>
+                    <span className="text-xs text-muted-foreground">This week</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg group hover:bg-secondary/5 transition-colors duration-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center group-hover:bg-secondary/20 transition-colors duration-200">
+                    <Repeat className="w-4 h-4 text-secondary" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm text-muted-foreground">Healthy Swaps</h3>
+                    <p className="text-xl font-semibold">{weeklyStats.healthySwaps}</p>
+                    <span className="text-xs text-muted-foreground">This week</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg group hover:bg-green-50 transition-colors duration-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors duration-200">
+                    <Save className="w-4 h-4 text-green-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm text-muted-foreground">Total Plans</h3>
+                    <p className="text-xl font-semibold">{savedPlansCount}</p>
+                    <span className="text-xs text-muted-foreground">All time</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Tips & Coming Soon */}
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Healthy Tips */}
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg group hover:bg-primary/5 transition-colors duration-200">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-200">
+                    <Lightbulb className="w-4 h-4 text-primary" />
+                  </div>
+                  Healthy Tips
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-colors duration-200">
+                  <h3 className="text-sm font-medium flex items-center gap-2 mb-1">
+                    <Leaf className="w-4 h-4 text-primary" />
+                    Meal Prep Success
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Prepare ingredients in advance for easier weekday cooking.
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg bg-secondary/5 border border-secondary/10 hover:bg-secondary/10 transition-colors duration-200">
+                  <h3 className="text-sm font-medium flex items-center gap-2 mb-1">
+                    <Apple className="w-4 h-4 text-green-500" />
+                    Smart Substitutions
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Try cauliflower rice for a low-carb alternative.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Coming Soon */}
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg group hover:bg-secondary/5 transition-colors duration-200">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center group-hover:bg-secondary/20 transition-colors duration-200">
+                    <Sparkles className="w-4 h-4 text-secondary" />
+                  </div>
+                  Coming Soon
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-colors duration-200">
+                  <h3 className="text-sm font-medium flex items-center gap-2 mb-1">
+                    <Settings className="w-4 h-4 text-primary" />
+                    Recipe Customization
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Customize recipes based on available ingredients.
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg bg-secondary/5 border border-secondary/10 hover:bg-secondary/10 transition-colors duration-200">
+                  <h3 className="text-sm font-medium flex items-center gap-2 mb-1">
+                    <Users className="w-4 h-4 text-secondary" />
+                    Community Features
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Share and discover recipes with other users.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </motion.div>
       </main>
     </div>
@@ -432,6 +654,6 @@ const Index = () => {
   );
 
   return user ? <LoggedInView /> : <LoggedOutView />;
-};
+}
 
 export default Index;
