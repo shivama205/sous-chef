@@ -298,7 +298,7 @@ export const MealPlanDetails = () => {
         .maybeSingle();
 
       if (existingShare) {
-        const shareUrl = `https://sous-chef.in/shared/meal-plan/${existingShare.id}`;
+        const shareUrl = `${window.location.origin}/shared/meal-plan/${existingShare.id}`;
         try {
           if (navigator.share) {
             await navigator.share({
@@ -353,7 +353,7 @@ export const MealPlanDetails = () => {
         return;
       }
 
-      const shareUrl = `https://sous-chef.in/shared/meal-plan/${newShare.id}`;
+      const shareUrl = `${window.location.origin}/shared/meal-plan/${newShare.id}`;
       
       try {
         if (navigator.share) {

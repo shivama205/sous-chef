@@ -82,6 +82,7 @@ export function SharedMealPlan() {
     };
 
     if (id) {
+      console.log("Fetching shared meal plan with ID:", id);
       fetchMealPlan();
     } else {
       console.log("No ID provided");
