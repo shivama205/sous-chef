@@ -8,6 +8,9 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    proxy: {},
+    // Enable SPA fallback
+    historyApiFallback: true,
   },
   plugins: [
     react(),
@@ -19,4 +22,5 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  base: '/', // Ensure base URL is set correctly
 }));
