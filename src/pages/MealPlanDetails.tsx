@@ -5,7 +5,7 @@ import { MealPlan } from "@/types/mealPlan";
 import NavigationBar from "@/components/NavigationBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Save, Trash2, Share2 } from "lucide-react";
+import { RefreshCw, Save, Trash2, Share2, Download } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import {
@@ -225,26 +225,58 @@ export const MealPlanDetails = () => {
     }
   };
 
-  const handleShare = async () => {
+  const handleDownload = async () => {
     if (!mealPlanRef.current) return;
 
     try {
-      const canvas = await html2canvas(mealPlanRef.current);
-      const imageUrl = canvas.toDataURL('image/jpeg', 0.8); // Using JPEG for smaller size
+      const canvas = await html2canvas(mealPlanRef.current, {
+        scale: 2, // Higher quality
+        backgroundColor: '#ffffff',
+      });
+      const imageUrl = canvas.toDataURL('image/png', 1.0); // Using PNG for better quality
       
-      // Create a temporary link to download the image
       const link = document.createElement('a');
       link.href = imageUrl;
-      link.download = 'meal-plan.jpg';
+      link.download = `meal-plan-${id || 'new'}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
-      // Open WhatsApp with a message
-      const whatsappUrl = `https://wa.me/?text=Check out my meal plan from HungryHub! 🍽️%0A%0APlease find the meal plan image attached.`;
-      window.open(whatsappUrl, '_blank');
+      toast({
+        title: "Download successful",
+        description: "Your meal plan has been downloaded as an image.",
+      });
     } catch (error) {
-      // Only log the error, don't show toast
+      console.error('Error downloading:', error);
+      toast({
+        title: "Download failed",
+        description: "Failed to download meal plan. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleShare = async () => {
+    if (!mealPlanRef.current) return;
+
+    try {
+      const shareUrl = `https://sous-chef.in/shared/meal-plan/${id}`;
+      
+      if (navigator.share) {
+        await navigator.share({
+          title: `${name || 'My Meal Plan'} - SousChef`,
+          text: "Check out my personalized meal plan created with SousChef!",
+          url: shareUrl,
+        });
+      } else {
+        // Fallback to copying to clipboard
+        await navigator.clipboard.writeText(shareUrl);
+        toast({
+          title: "Link copied!",
+          description: "Share link has been copied to your clipboard.",
+        });
+      }
+    } catch (error) {
       console.error('Error sharing:', error);
     }
   };
@@ -317,6 +349,14 @@ export const MealPlanDetails = () => {
                   >
                     <Share2 className="w-4 h-4" />
                     Share
+                  </Button>
+                  <Button
+                    onClick={handleDownload}
+                    variant="outline"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download
                   </Button>
                   <Button
                     onClick={() => navigate('/')}
