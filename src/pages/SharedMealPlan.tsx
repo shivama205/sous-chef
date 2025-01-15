@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/lib/supabase";
@@ -8,13 +8,16 @@ import { Card } from "@/components/ui/card";
 import { Loader2, ChefHat } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { MealPlan } from "@/types/mealPlan";
-
+import html2canvas from 'html2canvas';
+import MealPlanDownloadView from "@/components/MealPlanDownloadView";
 
 export function SharedMealPlan() {
   const { id } = useParams<{ id: string }>();
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [planName, setPlanName] = useState("");
+  const [previewImageUrl, setPreviewImageUrl] = useState("");
+  const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchMealPlan = async () => {
@@ -29,6 +32,18 @@ export function SharedMealPlan() {
         
         setMealPlan(data.plan);
         setPlanName(data.name || "Meal Plan");
+
+        // Generate preview image after meal plan is loaded
+        if (previewRef.current) {
+          const canvas = await html2canvas(previewRef.current, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            useCORS: true,
+            logging: false,
+          });
+          const imageUrl = canvas.toDataURL('image/png', 1.0);
+          setPreviewImageUrl(imageUrl);
+        }
       } catch (error) {
         console.error("Error fetching meal plan:", error);
         toast({
@@ -74,15 +89,16 @@ export function SharedMealPlan() {
       "@type": "Recipe",
       "name": planName,
       "description": "A personalized meal plan created with SousChef AI.",
+      "image": previewImageUrl || "https://sous-chef.in/og-image.jpg",
       "nutrition": {
         "@type": "NutritionInformation",
-        "calories": `${mealPlan.days.reduce((total, day) => 
+        "calories": `${mealPlan?.days.reduce((total, day) => 
           total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionInfo.calories, 0), 0)} calories`,
-        "proteinContent": `${mealPlan.days.reduce((total, day) => 
+        "proteinContent": `${mealPlan?.days.reduce((total, day) => 
           total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionInfo.protein, 0), 0)}g`,
-        "carbohydrateContent": `${mealPlan.days.reduce((total, day) => 
+        "carbohydrateContent": `${mealPlan?.days.reduce((total, day) => 
           total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionInfo.carbs, 0), 0)}g`,
-        "fatContent": `${mealPlan.days.reduce((total, day) => 
+        "fatContent": `${mealPlan?.days.reduce((total, day) => 
           total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionInfo.fat, 0), 0)}g`
       }
     }
@@ -97,11 +113,13 @@ export function SharedMealPlan() {
         <meta property="og:description" content={seoData.description} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={`https://sous-chef.in/shared/meal-plan/${id}`} />
-        <meta property="og:image" content="https://sous-chef.in/og-image.jpg" />
+        <meta property="og:image" content={previewImageUrl || "https://sous-chef.in/og-image.jpg"} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={seoData.title} />
         <meta name="twitter:description" content={seoData.description} />
-        <meta name="twitter:image" content="https://sous-chef.in/og-image.jpg" />
+        <meta name="twitter:image" content={previewImageUrl || "https://sous-chef.in/og-image.jpg"} />
         <script type="application/ld+json">
           {JSON.stringify(seoData.structuredData)}
         </script>
@@ -201,6 +219,16 @@ export function SharedMealPlan() {
               </Button>
             </div>
           </Card>
+
+          {/* Hidden preview element for generating share image */}
+          <div className="hidden">
+            <div ref={previewRef}>
+              <MealPlanDownloadView
+                mealPlan={mealPlan!}
+                planName={planName}
+              />
+            </div>
+          </div>
         </main>
       </div>
     </>
