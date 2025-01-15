@@ -21,10 +21,12 @@ import { generateMealPlan } from "@/utils/mealPlanGenerator";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { OutOfCreditDialog } from "@/components/OutOfCreditDialog";
 
 const MealPlan = () => {
   const [open, setOpen] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+  const [showCreditDialog, setShowCreditDialog] = useState(false);
   const [mealPlan, setMealPlan] = useState<MealPlanType | null>(null);
   const [name, setName] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -65,8 +67,48 @@ const MealPlan = () => {
   const handleSubmit = async (preferences: Preferences) => {
     setIsGenerating(true);
     setCurrentPreferences(preferences);
+
     try {
+      // Check if user is logged in and has credits
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        setLoginDialogOpen(true);
+        setIsGenerating(false);
+        return;
+      }
+
+      const { data: credits } = await supabase
+        .from('user_credits')
+        .select('credits_available, credits_used')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (!credits || credits.credits_available <= 0) {
+        setOpen(false); // Close save dialog if open
+        setShowCreditDialog(true);
+        setIsGenerating(false);
+        return;
+      }
+
       const mealPlan = await generateMealPlan(preferences);
+
+      // Consume one credit after successful generation
+      const { error: updateError } = await supabase
+        .from('user_credits')
+        .update({ 
+          credits_available: credits.credits_available - 1,
+          credits_used: credits.credits_used + 1
+        })
+        .eq('user_id', session.user.id);
+
+      if (updateError) {
+        toast({
+          title: "Error updating credits",
+          description: "Failed to update credits, but your meal plan was generated.",
+          variant: "destructive",
+        });
+      }
+
       setMealPlan(mealPlan);
       navigate('/meal-plan/new', { state: { mealPlan } });
     } catch (error) {
@@ -256,6 +298,11 @@ const MealPlan = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <OutOfCreditDialog 
+          open={showCreditDialog} 
+          onOpenChange={setShowCreditDialog} 
+        />
       </main>
     </div>
   );

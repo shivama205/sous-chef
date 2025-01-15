@@ -21,6 +21,7 @@ import { motion } from "framer-motion";
 import { generateMealPlan } from "@/utils/mealPlanGenerator";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import html2canvas from 'html2canvas';
+import { OutOfCreditDialog } from "@/components/OutOfCreditDialog";
 
 const loadingMessages = [
   "Cooking up your perfect meal plan... 🍳",
@@ -50,6 +51,7 @@ export const MealPlanDetails = () => {
   const mealPlanRef = useRef<HTMLDivElement>(null);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const [loadingInterval, setLoadingInterval] = useState<NodeJS.Timeout | null>(null);
+  const [showCreditDialog, setShowCreditDialog] = useState(false);
 
   // If the meal plan is passed through location state, use it
   useEffect(() => {
@@ -108,8 +110,78 @@ export const MealPlanDetails = () => {
     }
   };
 
+  const checkAndConsumeCredit = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      setLoginDialogOpen(true);
+      return false;
+    }
+
+    const { data: credits } = await supabase
+      .from('user_credits')
+      .select('credits_available')
+      .eq('user_id', session.user.id)
+      .single();
+
+    if (!credits || credits.credits_available <= 0) {
+      setShowCreditDialog(true);
+      return false;
+    }
+
+    // Consume one credit
+    const { error: updateError } = await supabase
+      .from('user_credits')
+      .update({ credits_available: credits.credits_available - 1 })
+      .eq('user_id', session.user.id);
+
+    if (updateError) {
+      toast({
+        title: "Error updating credits",
+        description: "Failed to update credits. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const handleRegenerateMealPlan = async () => {
     if (!mealPlan) return;
+
+    // Check if user is logged in and has credits
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      setLoginDialogOpen(true);
+      return;
+    }
+
+    const { data: credits } = await supabase
+      .from('user_credits')
+      .select('credits_available')
+      .eq('user_id', session.user.id)
+      .single();
+
+    if (!credits || credits.credits_available <= 0) {
+      setShowCreditDialog(true);
+      return;
+    }
+
+    // Consume one credit
+    const { error: updateError } = await supabase
+      .from('user_credits')
+      .update({ credits_available: credits.credits_available - 1 })
+      .eq('user_id', session.user.id);
+
+    if (updateError) {
+      toast({
+        title: "Error updating credits",
+        description: "Failed to update credits. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsRegenerating(true);
     startLoadingMessages();
 
@@ -423,17 +495,14 @@ export const MealPlanDetails = () => {
         <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Login Required</DialogTitle>
+              <DialogTitle>Sign in required</DialogTitle>
               <DialogDescription>
-                You need to log in to save your meal plan.
+                Please sign in to continue.
               </DialogDescription>
             </DialogHeader>
-            <DialogFooter>
-              <Button variant="secondary" onClick={() => setLoginDialogOpen(false)}>
-                Cancel
-              </Button>
+            <div className="mt-4">
               <GoogleSignInButton />
-            </DialogFooter>
+            </div>
           </DialogContent>
         </Dialog>
 
@@ -459,6 +528,11 @@ export const MealPlanDetails = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <OutOfCreditDialog 
+          open={showCreditDialog} 
+          onOpenChange={setShowCreditDialog} 
+        />
       </main>
     </div>
   );

@@ -136,7 +136,7 @@ Format the response as a meal plan with the following structure:
         {
           "name": "Meal name",
           "time": "breakfast",
-          "recipeLink": "https://www.example.com/recipes/chicken-alfredo",
+          "recipeLink": "Google search link with search query for the recipe",
           "nutritionInfo": {
             "calories": 500,
             "protein": 30,

@@ -8,8 +8,8 @@ import { User } from "@supabase/supabase-js";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
-import { QuickActions } from "@/components/dashboard/QuickActions";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { toast } from "@/components/ui/use-toast";
 
 const features = [
   {
@@ -88,15 +88,36 @@ const Index = () => {
           .select('*', { count: 'exact' })
           .eq('user_id', session.user.id);
           
-        // Fetch credits used
+        // Fetch credits and create if doesn't exist
         const { data: credits } = await supabase
           .from('user_credits')
-          .select('credits_used')
-          .eq('user_id', session.user.id)
-          .single();
-          
+          .select('*')
+          .eq('user_id', session.user.id);
+
+        if (!credits?.length) {
+          // New user - give them 10 credits
+          const { error: insertError } = await supabase
+            .from('user_credits')
+            .insert([
+              { 
+                user_id: session.user.id, 
+                credits_available: 10,
+                credits_used: 0
+              }
+            ]);
+
+          if (!insertError) {
+            toast({
+              title: "Welcome!",
+              description: "You've received 10 free credits to get started.",
+            });
+            setCreditsUsed(0);
+          }
+        } else {
+          setCreditsUsed(credits[0].credits_used ?? 0);
+        }
+
         setSavedPlansCount(plansCount ?? 0);
-        setCreditsUsed(credits?.credits_used ?? 0);
         setIsLoading(false);
       }
     };
@@ -148,9 +169,6 @@ const Index = () => {
             creditsUsed={creditsUsed}
             maxCredits={10}
           />
-
-          {/* Quick Actions */}
-          <QuickActions />
 
           {/* Recent Activity */}
           <RecentActivity activities={recentActivities} />

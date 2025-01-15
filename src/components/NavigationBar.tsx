@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
-import { Leaf, ChefHat, Apple, Sparkles } from "lucide-react";
+import { Leaf, ChefHat, Apple, Sparkles, Menu, X } from "lucide-react";
 import GoogleSignInButton from "./GoogleSignInButton";
 
 const NavigationBar = () => {
@@ -64,60 +64,71 @@ const NavigationBar = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center space-x-1 text-sm font-medium transition-colors hover:text-primary ${
-                  isActive(item.path) ? "text-primary" : "text-gray-600"
+                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-gray-50 ${
+                  isActive(item.path) 
+                    ? "text-primary bg-primary/5" 
+                    : "text-gray-600"
                 }`}
               >
                 {item.icon}
-                <span>{item.label}</span>
+                {item.label}
               </Link>
             ))}
             
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name} />
-                      <AvatarFallback>{user.user_metadata.full_name?.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user.user_metadata.full_name}</p>
-                      <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile">Profile</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/billing">Billing</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
-                    Log out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <GoogleSignInButton />
-            )}
+            <div className="pl-2">
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name} />
+                        <AvatarFallback>{user.user_metadata.full_name?.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user.user_metadata.full_name}</p>
+                        <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="w-full cursor-pointer">Profile</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/billing" className="w-full cursor-pointer">Billing</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={handleLogout}
+                      className="text-red-600 focus:text-red-600 cursor-pointer"
+                    >
+                      Log out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <div className="w-[120px]">
+                  <GoogleSignInButton />
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="md:hidden">
-            <Button variant="ghost" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-              <span className="sr-only">Open menu</span>
-              <div className="w-4 h-4 flex flex-col justify-between">
-                <span className={`block w-full h-0.5 bg-current transform transition duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`} />
-                <span className={`block w-full h-0.5 bg-current transition duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`} />
-                <span className={`block w-full h-0.5 bg-current transform transition duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`} />
-              </div>
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
+          </Button>
         </div>
 
         {isMobileMenuOpen && (
@@ -125,43 +136,66 @@ const NavigationBar = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="md:hidden flex flex-col space-y-4 py-4"
+            className="md:hidden py-4 space-y-2"
           >
             {menuItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center space-x-2 text-sm font-medium ${
-                  isActive(item.path) ? "text-primary" : "text-gray-600"
+                className={`flex items-center gap-3 px-2 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                  isActive(item.path) 
+                    ? "text-primary bg-primary/5" 
+                    : "text-gray-600 hover:bg-gray-50"
                 }`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {item.icon}
-                <span>{item.label}</span>
+                {item.label}
               </Link>
             ))}
             {user ? (
-              <>
-                <Link
-                  to="/profile"
-                  className="text-sm font-medium text-gray-600"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Profile
-                </Link>
-                <Link
-                  to="/billing"
-                  className="text-sm font-medium text-gray-600"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Billing
-                </Link>
-                <Button onClick={handleLogout} variant="ghost" className="justify-start">
-                  Log out
-                </Button>
-              </>
+              <div className="pt-4 mt-4 border-t border-gray-100">
+                <div className="flex items-center space-x-3 px-2 mb-4">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name} />
+                    <AvatarFallback>{user.user_metadata.full_name?.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <p className="text-sm font-medium">{user.user_metadata.full_name}</p>
+                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-3 px-2 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-50"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Profile
+                  </Link>
+                  <Link
+                    to="/billing"
+                    className="flex items-center gap-3 px-2 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-50"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Billing
+                  </Link>
+                  <Button 
+                    onClick={() => {
+                      handleLogout();
+                      setIsMobileMenuOpen(false);
+                    }} 
+                    variant="ghost" 
+                    className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50 px-2"
+                  >
+                    Log out
+                  </Button>
+                </div>
+              </div>
             ) : (
-              <GoogleSignInButton />
+              <div className="pt-4 mt-4 border-t border-gray-100 px-2">
+                <GoogleSignInButton />
+              </div>
             )}
           </motion.div>
         )}

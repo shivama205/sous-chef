@@ -8,12 +8,24 @@ import { useToast } from "@/components/ui/use-toast";
 import NavigationBar from "@/components/NavigationBar";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { HealthySwapRequest, HealthySwapResponse, Recipe } from "@/types/healthySwap";
+import { supabase } from "@/lib/supabase";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
+import { OutOfCreditDialog } from "@/components/OutOfCreditDialog";
 
 const HealthySwap = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [alternatives, setAlternatives] = useState<Recipe[]>([]);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const [showCreditDialog, setShowCreditDialog] = useState(false);
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [request, setRequest] = useState<HealthySwapRequest>({
     mealName: "",
     description: "",
@@ -63,6 +75,24 @@ const HealthySwap = () => {
       });
       return;
     }
+
+    // Check if user is logged in and has credits
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      setLoginDialogOpen(true);
+      return;
+    }
+
+    const { data: credits } = await supabase
+      .from('user_credits')
+      .select('credits_available, credits_used')
+      .eq('user_id', session.user.id)
+      .single();
+
+    if (!credits || credits.credits_available <= 0) {
+      setShowCreditDialog(true);
+      return;
+    }
     
     setIsLoading(true);
 
@@ -82,6 +112,20 @@ const HealthySwap = () => {
       
       const data = JSON.parse(jsonString) as HealthySwapResponse;
       setAlternatives(data.alternatives);
+
+      // Consume one credit after successful generation
+      const { error: updateError } = await supabase
+        .from('user_credits')
+        .update({ credits_available: credits.credits_available - 1, credits_used: credits.credits_used + 1 })
+        .eq('user_id', session.user.id);
+
+      if (updateError) {
+        toast({
+          title: "Error updating credits",
+          description: "Failed to update credits, but your alternatives were generated.",
+          variant: "destructive",
+        });
+      }
       
       toast({
         title: "Success",
@@ -199,6 +243,27 @@ const HealthySwap = () => {
           </div>
         )}
       </div>
+
+      {/* Login Dialog */}
+      <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Sign in required</DialogTitle>
+            <DialogDescription>
+              Please sign in to use the healthy swap feature.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4">
+            <GoogleSignInButton />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Replace the old credit dialog with the shared component */}
+      <OutOfCreditDialog 
+        open={showCreditDialog} 
+        onOpenChange={setShowCreditDialog} 
+      />
     </div>
   );
 };
