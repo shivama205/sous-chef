@@ -57,17 +57,17 @@ const features = [
 
 const testimonials = [
   {
-    name: "Sarah J.",
+    name: "Priya R.",
     role: "Fitness Enthusiast",
     content: "This app has transformed how I plan my meals. The AI suggestions are spot-on!"
   },
   {
-    name: "Mike R.",
+    name: "Rahul M.",
     role: "Busy Professional",
     content: "Finally, an app that makes healthy eating simple and achievable."
   },
   {
-    name: "Lisa M.",
+    name: "Anjali S.",
     role: "Health Coach",
     content: "I recommend this to all my clients. The meal plans are fantastic!"
   }
@@ -493,7 +493,7 @@ export function Index() {
                     <span className="text-secondary">Mobile App</span>
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Take HungryHub with you everywhere. Plan meals, track nutrition, and shop for ingredients on the go.
+                    Take SousChef with you everywhere. Plan meals, track nutrition, and shop for ingredients on the go.
                   </p>
                 </div>
               </CardContent>
@@ -555,7 +555,7 @@ export function Index() {
               transition={{ duration: 0.2 }}
             >
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <ChefHat className="w-6 h-6 text-primary" />
+                <Sparkles className="w-6 h-6 text-primary" />
               </div>
               <p className="text-sm font-medium text-gray-600">AI-Powered Meal Planning</p>
             </motion.div>
@@ -648,53 +648,15 @@ export function Index() {
                 className="p-6 rounded-2xl bg-white/80 backdrop-blur-sm shadow-xl"
               >
                 <div className="flex items-center mb-4">
-                  <Star className="w-5 h-5 text-yellow-400" />
-                  <Star className="w-5 h-5 text-yellow-400" />
-                  <Star className="w-5 h-5 text-yellow-400" />
-                  <Star className="w-5 h-5 text-yellow-400" />
-                  <Star className="w-5 h-5 text-yellow-400" />
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                  ))}
                 </div>
                 <p className="text-gray-600 mb-4">{testimonial.content}</p>
                 <div>
                   <p className="font-semibold">{testimonial.name}</p>
                   <p className="text-sm text-gray-500">{testimonial.role}</p>
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Coming Soon Section */}
-      <section className="py-20 bg-gradient-to-b from-white/50 to-transparent">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Coming Soon
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              We're constantly working on new features to make your healthy eating journey even better
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {upcomingFeatures.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="flex items-center gap-4 p-4 rounded-xl bg-white/80 backdrop-blur-sm shadow-lg"
-              >
-                <Sparkles className="w-6 h-6 text-secondary flex-shrink-0" />
-                <span>{feature}</span>
               </motion.div>
             ))}
           </div>
