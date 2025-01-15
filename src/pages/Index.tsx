@@ -549,59 +549,72 @@ export function Index() {
             transition={{ duration: 0.7, delay: 0.3 }}
             className="relative grid grid-cols-3 gap-6"
           >
+            {/* AI-Powered Icon */}
             <motion.div
               className="p-8 rounded-2xl bg-white/80 backdrop-blur-sm shadow-xl flex flex-col items-center text-center gap-4"
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)" }}
               transition={{ duration: 0.2 }}
             >
               <motion.div 
                 className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center"
                 animate={{ 
-                  boxShadow: [
-                    "0 0 0 0 rgba(63, 100, 62, 0.2)",
-                    "0 0 0 10px rgba(63, 100, 62, 0)",
-                  ],
+                  rotate: [-5, 5, -5],
+                  scale: [1, 1.1, 1],
                 }}
                 transition={{
-                  duration: 2,
+                  duration: 4,
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
               >
-                <motion.div
-                  animate={{ 
-                    rotate: [0, 360],
-                    scale: [1, 1.1, 1],
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                >
-                  <Sparkles className="w-6 h-6 text-primary" />
-                </motion.div>
+                <Sparkles className="w-6 h-6 text-primary" />
               </motion.div>
               <p className="text-sm font-medium text-gray-600">AI-Powered Meal Planning</p>
             </motion.div>
+
+            {/* Healthy Alternatives Icon */}
             <motion.div
               className="p-8 rounded-2xl bg-white/80 backdrop-blur-sm shadow-xl flex flex-col items-center text-center gap-4"
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)" }}
               transition={{ duration: 0.2 }}
             >
-              <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center">
+              <motion.div 
+                className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center"
+                animate={{ 
+                  rotate: [-5, 5, -5],
+                  scale: [1, 1.1, 1],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
                 <Apple className="w-6 h-6 text-secondary" />
-              </div>
+              </motion.div>
               <p className="text-sm font-medium text-gray-600">Healthy Alternatives</p>
             </motion.div>
+
+            {/* Nutritional Tracking Icon */}
             <motion.div
               className="p-8 rounded-2xl bg-white/80 backdrop-blur-sm shadow-xl flex flex-col items-center text-center gap-4"
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)" }}
               transition={{ duration: 0.2 }}
             >
-              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                <Leaf className="w-6 h-6 text-green-500" />
-              </div>
+              <motion.div 
+                className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center"
+                animate={{ 
+                  rotate: [-5, 5, -5],
+                  scale: [1, 1.1, 1],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
+                <Leaf className="w-6 h-6 text-primary" />
+              </motion.div>
               <p className="text-sm font-medium text-gray-600">Nutritional Tracking</p>
             </motion.div>
           </motion.div>
