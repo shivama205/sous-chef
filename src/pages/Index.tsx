@@ -1,16 +1,41 @@
 import { useNavigate } from "react-router-dom";
 import NavigationBar from "@/components/NavigationBar";
 import { motion } from "framer-motion";
-import { Leaf, Salad, Apple, CheckCircle2, Sparkles, Users, Star, Package, ArrowRight, ChefHat, Coins, CalendarCheck, Repeat, Save, Lightbulb, Settings, Utensils, CircleDot, Plus, Circle } from "lucide-react";
+import { Leaf, Apple, Sparkles, Users, Star, Package, ArrowRight, ChefHat, Coins, CalendarCheck, Repeat, Save, Lightbulb, Settings, CircleDot, Circle, ShoppingCart, Smartphone } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DashboardStats } from "@/components/dashboard/DashboardStats";
-import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { toast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { createClient, PostgrestError } from '@supabase/supabase-js';
+
+interface PricingPlan {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  price_monthly: number;
+  price_yearly: number;
+  features: string[];
+  credits_per_month: number;
+  is_popular: boolean;
+  sort_order: number;
+}
+
+interface UserCredits {
+  credits_available: number;
+  credits_used: number;
+  pricing_plans?: {
+    id: string;
+    slug: string;
+    name: string;
+    description: string;
+    credits_per_month: number;
+    features: string[];
+  };
+}
 
 const features = [
   {
@@ -61,7 +86,7 @@ export function Index() {
   const [isLoading, setIsLoading] = useState(false);
   const [creditsAvailable, setCreditsAvailable] = useState(0);
   const [creditsUsed, setCreditsUsed] = useState(0);
-  const [subscriptionTier, setSubscriptionTier] = useState<'free' | 'pro'>('free');
+  const [subscriptionTier, setSubscriptionTier] = useState<'BASIC' | 'STANDARD' | 'PREMIUM'>('BASIC');
   const [savedPlansCount, setSavedPlansCount] = useState(0);
   const [weeklyStats, setWeeklyStats] = useState<{
     plansCreated: number;
@@ -84,6 +109,8 @@ export function Index() {
       date: "Yesterday"
     }
   ]);
+  const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
+  const [isLoadingPlans, setIsLoadingPlans] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -95,42 +122,67 @@ export function Index() {
 
         try {
           // First check and initialize credits if needed
-          const { data: credits } = await supabase
+          const { data: userCredits, error: creditsError } = await supabase
             .from('user_credits')
-            .select('credits_available, credits_used, subscription_tier')
+            .select('credits_available, credits_used, pricing_plan_id')
             .eq('user_id', session.user.id)
-            .single();
+            .maybeSingle();
 
-          if (!credits) {
-            // New user - initialize with 10 credits
-            const { data: newCredits, error: insertError } = await supabase
-              .from('user_credits')
-              .insert([
-                { 
-                  user_id: session.user.id, 
-                  credits_available: 10,
-                  credits_used: 0,
-                  subscription_tier: 'free'
-                }
-              ])
-              .select()
+          if (creditsError) {
+            console.error('Error fetching user credits:', creditsError);
+            return;
+          }
+
+          if (!userCredits) {
+            // First fetch the BASIC plan
+            const { data: basicPlan, error: planError } = await supabase
+              .from('pricing_plans')
+              .select('id, credits_per_month')
+              .eq('slug', 'BASIC')
               .single();
 
-            if (!insertError && newCredits) {
-              setCreditsAvailable(10);
-              setCreditsUsed(0);
-              setSubscriptionTier('free');
-              toast({
-                title: "Welcome to HungryHub! 🎉",
-                description: "You've received 10 free credits to get started.",
-              });
-            } else {
-              throw new Error('Failed to initialize credits');
+            if (planError) {
+              console.error('Error fetching BASIC plan:', planError);
+              return;
             }
+
+            // Initialize user credits with BASIC plan
+            const { error: insertError } = await supabase
+              .from('user_credits')
+              .insert({
+                user_id: session.user.id,
+                credits_available: basicPlan.credits_per_month,
+                credits_used: 0,
+                pricing_plan_id: basicPlan.id
+              });
+
+            if (insertError) {
+              console.error('Error initializing user credits:', insertError);
+              return;
+            }
+
+            // Set the initial state values
+            setCreditsAvailable(basicPlan.credits_per_month);
+            setCreditsUsed(0);
+            setSubscriptionTier('BASIC');
           } else {
-            setCreditsUsed(credits.credits_used);
-            setCreditsAvailable(credits.credits_available);
-            setSubscriptionTier(credits.subscription_tier || 'free');
+            setCreditsAvailable(userCredits.credits_available);
+            setCreditsUsed(userCredits.credits_used);
+            // Set the current plan info
+            if (userCredits.pricing_plan_id) {
+              const { data: pricingPlan, error: planError } = await supabase
+                .from('pricing_plans')
+                .select('slug')
+                .eq('id', userCredits.pricing_plan_id)
+                .single();
+
+              if (planError) {
+                console.error('Error fetching pricing plan:', planError);
+                return;
+              }
+
+              setSubscriptionTier(pricingPlan?.slug as 'BASIC' | 'STANDARD' | 'PREMIUM');
+            }
           }
 
           // After credits are initialized, fetch other metrics
@@ -183,7 +235,7 @@ export function Index() {
         setSavedPlansCount(0);
         setCreditsUsed(0);
         setCreditsAvailable(0);
-        setSubscriptionTier('free');
+        setSubscriptionTier('BASIC');
         setWeeklyStats({
           plansCreated: 0,
           healthySwaps: 0
@@ -195,6 +247,32 @@ export function Index() {
     return () => {
       subscription.unsubscribe();
     };
+  }, []);
+
+  useEffect(() => {
+    const fetchPricingPlans = async () => {
+      setIsLoadingPlans(true);
+      try {
+        const { data: plans, error } = await supabase
+          .from('pricing_plans')
+          .select('*')
+          .order('sort_order', { ascending: true });
+
+        if (error) throw error;
+        setPricingPlans(plans || []);
+      } catch (error) {
+        console.error('Error fetching pricing plans:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load pricing information. Please try again later.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoadingPlans(false);
+      }
+    };
+
+    fetchPricingPlans();
   }, []);
 
   const LoggedInView = () => (
@@ -211,7 +289,7 @@ export function Index() {
           {/* Welcome & Plan Status Card */}
           <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
             <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center">
                 <div className="flex items-center gap-2">
                   <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
                     <ChefHat className="w-5 h-5 text-secondary" />
@@ -221,16 +299,6 @@ export function Index() {
                     <p className="text-sm text-muted-foreground">Here's your dashboard overview</p>
                   </div>
                 </div>
-                {subscriptionTier === 'free' && (
-                  <Button
-                    onClick={() => navigate('/pricing')}
-                    variant="secondary"
-                    size="sm"
-                    className="bg-gradient-to-r from-secondary to-secondary/80 hover:opacity-90"
-                  >
-                    Upgrade to Pro <ArrowRight className="w-4 h-4 ml-1" />
-                  </Button>
-                )}
               </div>
               <div className="grid md:grid-cols-2 gap-4 mt-4">
                 <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
@@ -240,11 +308,26 @@ export function Index() {
                     </div>
                     Current Plan
                   </h3>
-                  <div className="mt-3 flex items-center justify-between">
-                    <p className="text-base font-semibold capitalize">{subscriptionTier} Plan</p>
-                    <Badge variant="outline" className="capitalize">
-                      {subscriptionTier === 'free' ? 'Limited' : 'Unlimited'}
-                    </Badge>
+                  <div className="mt-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-base font-semibold capitalize">
+                        {pricingPlans.find(plan => plan.slug === subscriptionTier)?.name || 'Basic Plan'}
+                      </p>
+                      <Badge variant="outline" className="capitalize">
+                        {subscriptionTier === 'BASIC' ? 'Limited' : 'Unlimited'}
+                      </Badge>
+                    </div>
+                    {subscriptionTier === 'BASIC' && pricingPlans.length > 0 && (
+                      <Button
+                        onClick={() => navigate('/pricing')}
+                        variant="ghost"
+                        size="sm"
+                        className="w-full text-sm text-muted-foreground hover:text-primary hover:bg-primary/5"
+                      >
+                        Upgrade to get {pricingPlans.find(plan => plan.slug === 'STANDARD')?.credits_per_month} credits/month{' '}
+                        <ArrowRight className="w-3 h-3 ml-1" />
+                      </Button>
+                    )}
                   </div>
                 </div>
                 <div className="p-4 rounded-lg bg-secondary/5 border border-secondary/10">
@@ -283,34 +366,6 @@ export function Index() {
             </CardHeader>
           </Card>
 
-          {/* Quick Actions */}
-          <div className="grid grid-cols-2 gap-4">
-            <Button
-              onClick={() => navigate('/meal-plan')}
-              className="relative h-12 bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 overflow-hidden group"
-            >
-              <div className="absolute inset-0 bg-primary/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <Plus className="w-4 h-4" />
-              </div>
-              <div className="flex items-center gap-2">
-                <Utensils className="w-4 h-4" />
-                <span>Create Meal Plan</span>
-              </div>
-            </Button>
-            <Button
-              onClick={() => navigate('/healthy-swap')}
-              className="relative h-12 bg-gradient-to-r from-secondary to-secondary/80 hover:opacity-90 overflow-hidden group"
-            >
-              <div className="absolute inset-0 bg-secondary/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <ArrowRight className="w-4 h-4" />
-              </div>
-              <div className="flex items-center gap-2">
-                <Salad className="w-4 h-4" />
-                <span>Find Alternatives</span>
-              </div>
-            </Button>
-          </div>
-
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg group hover:bg-primary/5 transition-colors duration-200">
@@ -321,7 +376,7 @@ export function Index() {
                   </div>
                   <div>
                     <h3 className="text-sm text-muted-foreground">Plans Created</h3>
-                    <p className="text-xl font-semibold">{weeklyStats.plansCreated}</p>
+                    <p className="text-xl font-semibold text-primary">{weeklyStats.plansCreated}</p>
                     <span className="text-xs text-muted-foreground">This week</span>
                   </div>
                 </div>
@@ -335,21 +390,21 @@ export function Index() {
                   </div>
                   <div>
                     <h3 className="text-sm text-muted-foreground">Healthy Swaps</h3>
-                    <p className="text-xl font-semibold">{weeklyStats.healthySwaps}</p>
+                    <p className="text-xl font-semibold text-secondary">{weeklyStats.healthySwaps}</p>
                     <span className="text-xs text-muted-foreground">This week</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg group hover:bg-green-50 transition-colors duration-200">
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg group hover:bg-primary/5 transition-colors duration-200">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors duration-200">
-                    <Save className="w-4 h-4 text-green-500" />
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-200">
+                    <Save className="w-4 h-4 text-primary" />
                   </div>
                   <div>
                     <h3 className="text-sm text-muted-foreground">Total Plans</h3>
-                    <p className="text-xl font-semibold">{savedPlansCount}</p>
+                    <p className="text-xl font-semibold text-primary">{savedPlansCount}</p>
                     <span className="text-xs text-muted-foreground">All time</span>
                   </div>
                 </div>
@@ -392,32 +447,53 @@ export function Index() {
             </Card>
 
             {/* Coming Soon */}
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg group hover:bg-secondary/5 transition-colors duration-200">
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center group-hover:bg-secondary/20 transition-colors duration-200">
+                  <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center">
                     <Sparkles className="w-4 h-4 text-secondary" />
                   </div>
-                  Coming Soon
+                  <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                    Exciting New Features Coming Soon
+                  </span>
                 </CardTitle>
+                <CardDescription>We're working on these amazing features to enhance your experience</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-colors duration-200">
-                  <h3 className="text-sm font-medium flex items-center gap-2 mb-1">
+              <CardContent className="grid md:grid-cols-2 gap-4">
+                <div className="p-4 rounded-lg bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-colors duration-200">
+                  <h3 className="text-sm font-medium flex items-center gap-2 mb-2">
                     <Settings className="w-4 h-4 text-primary" />
-                    Recipe Customization
+                    <span className="text-primary">Smart Recipe Customization</span>
                   </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Customize recipes based on available ingredients.
+                  <p className="text-sm text-muted-foreground">
+                    Customize recipes based on ingredients you have in your kitchen. Our AI will suggest creative alternatives.
                   </p>
                 </div>
-                <div className="p-3 rounded-lg bg-secondary/5 border border-secondary/10 hover:bg-secondary/10 transition-colors duration-200">
-                  <h3 className="text-sm font-medium flex items-center gap-2 mb-1">
+                <div className="p-4 rounded-lg bg-secondary/5 border border-secondary/10 hover:bg-secondary/10 transition-colors duration-200">
+                  <h3 className="text-sm font-medium flex items-center gap-2 mb-2">
                     <Users className="w-4 h-4 text-secondary" />
-                    Community Features
+                    <span className="text-secondary">Community Recipe Sharing</span>
                   </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Share and discover recipes with other users.
+                  <p className="text-sm text-muted-foreground">
+                    Share your favorite recipes and meal plans with the community. Discover new ideas from other health enthusiasts.
+                  </p>
+                </div>
+                <div className="p-4 rounded-lg bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-colors duration-200">
+                  <h3 className="text-sm font-medium flex items-center gap-2 mb-2">
+                    <ShoppingCart className="w-4 h-4 text-primary" />
+                    <span className="text-primary">Smart Grocery Lists</span>
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Automatically generate optimized shopping lists from your meal plans with smart categorization.
+                  </p>
+                </div>
+                <div className="p-4 rounded-lg bg-secondary/5 border border-secondary/10 hover:bg-secondary/10 transition-colors duration-200">
+                  <h3 className="text-sm font-medium flex items-center gap-2 mb-2">
+                    <Smartphone className="w-4 h-4 text-secondary" />
+                    <span className="text-secondary">Mobile App</span>
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Take HungryHub with you everywhere. Plan meals, track nutrition, and shop for ingredients on the go.
                   </p>
                 </div>
               </CardContent>
