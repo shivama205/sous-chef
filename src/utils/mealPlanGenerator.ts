@@ -101,14 +101,67 @@ export const generateNewMeal = async (mealPlan: MealPlan, dayIndex: number, meal
   }
 };
 
-export const generateMealPlan = async (preferences: Preferences): Promise<MealPlan> => {
+export async function generateMealPlan(preferences: Preferences): Promise<MealPlan> {
+  const prompt = `Create a ${preferences.days}-day meal plan with the following requirements:
+
+${preferences.dietaryRestrictions ? `Dietary Restrictions: ${preferences.dietaryRestrictions}` : 'No specific dietary restrictions.'}
+
+Nutritional Targets:
+${preferences.proteinGoal || preferences.calorieIntakeGoal ? `Daily Targets:
+- ${preferences.proteinGoal ? `Target Daily Protein: ${preferences.proteinGoal}g` : ''}
+- ${preferences.calorieIntakeGoal ? `Target Daily Calories: ${preferences.calorieIntakeGoal}` : ''}` : ''}
+${preferences.mealTargets?.proteinPerMeal || preferences.mealTargets?.caloriesPerMeal ? `Per-Meal Targets:
+- ${preferences.mealTargets.proteinPerMeal ? `Target Protein per Meal: ${preferences.mealTargets.proteinPerMeal}g` : ''}
+- ${preferences.mealTargets.caloriesPerMeal ? `Target Calories per Meal: ${preferences.mealTargets.caloriesPerMeal}` : ''}` : ''}
+
+${preferences.cuisinePreferences?.length ? `Preferred Cuisines: ${preferences.cuisinePreferences.join(', ')}` : 'No specific cuisine preferences (include a variety of cuisines).'}
+
+Please create a detailed meal plan with 3 main meals (breakfast, lunch, dinner) and 2 snacks per day. For each meal, include:
+1. Name of the dish
+2. Nutritional information (protein, fat, carbs, calories)
+3. Appropriate meal timing
+
+Make sure the meals are varied, nutritionally balanced, and meet the specified targets. If no specific targets are provided, aim for balanced nutrition with approximately:
+- 2000 calories per day
+- 100g protein per day
+- Balanced distribution across meals
+
+Format the response as a meal plan with the following structure:
+
+{
+  "days": [
+    {
+      "day": "Monday",
+      "meals": [
+        {
+          "name": "Meal name",
+          "time": "breakfast",
+          "recipeLink": "https://www.example.com/recipes/chicken-alfredo",
+          "nutritionInfo": {
+            "calories": 500,
+            "protein": 30,
+            "carbs": 50,
+            "fat": 20,
+            "fiber": 5,
+            "sugar": 10
+          }
+        }
+      ]
+    }
+  ]
+}
+
+Do not add any other text or comments to the response.
+
+`;
+
   console.log("Generating meal plan with preferences:", preferences);
   
   try {
     const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const result = await model.generateContent(createPrompt(preferences));
+    const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
     
@@ -128,4 +181,4 @@ export const generateMealPlan = async (preferences: Preferences): Promise<MealPl
     console.error("Error generating meal plan:", error);
     throw error;
   }
-};
+}

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { PreferencesForm } from "@/components/PreferencesForm";
@@ -165,7 +165,7 @@ const MealPlan = () => {
                     </thead>
                     <tbody>
                       {mealPlan.days.map((day, dayIndex) => (
-                        <>
+                        <React.Fragment key={`day-${dayIndex}`}>
                           {day.meals.map((meal, mealIndex) => (
                             <tr 
                               key={`${dayIndex}-${mealIndex}`}
@@ -204,7 +204,7 @@ const MealPlan = () => {
                               {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.calories, 0)}
                             </td>
                           </tr>
-                        </>
+                        </React.Fragment>
                       ))}
                     </tbody>
                   </table>

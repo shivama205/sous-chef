@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import NavigationBar from "@/components/NavigationBar";
 import { motion } from "framer-motion";
-import { Leaf, Salad, Apple, CheckCircle2, Sparkles, Users, Star, Package, ArrowRight } from "lucide-react";
+import { Leaf, Salad, Apple, CheckCircle2, Sparkles, Users, Star, Package, ArrowRight, ChefHat } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
@@ -231,18 +231,38 @@ const Index = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.7, delay: 0.3 }}
-            className="relative grid grid-cols-2 gap-4"
+            className="relative grid grid-cols-3 gap-6"
           >
-            {[Leaf, Salad, Apple].map((Icon, index) => (
-              <motion.div
-                key={index}
-                className="p-8 rounded-2xl bg-white/80 backdrop-blur-sm shadow-xl"
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Icon className="w-full h-full text-primary" />
-              </motion.div>
-            ))}
+            <motion.div
+              className="p-8 rounded-2xl bg-white/80 backdrop-blur-sm shadow-xl flex flex-col items-center text-center gap-4"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <ChefHat className="w-6 h-6 text-primary" />
+              </div>
+              <p className="text-sm font-medium text-gray-600">AI-Powered Meal Planning</p>
+            </motion.div>
+            <motion.div
+              className="p-8 rounded-2xl bg-white/80 backdrop-blur-sm shadow-xl flex flex-col items-center text-center gap-4"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center">
+                <Apple className="w-6 h-6 text-secondary" />
+              </div>
+              <p className="text-sm font-medium text-gray-600">Healthy Alternatives</p>
+            </motion.div>
+            <motion.div
+              className="p-8 rounded-2xl bg-white/80 backdrop-blur-sm shadow-xl flex flex-col items-center text-center gap-4"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                <Leaf className="w-6 h-6 text-green-500" />
+              </div>
+              <p className="text-sm font-medium text-gray-600">Nutritional Tracking</p>
+            </motion.div>
           </motion.div>
         </div>
       </section>

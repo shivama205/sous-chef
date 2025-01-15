@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { MealPlan } from "@/types/mealPlan";
 import NavigationBar from "@/components/NavigationBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Save, Trash2 } from "lucide-react";
+import { RefreshCw, Save, Trash2, Share2, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import {
   Dialog,
@@ -20,8 +20,20 @@ import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
 import { generateMealPlan } from "@/utils/mealPlanGenerator";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
+import html2canvas from 'html2canvas';
 
-const MealPlanDetails = () => {
+const loadingMessages = [
+  "Cooking up your perfect meal plan... 🍳",
+  "Mixing healthy ingredients... 🥗",
+  "Balancing your macros... 💪",
+  "Sprinkling some nutrition magic... ✨",
+  "Taste-testing your menu... 😋",
+  "Adding a pinch of variety... 🌮",
+  "Making sure everything is delicious... 🍽️",
+  "Almost ready to serve... 🍽️"
+];
+
+export const MealPlanDetails = () => {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -35,6 +47,9 @@ const MealPlanDetails = () => {
   const [isSaved, setIsSaved] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const mealPlanRef = useRef<HTMLDivElement>(null);
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+  const [loadingInterval, setLoadingInterval] = useState<NodeJS.Timeout | null>(null);
 
   // If the meal plan is passed through location state, use it
   useEffect(() => {
@@ -70,12 +85,37 @@ const MealPlanDetails = () => {
     fetchMealPlan();
   }, [id, location.state]);
 
+  // Clear interval on unmount
+  useEffect(() => {
+    return () => {
+      if (loadingInterval) {
+        clearInterval(loadingInterval);
+      }
+    };
+  }, [loadingInterval]);
+
+  const startLoadingMessages = () => {
+    const interval = setInterval(() => {
+      setLoadingMessageIndex((prev) => (prev + 1) % loadingMessages.length);
+    }, 3000);
+    setLoadingInterval(interval);
+  };
+
+  const stopLoadingMessages = () => {
+    if (loadingInterval) {
+      clearInterval(loadingInterval);
+      setLoadingInterval(null);
+    }
+  };
+
   const handleRegenerateMealPlan = async () => {
     if (!mealPlan) return;
     setIsRegenerating(true);
+    startLoadingMessages();
+
     try {
       const newMealPlan = await generateMealPlan({
-        days: mealPlan.days.length.toString(),
+        days: mealPlan.days.length,
         // Add other preferences if available in your meal plan data
       });
       setMealPlan(newMealPlan);
@@ -87,6 +127,7 @@ const MealPlanDetails = () => {
       });
     } finally {
       setIsRegenerating(false);
+      stopLoadingMessages();
     }
   };
 
@@ -148,6 +189,30 @@ const MealPlanDetails = () => {
     }
   };
 
+  const handleShare = async () => {
+    if (!mealPlanRef.current) return;
+
+    try {
+      const canvas = await html2canvas(mealPlanRef.current);
+      const imageUrl = canvas.toDataURL('image/jpeg', 0.8); // Using JPEG for smaller size
+      
+      // Create a temporary link to download the image
+      const link = document.createElement('a');
+      link.href = imageUrl;
+      link.download = 'meal-plan.jpg';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Open WhatsApp with a message
+      const whatsappUrl = `https://wa.me/?text=Check out my meal plan from HungryHub! 🍽️%0A%0APlease find the meal plan image attached.`;
+      window.open(whatsappUrl, '_blank');
+    } catch (error) {
+      // Only log the error, don't show toast
+      console.error('Error sharing:', error);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
@@ -180,61 +245,74 @@ const MealPlanDetails = () => {
           transition={{ duration: 0.5 }}
           className="space-y-6"
         >
-          <div className="flex justify-between items-center">
+          {isRegenerating && (
+            <div className="fixed inset-0 bg-white/50 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-50">
+              <div className="flex items-center gap-3">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                <p className="text-lg font-medium text-primary">{loadingMessages[loadingMessageIndex]}</p>
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               {isSaved ? name || "Your Meal Plan" : "Your Generated Meal Plan"}
             </h2>
-            <div className="flex gap-4">
+            <div className="flex flex-wrap gap-2 sm:gap-4 w-full sm:w-auto">
               {!isSaved ? (
                 <>
                   <Button
                     onClick={handleRegenerateMealPlan}
                     variant="outline"
                     disabled={isRegenerating}
-                    className="flex items-center gap-2"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2"
                   >
                     <RefreshCw className={`w-4 h-4 ${isRegenerating ? 'animate-spin' : ''}`} />
-                    {isRegenerating ? "Regenerating..." : "Regenerate Plan"}
+                    {isRegenerating ? "Regenerating..." : "Regenerate"}
                   </Button>
                   <Button
                     onClick={() => setOpen(true)}
-                    className="flex items-center gap-2"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2"
                   >
                     <Save className="w-4 h-4" />
-                    Save Plan
+                    Save
                   </Button>
                 </>
               ) : (
                 <>
                   <Button
-                    onClick={() => navigate('/meal-plan')}
+                    onClick={handleShare}
                     variant="outline"
-                    className="flex items-center gap-2"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2"
                   >
-                    Create New Plan
+                    <Share2 className="w-4 h-4" />
+                    Share
                   </Button>
                   <Button
                     onClick={() => navigate('/')}
                     variant="secondary"
-                    className="flex items-center gap-2"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2"
                   >
-                    Back to Home
+                    Back
                   </Button>
                   <Button
                     onClick={() => setDeleteDialogOpen(true)}
                     variant="ghost"
-                    size="icon"
-                    className="text-muted-foreground hover:text-destructive transition-colors"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 hover:text-destructive"
                     disabled={isDeleting}
                   >
-                    <Trash2 className={`w-4 h-4 ${isDeleting ? 'animate-pulse' : ''}`} />
+                    <Trash2 className="w-4 h-4" />
+                    {isDeleting ? "Deleting..." : "Delete"}
                   </Button>
                 </>
               )}
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-gray-100 bg-white/80 backdrop-blur-sm shadow-xl">
+          <motion.div
+            ref={mealPlanRef}
+            className="overflow-x-auto rounded-xl border border-gray-100 bg-white/80 backdrop-blur-sm shadow-xl"
+          >
             <table className="w-full">
               <thead className="bg-gradient-to-r from-primary to-primary/80">
                 <tr>
@@ -248,7 +326,7 @@ const MealPlanDetails = () => {
               </thead>
               <tbody>
                 {mealPlan.days.map((day, dayIndex) => (
-                  <>
+                  <React.Fragment key={`day-${dayIndex}`}>
                     {day.meals.map((meal, mealIndex) => (
                       <tr 
                         key={`${dayIndex}-${mealIndex}`}
@@ -287,35 +365,57 @@ const MealPlanDetails = () => {
                         {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.calories, 0)}
                       </td>
                     </tr>
-                  </>
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>
-          </div>
+          </motion.div>
         </motion.div>
 
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Save Meal Plan</DialogTitle>
-              <DialogDescription>
-                Enter a name for your meal plan.
+              <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                Save Meal Plan
+              </DialogTitle>
+              <DialogDescription className="text-base text-muted-foreground">
+                Give your meal plan a memorable name to find it easily later.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4">
-              <Label htmlFor="meal-plan-name">Meal Plan Name</Label>
-              <Input
-                id="meal-plan-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter meal plan name"
-              />
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label 
+                  htmlFor="meal-plan-name" 
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Meal Plan Name
+                </Label>
+                <Input
+                  id="meal-plan-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g., Weekly Healthy Plan"
+                  className="h-11"
+                />
+              </div>
             </div>
-            <DialogFooter>
-              <Button variant="secondary" onClick={() => setOpen(false)}>
+            <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+                className="mt-2 sm:mt-0"
+              >
                 Cancel
               </Button>
-              <Button onClick={handleSaveMealPlan}>Save</Button>
+              <Button
+                type="submit"
+                onClick={handleSaveMealPlan}
+                disabled={!name.trim()}
+                className="bg-gradient-to-r from-primary to-primary/80"
+              >
+                Save Plan
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
