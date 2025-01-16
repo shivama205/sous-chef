@@ -1,3 +1,4 @@
+import html2canvas from 'html2canvas';
 import { NutritionInfo, MealPlanDay } from "@/types/mealPlan";
 
 export const calculateDailyNutrition = (day: MealPlanDay): NutritionInfo => {
