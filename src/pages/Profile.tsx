@@ -9,6 +9,8 @@ import NavigationBar from "@/components/NavigationBar";
 import { MealPlan } from "@/types/mealPlan";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Calculator } from "lucide-react";
+import type { UserMacros } from "@/types/macros";
 
 interface SavedMealPlan {
   id: string;
@@ -21,6 +23,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [savedMealPlans, setSavedMealPlans] = useState<SavedMealPlan[]>([]);
+  const [savedMacros, setSavedMacros] = useState<UserMacros | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -31,19 +34,30 @@ const Profile = () => {
         return;
       }
       setUser(session.user);
-      console.log("User:", session.user);
       setIsLoading(true);
 
-      const { data: mealPlans, error } = await supabase
+      // Fetch meal plans
+      const { data: mealPlans, error: mealPlansError } = await supabase
         .from('saved_meal_plans')
         .select('*')
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: false });
         
-      console.log("Meal plans:", mealPlans);
-      if (!error && mealPlans) {
+      if (!mealPlansError && mealPlans) {
         setSavedMealPlans(mealPlans);
       }
+
+      // Fetch saved macros
+      const { data: macros, error: macrosError } = await supabase
+        .from('user_macros')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (!macrosError && macros) {
+        setSavedMacros(macros);
+      }
+
       setIsLoading(false);
     };
 
@@ -74,6 +88,44 @@ const Profile = () => {
               </div>
             </CardHeader>
           </Card>
+
+          {savedMacros && (
+            <Card className="mb-8 bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Calculator className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-2xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                      Your Macro Goals
+                    </CardTitle>
+                    <CardDescription>Last updated: {format(new Date(savedMacros.last_updated), 'PPP')}</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="p-4 bg-primary/5 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Daily Calories</p>
+                    <p className="text-2xl font-semibold text-primary">{savedMacros.calories}</p>
+                  </div>
+                  <div className="p-4 bg-primary/5 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Protein</p>
+                    <p className="text-2xl font-semibold text-primary">{savedMacros.protein}g</p>
+                  </div>
+                  <div className="p-4 bg-primary/5 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Carbs</p>
+                    <p className="text-2xl font-semibold text-primary">{savedMacros.carbs}g</p>
+                  </div>
+                  <div className="p-4 bg-primary/5 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Fat</p>
+                    <p className="text-2xl font-semibold text-primary">{savedMacros.fat}g</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
             <CardHeader>

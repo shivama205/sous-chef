@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,40 +8,87 @@ import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
 import { Calculator, Save } from "lucide-react";
+import type { UserMacros, MacroResults } from "@/types/macros";
+import { ChevronDown } from "lucide-react";
 
-interface MacroResults {
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
+interface MacroCalculatorProps {
+  onSaveMacros?: (macros: MacroResults) => void;
 }
 
-export function MacroCalculator() {
-  const [age, setAge] = useState("");
-  const [weight, setWeight] = useState("");
-  const [height, setHeight] = useState("");
-  const [gender, setGender] = useState<"male" | "female">("male");
-  const [activityLevel, setActivityLevel] = useState("moderate");
-  const [goal, setGoal] = useState("maintain");
-  const [showAdvanced, setShowAdvanced] = useState(false);
+export function MacroCalculator({ onSaveMacros }: MacroCalculatorProps) {
+  const [age, setAge] = useState(() => localStorage.getItem('macro_calc_age') || "");
+  const [weight, setWeight] = useState(() => localStorage.getItem('macro_calc_weight') || "");
+  const [height, setHeight] = useState(() => localStorage.getItem('macro_calc_height') || "");
+  const [gender, setGender] = useState<"male" | "female">(() => 
+    (localStorage.getItem('macro_calc_gender') as "male" | "female") || "male"
+  );
+  const [activityLevel, setActivityLevel] = useState(() => 
+    localStorage.getItem('macro_calc_activity') || "moderate"
+  );
+  const [goal, setGoal] = useState(() => localStorage.getItem('macro_calc_goal') || "maintain");
+  const [showPerMealTargets, setShowPerMealTargets] = useState(false);
   const [results, setResults] = useState<MacroResults | null>(null);
+  const [savedMacros, setSavedMacros] = useState<UserMacros | null>(null);
+
+  // Save inputs to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('macro_calc_age', age);
+    localStorage.setItem('macro_calc_weight', weight);
+    localStorage.setItem('macro_calc_height', height);
+    localStorage.setItem('macro_calc_gender', gender);
+    localStorage.setItem('macro_calc_activity', activityLevel);
+    localStorage.setItem('macro_calc_goal', goal);
+  }, [age, weight, height, gender, activityLevel, goal]);
+
+  useEffect(() => {
+    loadSavedMacros();
+  }, []);
+
+  const loadSavedMacros = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+
+    const { data, error } = await supabase
+      .from('user_macros')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .single();
+
+    if (error) {
+      console.error('Error loading saved macros:', error);
+      return;
+    }
+
+    if (data) {
+      setSavedMacros(data);
+      setResults({
+        calories: data.calories,
+        protein: data.protein,
+        carbs: data.carbs,
+        fat: data.fat
+      });
+    }
+  };
+
+  const scrollToElement = (elementId: string) => {
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
 
   const calculateMacros = () => {
-    // Basic BMR calculation using Mifflin-St Jeor Equation
-    const weightKg = parseFloat(weight);
-    const heightCm = parseFloat(height);
-    const ageYears = parseFloat(age);
-
-    if (!weightKg || !heightCm || !ageYears) {
+    if (!age || !weight || !height) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields",
+        description: "Please fill in all required fields.",
         variant: "destructive",
       });
       return;
     }
 
-    let bmr = 10 * weightKg + 6.25 * heightCm - 5 * ageYears;
+    // BMR calculation using Mifflin-St Jeor Equation
+    let bmr = 10 * parseFloat(weight) + 6.25 * parseFloat(height) - 5 * parseFloat(age);
     bmr = gender === "male" ? bmr + 5 : bmr - 161;
 
     // Activity multiplier
@@ -58,22 +105,56 @@ export function MacroCalculator() {
     // Adjust based on goal
     switch (goal) {
       case "lose":
-        tdee *= 0.8; // 20% deficit
+        tdee *= 0.85; // 15% deficit
         break;
       case "gain":
-        tdee *= 1.2; // 20% surplus
+        tdee *= 1.15; // 15% surplus
         break;
     }
 
-    const macros: MacroResults = {
+    const newResults = {
       calories: Math.round(tdee),
-      protein: Math.round((tdee * 0.3) / 4), // 30% protein
-      carbs: Math.round((tdee * 0.4) / 4), // 40% carbs
-      fat: Math.round((tdee * 0.3) / 9), // 30% fat
+      protein: Math.round(parseFloat(weight) * 2), // 2g per kg bodyweight
+      carbs: Math.round((tdee * 0.4) / 4), // 40% of calories from carbs
+      fat: Math.round((tdee * 0.3) / 9), // 30% of calories from fat
     };
 
-    setResults(macros);
+    // Save to localStorage
+    localStorage.setItem('calculated_macros', JSON.stringify(newResults));
+    
+    // Animate out old results if they exist
+    if (results) {
+      const element = document.querySelector('.macro-results');
+      if (element) {
+        element.classList.add('fade-out');
+        setTimeout(() => {
+          setResults(newResults);
+          element.classList.remove('fade-out');
+          element.classList.add('fade-in');
+          setTimeout(() => {
+            element.classList.remove('fade-in');
+          }, 500);
+        }, 300);
+      } else {
+        setResults(newResults);
+      }
+    } else {
+      setResults(newResults);
+    }
+
+    // After calculation, scroll to results
+    setTimeout(() => {
+      scrollToElement('macro-results');
+    }, 100);
   };
+
+  // Load calculated macros from localStorage on mount
+  useEffect(() => {
+    const savedCalculatedMacros = localStorage.getItem('calculated_macros');
+    if (savedCalculatedMacros) {
+      setResults(JSON.parse(savedCalculatedMacros));
+    }
+  }, []);
 
   const saveMacros = async () => {
     if (!results) return;
@@ -93,15 +174,49 @@ export function MacroCalculator() {
       return;
     }
 
-    const { error } = await supabase
+    // Check if user already has macros saved
+    const { data: existingMacros } = await supabase
       .from('user_macros')
-      .upsert({
-        user_id: session.user.id,
-        ...results,
-        last_updated: new Date().toISOString(),
-      });
+      .select('*')
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+
+    const macroData = {
+      user_id: session.user.id,
+      calories: results.calories,
+      protein: results.protein,
+      carbs: results.carbs,
+      fat: results.fat,
+      last_updated: new Date().toISOString(),
+      // Save user inputs
+      user_inputs: {
+        age,
+        weight,
+        height,
+        gender,
+        activity_level: activityLevel,
+        goal
+      }
+    };
+
+    let error;
+    if (existingMacros) {
+      // Update existing record
+      const { error: updateError } = await supabase
+        .from('user_macros')
+        .update(macroData)
+        .eq('id', existingMacros.id);
+      error = updateError;
+    } else {
+      // Insert new record
+      const { error: insertError } = await supabase
+        .from('user_macros')
+        .insert([macroData]);
+      error = insertError;
+    }
 
     if (error) {
+      console.error('Error saving macros:', error);
       toast({
         title: "Error",
         description: "Failed to save macro goals. Please try again.",
@@ -112,11 +227,27 @@ export function MacroCalculator() {
         title: "Success",
         description: "Your macro goals have been saved!",
       });
+      setSavedMacros(existingMacros ? { ...existingMacros, ...macroData } : macroData);
+      
+      // Trigger save animation and callback
+      const element = document.querySelector('.macro-results');
+      if (element) {
+        element.classList.add('save-flash');
+        setTimeout(() => {
+          element.classList.remove('save-flash');
+          onSaveMacros?.(results);
+          // After saving, trigger scroll to preferences form
+          scrollToElement('preferences-form');
+        }, 600);
+      } else {
+        onSaveMacros?.(results);
+        scrollToElement('preferences-form');
+      }
     }
   };
 
   return (
-    <Card className="w-full backdrop-blur-sm bg-white/80 border-0 shadow-xl rounded-2xl p-4">
+    <Card className="w-full backdrop-blur-sm bg-white/80 border-0 shadow-xl rounded-2xl p-6">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -128,7 +259,7 @@ export function MacroCalculator() {
           <h2 className="text-lg font-semibold">Macro Calculator</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div id="macro-form" className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="age">Age</Label>
             <Input
@@ -210,42 +341,130 @@ export function MacroCalculator() {
           <Button onClick={calculateMacros} className="flex-1">
             Calculate Macros
           </Button>
-          {results && (
-            <Button onClick={saveMacros} variant="secondary" className="flex items-center gap-2">
-              <Save className="w-4 h-4" />
-              Save Results
-            </Button>
-          )}
         </div>
 
         {results && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-4 bg-primary/5 rounded-lg space-y-2"
+            className="space-y-6"
           >
-            <h3 className="font-semibold text-primary">Your Daily Targets:</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Calories</p>
-                <p className="text-xl font-semibold">{results.calories}</p>
+            <div id="macro-results" className="space-y-4 macro-results">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-primary">
+                  {showPerMealTargets ? "Your Per Meal Targets:" : "Your Daily Targets:"}
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowPerMealTargets(!showPerMealTargets)}
+                  className="text-sm text-muted-foreground hover:text-primary"
+                >
+                  {showPerMealTargets ? "Show Daily Totals" : "Show Per Meal"}
+                  <ChevronDown className={`ml-1 h-4 w-4 transition-transform ${showPerMealTargets ? "rotate-180" : ""}`} />
+                </Button>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Protein</p>
-                <p className="text-xl font-semibold">{results.protein}g</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Carbs</p>
-                <p className="text-xl font-semibold">{results.carbs}g</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Fat</p>
-                <p className="text-xl font-semibold">{results.fat}g</p>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-4 bg-primary/5 rounded-lg">
+                  <p className="text-sm text-muted-foreground">
+                    {showPerMealTargets ? "Calories per Meal" : "Daily Calories"}
+                  </p>
+                  <p className="text-xl font-semibold">
+                    {showPerMealTargets ? Math.round(results.calories / 5) : results.calories}
+                  </p>
+                </div>
+                <div className="p-4 bg-primary/5 rounded-lg">
+                  <p className="text-sm text-muted-foreground">
+                    {showPerMealTargets ? "Protein per Meal" : "Daily Protein"}
+                  </p>
+                  <p className="text-xl font-semibold">
+                    {showPerMealTargets ? Math.round(results.protein / 5) : results.protein}g
+                  </p>
+                </div>
+                <div className="p-4 bg-primary/5 rounded-lg">
+                  <p className="text-sm text-muted-foreground">
+                    {showPerMealTargets ? "Carbs per Meal" : "Daily Carbs"}
+                  </p>
+                  <p className="text-xl font-semibold">
+                    {showPerMealTargets ? Math.round(results.carbs / 5) : results.carbs}g
+                  </p>
+                </div>
+                <div className="p-4 bg-primary/5 rounded-lg">
+                  <p className="text-sm text-muted-foreground">
+                    {showPerMealTargets ? "Fat per Meal" : "Daily Fat"}
+                  </p>
+                  <p className="text-xl font-semibold">
+                    {showPerMealTargets ? Math.round(results.fat / 5) : results.fat}g
+                  </p>
+                </div>
               </div>
             </div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Button onClick={saveMacros} className="w-full">
+                <Save className="w-4 h-4 mr-2" />
+                Save Results
+              </Button>
+            </motion.div>
           </motion.div>
         )}
       </motion.div>
+
+      <style>{`
+        @keyframes saveFlash {
+          0% {
+            transform: scale(1);
+            filter: brightness(1);
+          }
+          50% {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+          }
+          100% {
+            transform: scale(1);
+            filter: brightness(1);
+          }
+        }
+
+        .save-flash {
+          animation: saveFlash 0.6s ease-in-out;
+        }
+
+        @keyframes fadeOut {
+          from {
+            opacity: 1;
+            transform: translateY(0);
+          }
+          to {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .fade-out {
+          animation: fadeOut 0.3s ease-out forwards;
+        }
+
+        .fade-in {
+          animation: fadeIn 0.5s ease-out forwards;
+        }
+      `}</style>
     </Card>
   );
 }

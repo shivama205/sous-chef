@@ -6,7 +6,8 @@ import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog';
 import { generateMealPlan } from '../utils/mealPlanGenerator';
 import { Preferences, Cuisine } from '../types/preferences';
-import LoadingOverlay from '../components/LoadingOverlay';
+import { LoadingOverlay } from '../components/LoadingOverlay';
+import { MealPlanLoadingOverlay } from '@/components/MealPlanLoadingOverlay';
 
 const GenerateMealPlan: React.FC = () => {
   const navigate = useNavigate();
@@ -72,7 +73,7 @@ const GenerateMealPlan: React.FC = () => {
 
   return (
     <div>
-      <LoadingOverlay isLoading={isLoading} useRotatingMessages={true} />
+      <MealPlanLoadingOverlay isLoading={isLoading} />
       
       {/* Rest of the component code */}
 

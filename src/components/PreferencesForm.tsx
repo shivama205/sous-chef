@@ -2,13 +2,17 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Calculator, HelpCircle, ArrowRight } from "lucide-react";
-import { Preferences, MealTargets, Cuisine } from "../types/preferences";
+import { Preferences, Cuisine } from "../types/preferences";
 import { MacroCalculator } from "./MacroCalculator";
 import { DaysSelector } from "./preferences/DaysSelector";
 import { NutritionalTargets } from "./preferences/NutritionalTargets";
 import { CuisineSelector } from "./preferences/CuisineSelector";
 import { DietaryRestrictions } from "./preferences/DietaryRestrictions";
+import { Label } from "@/components/ui/label";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2, ChevronDown } from "lucide-react";
 
 const loadingMessages = [
   "Cooking up your perfect meal plan... 🍳",
@@ -21,131 +25,182 @@ const loadingMessages = [
   "Almost ready to serve... 🍽️"
 ];
 
-export function PreferencesForm({ 
-  onSubmit,
-  disabled
-}: { 
+interface PreferencesFormProps {
   onSubmit: (preferences: Preferences) => void;
-  disabled?: boolean;
-}) {
-  const [days, setDays] = useState(7);
-  const [proteinGoal, setProteinGoal] = useState("");
-  const [calorieIntakeGoal, setCalorieIntakeGoal] = useState("");
-  const [dietaryRestrictions, setDietaryRestrictions] = useState("");
-  const [cuisinePreferences, setCuisinePreferences] = useState<Cuisine[]>([]);
+  isLoading?: boolean;
+  preferences: Preferences | null;
+  setPreferences: (preferences: Preferences) => void;
+}
+
+type PreferenceValue = string | number | Cuisine[];
+
+export function PreferencesForm({ onSubmit, isLoading, preferences, setPreferences }: PreferencesFormProps) {
   const [showPerMealTargets, setShowPerMealTargets] = useState(false);
-  const [mealTargets, setMealTargets] = useState<MealTargets>({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
-  const [showMacroCalculator, setShowMacroCalculator] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    const loadingInterval = setInterval(() => {
-      setLoadingMessageIndex((prev) => (prev + 1) % loadingMessages.length);
-    }, 3000);
-
-    try {
-      const preferences: Preferences = {
-        days,
-        proteinGoal: proteinGoal || undefined,
-        calorieIntakeGoal: calorieIntakeGoal || undefined,
-        dietaryRestrictions: dietaryRestrictions || undefined,
-        cuisinePreferences: cuisinePreferences.length > 0 ? cuisinePreferences : undefined,
-        mealTargets: showPerMealTargets ? {
-          proteinPerMeal: mealTargets.proteinPerMeal || undefined,
-          caloriesPerMeal: mealTargets.caloriesPerMeal || undefined,
-        } : undefined,
-      };
-      await onSubmit(preferences);
-    } finally {
-      clearInterval(loadingInterval);
-      setIsLoading(false);
+    if (preferences) {
+      onSubmit(preferences);
     }
   };
 
+  const handlePreferenceChange = (key: keyof Preferences, value: PreferenceValue) => {
+    if (preferences) {
+      setPreferences({
+        ...preferences,
+        [key]: value
+      });
+    }
+  };
+
+  if (!preferences) return null;
+
   return (
-    <div className="grid md:grid-cols-2 gap-8">
-      <div className="space-y-6">
-        <Card className="w-full backdrop-blur-sm bg-white/80 border-0 shadow-xl rounded-2xl p-4 sm:p-8">
-          <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
-            <DaysSelector 
-              days={days}
-              setDays={setDays}
-              isLoading={isLoading}
-            />
-
-            <NutritionalTargets
-              showPerMealTargets={showPerMealTargets}
-              setShowPerMealTargets={setShowPerMealTargets}
-              proteinGoal={proteinGoal}
-              setProteinGoal={setProteinGoal}
-              calorieIntakeGoal={calorieIntakeGoal}
-              setCalorieIntakeGoal={setCalorieIntakeGoal}
-              mealTargets={mealTargets}
-              setMealTargets={setMealTargets}
-              isLoading={isLoading}
-            />
-
-            <CuisineSelector
-              cuisinePreferences={cuisinePreferences}
-              setCuisinePreferences={setCuisinePreferences}
-              isLoading={isLoading}
-            />
-
-            <DietaryRestrictions
-              dietaryRestrictions={dietaryRestrictions}
-              setDietaryRestrictions={setDietaryRestrictions}
-              isLoading={isLoading}
-            />
-
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full h-12 sm:h-14 text-base sm:text-lg font-semibold transition-all duration-200 hover:scale-105 bg-gradient-to-r from-primary to-primary/80"
+    <Card className="w-full backdrop-blur-sm bg-white/80 border-0 shadow-xl rounded-2xl p-6">
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="days" className="text-base font-semibold">Days to Plan</Label>
+            <Select 
+              value={preferences.days.toString()} 
+              onValueChange={(value) => handlePreferenceChange('days', parseInt(value))}
             >
-              Generate Meal Plan
-            </Button>
-          </form>
-        </Card>
+              <SelectTrigger className="h-11">
+                <SelectValue placeholder="Select number of days" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">1 day</SelectItem>
+                <SelectItem value="3">3 days</SelectItem>
+                <SelectItem value="5">5 days</SelectItem>
+                <SelectItem value="7">7 days</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        {/* Help Section */}
-        <Card className="w-full backdrop-blur-sm bg-gradient-to-r from-secondary/10 to-primary/10 border-0 shadow-xl rounded-2xl p-6">
-          <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-full bg-white/80 flex items-center justify-center">
-              <HelpCircle className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Need Help with Your Nutritional Goals?</h3>
-              <p className="text-muted-foreground mb-4">
-                Not sure about your daily caloric needs or macro targets? Our calculator can help you determine the right numbers based on your goals.
-              </p>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-semibold">Nutritional Targets</Label>
               <Button
                 type="button"
-                onClick={() => setShowMacroCalculator(true)}
-                variant="secondary"
-                className="w-full flex items-center justify-center gap-2"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowPerMealTargets(!showPerMealTargets)}
+                className="text-sm text-muted-foreground hover:text-primary"
               >
-                <Calculator className="w-4 h-4" />
-                Calculate Your Macros
-                <ArrowRight className="w-4 h-4" />
+                {showPerMealTargets ? "Switch to Daily Totals" : "Switch to Per Meal"}
+                <ChevronDown className={`ml-1 h-4 w-4 transition-transform ${showPerMealTargets ? "rotate-180" : ""}`} />
               </Button>
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="targetCalories" className="text-sm text-muted-foreground">
+                  {showPerMealTargets ? "Calories per Meal" : "Daily Calories"}
+                </Label>
+                <Input
+                  id="targetCalories"
+                  type="number"
+                  value={showPerMealTargets && preferences.targetCalories 
+                    ? Math.round(preferences.targetCalories / 5) 
+                    : preferences.targetCalories}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    handlePreferenceChange('targetCalories', showPerMealTargets ? value * 5 : value);
+                  }}
+                  placeholder={showPerMealTargets ? "e.g. 400" : "e.g. 2000"}
+                  className="h-11"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="targetProtein" className="text-sm text-muted-foreground">
+                  {showPerMealTargets ? "Protein per Meal (g)" : "Daily Protein (g)"}
+                </Label>
+                <Input
+                  id="targetProtein"
+                  type="number"
+                  value={showPerMealTargets && preferences.targetProtein 
+                    ? Math.round(preferences.targetProtein / 5) 
+                    : preferences.targetProtein}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    handlePreferenceChange('targetProtein', showPerMealTargets ? value * 5 : value);
+                  }}
+                  placeholder={showPerMealTargets ? "e.g. 30" : "e.g. 150"}
+                  className="h-11"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="targetCarbs" className="text-sm text-muted-foreground">
+                  {showPerMealTargets ? "Carbs per Meal (g)" : "Daily Carbs (g)"}
+                </Label>
+                <Input
+                  id="targetCarbs"
+                  type="number"
+                  value={showPerMealTargets && preferences.targetCarbs 
+                    ? Math.round(preferences.targetCarbs / 5) 
+                    : preferences.targetCarbs}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    handlePreferenceChange('targetCarbs', showPerMealTargets ? value * 5 : value);
+                  }}
+                  placeholder={showPerMealTargets ? "e.g. 40" : "e.g. 200"}
+                  className="h-11"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="targetFat" className="text-sm text-muted-foreground">
+                  {showPerMealTargets ? "Fat per Meal (g)" : "Daily Fat (g)"}
+                </Label>
+                <Input
+                  id="targetFat"
+                  type="number"
+                  value={showPerMealTargets && preferences.targetFat 
+                    ? Math.round(preferences.targetFat / 5) 
+                    : preferences.targetFat}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    handlePreferenceChange('targetFat', showPerMealTargets ? value * 5 : value);
+                  }}
+                  placeholder={showPerMealTargets ? "e.g. 13" : "e.g. 65"}
+                  className="h-11"
+                />
+              </div>
+            </div>
           </div>
-        </Card>
-      </div>
 
-      {showMacroCalculator && (
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.3 }}
-        >
-          <MacroCalculator />
-        </motion.div>
-      )}
-    </div>
+          <div className="space-y-4">
+            <Label className="text-base font-semibold">Cuisine Preferences</Label>
+            <CuisineSelector 
+              cuisinePreferences={preferences.cuisinePreferences} 
+              setCuisinePreferences={(cuisines) => handlePreferenceChange('cuisinePreferences', cuisines)} 
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="dietaryRestrictions" className="text-base font-semibold">
+              Dietary Restrictions
+              <span className="text-sm font-normal text-muted-foreground ml-2">(Optional)</span>
+            </Label>
+            <Textarea
+              id="dietaryRestrictions"
+              value={preferences.dietaryRestrictions}
+              onChange={(e) => handlePreferenceChange('dietaryRestrictions', e.target.value)}
+              placeholder="Enter any dietary restrictions or allergies..."
+              className="min-h-[100px]"
+            />
+          </div>
+        </div>
+
+        <Button type="submit" disabled={isLoading} className="w-full h-11 text-base font-medium">
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Generating your meal plan...
+            </>
+          ) : (
+            'Generate Meal Plan'
+          )}
+        </Button>
+      </form>
+    </Card>
   );
 }

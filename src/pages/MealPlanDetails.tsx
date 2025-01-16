@@ -4,9 +4,9 @@ import { supabase } from "@/lib/supabase";
 import { MealPlan } from "@/types/mealPlan";
 import NavigationBar from "@/components/NavigationBar";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Save, Trash2, Share2, Download } from "lucide-react";
+import { RefreshCw, Save, Trash2, Share2, Download, ShoppingCart } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import LoadingOverlay from "@/components/LoadingOverlay";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,8 @@ import { OutOfCreditDialog } from "@/components/OutOfCreditDialog";
 import { LoginDialog } from "@/components/LoginDialog";
 import MealPlanDownloadView from "@/components/MealPlanDownloadView";
 import { GroceryList } from "@/components/GroceryList";
+import html2canvas from "html2canvas";
+import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
 
 export const MealPlanDetails = () => {
   const { id } = useParams();
@@ -117,10 +119,25 @@ export const MealPlanDetails = () => {
     setIsRegenerating(true);
 
     try {
-      const newMealPlan = await generateMealPlan({
+      // Get the saved meal plan to access its preferences
+      const { data: savedPlan } = await supabase
+        .from('saved_meal_plans')
+        .select('plan')
+        .eq('id', id)
+        .single();
+
+      const preferences = {
         days: mealPlan.days.length,
-        // Add other preferences if available in your meal plan data
-      });
+        cuisinePreferences: savedPlan?.plan?.preferences?.cuisinePreferences || [],
+        dietaryRestrictions: savedPlan?.plan?.preferences?.dietaryRestrictions || "",
+        targetCalories: savedPlan?.plan?.preferences?.targetCalories,
+        targetProtein: savedPlan?.plan?.preferences?.targetProtein,
+        targetCarbs: savedPlan?.plan?.preferences?.targetCarbs,
+        targetFat: savedPlan?.plan?.preferences?.targetFat,
+        mealTargets: savedPlan?.plan?.preferences?.mealTargets,
+      };
+
+      const newMealPlan = await generateMealPlan(preferences);
       setMealPlan(newMealPlan);
     } catch (error) {
       toast({
@@ -364,7 +381,7 @@ export const MealPlanDetails = () => {
       <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
         <NavigationBar />
         <main className="container mx-auto px-4 py-8">
-          <LoadingOverlay isLoading={true} message="Loading meal plan..." useRotatingMessages={false} />
+          <MealPlanLoadingOverlay isLoading={true} />
         </main>
       </div>
     );
@@ -391,7 +408,7 @@ export const MealPlanDetails = () => {
           transition={{ duration: 0.5 }}
           className="space-y-6"
         >
-          <LoadingOverlay isLoading={isRegenerating} useRotatingMessages={true} />
+          <MealPlanLoadingOverlay isLoading={isRegenerating} />
 
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 className="text-2xl font-bold text-primary">
@@ -531,9 +548,21 @@ export const MealPlanDetails = () => {
             </div>
 
             {/* Grocery List Section */}
-            {mealPlan && (
-              <div className="mt-8">
-                <GroceryList mealPlan={mealPlan} />
+            {isSaved ? (
+              <GroceryList mealPlan={mealPlan} />
+            ) : (
+              <div className="mt-8 p-6 bg-secondary/5 rounded-lg border border-secondary/10">
+                <div className="flex items-center gap-3 mb-4">
+                  <ShoppingCart className="w-5 h-5 text-secondary" />
+                  <h3 className="text-lg font-semibold text-secondary">Save to View Grocery List</h3>
+                </div>
+                <p className="text-muted-foreground mb-4">
+                  Save your meal plan to generate a comprehensive grocery list with all the ingredients you'll need.
+                </p>
+                <Button onClick={() => setOpen(true)} variant="secondary" className="flex items-center gap-2">
+                  <Save className="w-4 h-4" />
+                  Save Meal Plan
+                </Button>
               </div>
             )}
           </motion.div>

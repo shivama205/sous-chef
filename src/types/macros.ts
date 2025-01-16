@@ -1,3 +1,19 @@
+export interface MacroResults {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+interface UserInputs {
+  age: string;
+  weight: string;
+  height: string;
+  gender: "male" | "female";
+  activityLevel: string;
+  goal: string;
+}
+
 export interface UserMacros {
   user_id: string;
   calories: number;
@@ -5,6 +21,7 @@ export interface UserMacros {
   carbs: number;
   fat: number;
   last_updated: string;
+  user_inputs?: UserInputs;
 }
 
 export interface GroceryList {

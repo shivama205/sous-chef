@@ -1,43 +1,28 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2 } from "lucide-react";
+import { mealPlanLoadingMessages } from "@/lib/loadingMessages";
 import { useState, useEffect } from "react";
+import { LoadingMessage } from "./LoadingOverlay";
 
-export interface LoadingMessage {
-  message: string;
-  submessage?: string;
-}
-
-interface LoadingOverlayProps {
+interface MealPlanLoadingOverlayProps {
   isLoading: boolean;
-  messages?: LoadingMessage[];
-  defaultMessage?: LoadingMessage;
 }
 
-const defaultLoadingMessages: LoadingMessage[] = [
-  { message: "Loading...", submessage: "Please wait" },
-  { message: "Almost there...", submessage: "Just a moment" },
-  { message: "Working on it...", submessage: "Thanks for your patience" },
-];
-
-export function LoadingOverlay({ 
-  isLoading,
-  messages = defaultLoadingMessages,
-  defaultMessage = defaultLoadingMessages[0]
-}: LoadingOverlayProps) {
-  const [currentMessage, setCurrentMessage] = useState<LoadingMessage>(defaultMessage);
+export function MealPlanLoadingOverlay({ isLoading }: MealPlanLoadingOverlayProps) {
+  const [currentMessage, setCurrentMessage] = useState<LoadingMessage>(mealPlanLoadingMessages[0]);
 
   useEffect(() => {
     if (!isLoading) return;
 
     const interval = setInterval(() => {
       setCurrentMessage(prev => {
-        const currentIndex = messages.findIndex(msg => msg.message === prev.message);
-        return messages[(currentIndex + 1) % messages.length];
+        const currentIndex = mealPlanLoadingMessages.findIndex(msg => msg.message === prev.message);
+        return mealPlanLoadingMessages[(currentIndex + 1) % mealPlanLoadingMessages.length];
       });
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [isLoading, messages]);
+  }, [isLoading]);
 
   return (
     <AnimatePresence>
@@ -70,9 +55,7 @@ export function LoadingOverlay({
               className="space-y-2"
             >
               <h3 className="text-lg font-semibold text-primary">{currentMessage.message}</h3>
-              {currentMessage.submessage && (
-                <p className="text-sm text-muted-foreground">{currentMessage.submessage}</p>
-              )}
+              <p className="text-sm text-muted-foreground">{currentMessage.submessage}</p>
             </motion.div>
           </div>
         </motion.div>

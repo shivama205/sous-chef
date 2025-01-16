@@ -11,7 +11,8 @@ import type { HealthySwapRequest, HealthySwapResponse, Recipe } from "@/types/he
 import { supabase } from "@/lib/supabase";
 import { OutOfCreditDialog } from "@/components/OutOfCreditDialog";
 import { LoginDialog } from "@/components/LoginDialog";
-import LoadingOverlay from "@/components/LoadingOverlay";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
+import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
 
 const HealthySwap = () => {
   const { toast } = useToast();
@@ -145,7 +146,7 @@ const HealthySwap = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
       <NavigationBar />
-      <LoadingOverlay isLoading={isLoading} message="Finding healthy alternatives..." />
+      <MealPlanLoadingOverlay isLoading={isLoading} />
       
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-primary mb-8">Find Healthy Alternatives</h1>

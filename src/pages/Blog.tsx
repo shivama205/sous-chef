@@ -2,6 +2,8 @@ import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { Leaf, Apple, Brain, Heart, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import NavigationBar from "@/components/NavigationBar";
+import Footer from "@/components/Footer";
 
 const articles = [
   {
@@ -58,8 +60,10 @@ const articles = [
 
 export function Blog() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10 py-12">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
+      <NavigationBar />
+      
+      <div className="container mx-auto px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -102,6 +106,8 @@ export function Blog() {
           </div>
         </motion.div>
       </div>
+
+      <Footer />
     </div>
   );
 }
