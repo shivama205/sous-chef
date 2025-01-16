@@ -85,7 +85,7 @@ const Pricing = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
                 className={`relative rounded-lg bg-white/80 backdrop-blur-sm shadow-lg p-8 border ${
-                  plan.is_popular ? 'border-primary' : 'border-gray-200'
+                  plan.is_popular ? 'border-primary' : plan.slug === 'BASIC' ? 'border-secondary ring-2 ring-secondary/20' : 'border-gray-200'
                 }`}
               >
                 {plan.is_popular && (
@@ -95,8 +95,15 @@ const Pricing = () => {
                     </span>
                   </div>
                 )}
+                {plan.slug === 'BASIC' && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <span className="bg-secondary text-white text-sm px-3 py-1 rounded-full">
+                      Current Plan
+                    </span>
+                  </div>
+                )}
                 <div className="flex flex-col h-full">
-                  <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                  <h3 className={`text-2xl font-bold mb-2 ${plan.slug === 'BASIC' ? 'text-secondary' : ''}`}>{plan.name}</h3>
                   <div className="mb-4">
                     <span className="text-4xl font-bold">
                       ${(plan.price_monthly / 100).toFixed(2)}
@@ -117,11 +124,13 @@ const Pricing = () => {
                   <Button 
                     className={`w-full ${
                       plan.is_popular 
-                        ? 'bg-gradient-to-r from-primary to-primary/80' 
-                        : 'bg-gradient-to-r from-secondary to-secondary/80'
+                        ? 'bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70' 
+                        : plan.slug === 'BASIC'
+                          ? 'bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary/90 hover:to-secondary/70'
+                          : 'bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70'
                     }`}
                   >
-                    Get Started
+                    {plan.slug === 'BASIC' ? 'Current Plan' : 'Get Started'}
                   </Button>
                 </div>
               </motion.div>

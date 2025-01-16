@@ -211,28 +211,18 @@ export const MealPlanDetails = () => {
       
       const imageUrl = canvas.toDataURL('image/png', 1.0);
       
-      // For mobile devices, open in new tab
-      if (isMobile) {
-        window.open(imageUrl);
-        setPreviewOpen(false);
-        toast({
-          title: "Image ready",
-          description: "Long press the image to save it to your device.",
-        });
-      } else {
-        // For desktop, trigger download
-        const link = document.createElement('a');
-        link.href = imageUrl;
-        link.download = `${name || 'meal-plan'}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setPreviewOpen(false);
-        toast({
-          title: "Download successful",
-          description: "Your meal plan has been downloaded as an image.",
-        });
-      }
+      // For both mobile and desktop, trigger direct download
+      const link = document.createElement('a');
+      link.href = imageUrl;
+      link.download = `${name || 'meal-plan'}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setPreviewOpen(false);
+      toast({
+        title: "Download successful",
+        description: "Your meal plan has been downloaded as an image.",
+      });
     } catch (error) {
       console.error('Error downloading:', error);
       toast({
@@ -618,7 +608,7 @@ export const MealPlanDetails = () => {
           onOpenChange={setShowCreditDialog} 
         />
 
-        <div className="hidden">
+        <div className="absolute opacity-0 pointer-events-none">
           <MealPlanDownloadView
             ref={downloadRef}
             mealPlan={mealPlan}
