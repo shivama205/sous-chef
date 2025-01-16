@@ -467,62 +467,73 @@ export const MealPlanDetails = () => {
             transition={{ duration: 0.5 }}
             className="relative"
           >
-            <table className="w-full">
-              <thead className="bg-gradient-to-r from-primary to-primary/80">
-                <tr>
-                  <th className="py-4 px-6 text-left text-white font-semibold">Day</th>
-                  <th className="py-4 px-6 text-left text-white font-semibold">Meal</th>
-                  <th className="py-4 px-6 text-center text-white font-semibold">Protein (g)</th>
-                  <th className="py-4 px-6 text-center text-white font-semibold">Fat (g)</th>
-                  <th className="py-4 px-6 text-center text-white font-semibold">Carbs (g)</th>
-                  <th className="py-4 px-6 text-center text-white font-semibold">Calories</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mealPlan.days.map((day, dayIndex) => (
-                  <React.Fragment key={`day-${dayIndex}`}>
+            {/* Card Grid View for All Screens */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {mealPlan.days.map((day, dayIndex) => (
+                <div key={dayIndex} className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <div className="bg-gradient-to-r from-primary to-primary/80 py-3 px-4">
+                    <h3 className="text-white font-semibold">{day.day}</h3>
+                  </div>
+                  <div className="divide-y divide-gray-100">
                     {day.meals.map((meal, mealIndex) => (
-                      <tr 
-                        key={`${dayIndex}-${mealIndex}`}
-                        className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
-                      >
-                        {mealIndex === 0 && (
-                          <td 
-                            className="py-4 px-6 font-medium text-gray-900"
-                            rowSpan={day.meals.length}
-                          >
-                            {day.day}
-                          </td>
-                        )}
-                        <td className="py-4 px-6">
-                          <div className="font-medium text-gray-900">{meal.name}</div>
+                      <div key={mealIndex} className="p-4 space-y-3">
+                        <div className="space-y-1">
                           <div className="text-sm text-gray-500">{meal.time}</div>
-                        </td>
-                        <td className="py-4 px-6 text-center text-gray-700">{meal.nutritionInfo.protein}</td>
-                        <td className="py-4 px-6 text-center text-gray-700">{meal.nutritionInfo.fat}</td>
-                        <td className="py-4 px-6 text-center text-gray-700">{meal.nutritionInfo.carbs}</td>
-                        <td className="py-4 px-6 text-center text-gray-700">{meal.nutritionInfo.calories}</td>
-                      </tr>
+                          <div className="font-medium text-gray-900">{meal.name}</div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div className="bg-primary/5 p-2 rounded">
+                            <div className="text-gray-500 text-xs">Protein</div>
+                            <div className="font-medium text-gray-900">{meal.nutritionInfo.protein}g</div>
+                          </div>
+                          <div className="bg-primary/5 p-2 rounded">
+                            <div className="text-gray-500 text-xs">Fat</div>
+                            <div className="font-medium text-gray-900">{meal.nutritionInfo.fat}g</div>
+                          </div>
+                          <div className="bg-primary/5 p-2 rounded">
+                            <div className="text-gray-500 text-xs">Carbs</div>
+                            <div className="font-medium text-gray-900">{meal.nutritionInfo.carbs}g</div>
+                          </div>
+                          <div className="bg-primary/5 p-2 rounded">
+                            <div className="text-gray-500 text-xs">Calories</div>
+                            <div className="font-medium text-gray-900">{meal.nutritionInfo.calories}</div>
+                          </div>
+                        </div>
+                      </div>
                     ))}
-                    <tr className="bg-gray-50/80 font-semibold">
-                      <td colSpan={2} className="py-3 px-6 text-gray-900">Daily Total</td>
-                      <td className="py-3 px-6 text-center text-gray-900">
-                        {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.protein, 0)}g
-                      </td>
-                      <td className="py-3 px-6 text-center text-gray-900">
-                        {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.fat, 0)}g
-                      </td>
-                      <td className="py-3 px-6 text-center text-gray-900">
-                        {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.carbs, 0)}g
-                      </td>
-                      <td className="py-3 px-6 text-center text-gray-900">
-                        {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.calories, 0)}
-                      </td>
-                    </tr>
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
+                  </div>
+                  <div className="bg-gray-50 p-4">
+                    <div className="text-sm font-medium text-gray-900 mb-2">Daily Total</div>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="bg-white p-2 rounded shadow-sm">
+                        <div className="text-gray-500 text-xs">Protein</div>
+                        <div className="font-medium text-gray-900">
+                          {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.protein, 0)}g
+                        </div>
+                      </div>
+                      <div className="bg-white p-2 rounded shadow-sm">
+                        <div className="text-gray-500 text-xs">Fat</div>
+                        <div className="font-medium text-gray-900">
+                          {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.fat, 0)}g
+                        </div>
+                      </div>
+                      <div className="bg-white p-2 rounded shadow-sm">
+                        <div className="text-gray-500 text-xs">Carbs</div>
+                        <div className="font-medium text-gray-900">
+                          {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.carbs, 0)}g
+                        </div>
+                      </div>
+                      <div className="bg-white p-2 rounded shadow-sm">
+                        <div className="text-gray-500 text-xs">Calories</div>
+                        <div className="font-medium text-gray-900">
+                          {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.calories, 0)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </motion.div>
         </motion.div>
 

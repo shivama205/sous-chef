@@ -105,12 +105,9 @@ export const MealPlanDownloadView = React.forwardRef<HTMLDivElement, MealPlanDow
               <Utensils className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-base sm:text-lg font-bold text-gray-900">Preview Meal Plan</h1>
-              <p className="text-[10px] sm:text-xs text-gray-500">This is how your meal plan will look when shared</p>
+              <h1 className="text-base sm:text-lg font-bold text-gray-900">{planName}</h1>
+              <p className="text-[10px] sm:text-xs text-gray-500">{mealPlan.days.length} Day Meal Plan</p>
             </div>
-          </div>
-          <div className="text-[10px] sm:text-xs text-right text-gray-500 bg-gray-100 px-2 sm:px-3 py-1 rounded-full">
-            {mealPlan.days.length} days
           </div>
         </div>
 
@@ -127,7 +124,7 @@ export const MealPlanDownloadView = React.forwardRef<HTMLDivElement, MealPlanDow
           {mealPlan.days.map((day, dayIndex) => (
             <div 
               key={dayIndex}
-              className={`${layout.dayClass} rounded-lg bg-primary/5 border border-primary/10 hover:border-primary/20 transition-colors`}
+              className={`${layout.dayClass} rounded-lg bg-primary/5 border border-primary/10`}
               style={layout.gridAreas ? { gridArea: `d${dayIndex + 1}` } : {}}
             >
               <div className="font-medium text-primary mb-3 pb-2 border-b border-primary/10 text-sm">
@@ -137,12 +134,12 @@ export const MealPlanDownloadView = React.forwardRef<HTMLDivElement, MealPlanDow
                 {day.meals.map((meal, mealIndex) => (
                   <div 
                     key={mealIndex} 
-                    className="grid gap-1 group"
+                    className="grid gap-1"
                   >
                     <span className="text-gray-500 font-medium text-xs">
                       {meal.time}
                     </span>
-                    <span className="text-gray-900 group-hover:text-primary transition-colors text-xs sm:text-sm line-clamp-2">
+                    <span className="text-gray-900 text-xs sm:text-sm line-clamp-2">
                       {meal.name}
                     </span>
                   </div>
