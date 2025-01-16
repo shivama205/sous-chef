@@ -13,7 +13,7 @@ import MealPlanDownloadView from "@/components/MealPlanDownloadView";
 import { motion } from "framer-motion";
 
 export function SharedMealPlan() {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [planName, setPlanName] = useState("");

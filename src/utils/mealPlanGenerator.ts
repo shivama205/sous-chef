@@ -2,48 +2,6 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { MealPlan } from "@/types/mealPlan";
 import type { Preferences } from "@/types/preferences";
 
-const createPrompt = (preferences: Preferences): string => {
-  return `Create a ${preferences.days}-day meal plan with the following requirements:
-${preferences.dietaryRestrictions ? `Dietary restrictions: ${preferences.dietaryRestrictions}` : ''}
-${preferences.proteinGoal ? `Daily protein goal: ${preferences.proteinGoal}g` : ''}
-${preferences.calorieIntakeGoal ? `Daily calorie intake goal: ${preferences.calorieIntakeGoal}kcal` : ''}
-${preferences.cuisinePreferences?.length ? `Preferred cuisines: ${preferences.cuisinePreferences.join(', ')}` : ''}
-
-Always suggest meal plan with 4 meals with about 2000 daily calories.
-Consider output token limits when generating the meal plan. Meal plan has to always be 8000 tokens or less.
-Do not add any other text or comments to the response.
-
-For each meal, provide:
-- Name of the meal (a descriptive name of the meal)
-- Time of the meal (Breakfast, Lunch, Dinner, Snack)
-- Recipe link (a google search link with search query for the recipe)
-- Nutritional information including calories, protein, carbs, fat, fiber, and sugar
-
-Format the response as a JSON object with the following structure:
-{
-  "days": [
-    {
-      "day": "Monday",
-      "meals": [
-        {
-          "name": "Meal name",
-          "time": "breakfast",
-          "recipeLink": "https://www.example.com/recipes/chicken-alfredo",
-          "nutritionInfo": {
-            "calories": 500,
-            "protein": 30,
-            "carbs": 50,
-            "fat": 20,
-            "fiber": 5,
-            "sugar": 10
-          }
-        }
-      ]
-    }
-  ]
-}`;
-};
-
 const createNewMealPrompt = (mealPlan: MealPlan, dayIndex: number, mealIndex: number): string => {
   const day = mealPlan.days[dayIndex];
   const meal = day.meals[mealIndex];

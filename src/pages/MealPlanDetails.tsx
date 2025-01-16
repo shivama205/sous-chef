@@ -3,7 +3,6 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { MealPlan } from "@/types/mealPlan";
 import NavigationBar from "@/components/NavigationBar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Save, Trash2, Share2, Download } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
@@ -20,12 +19,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
 import { generateMealPlan } from "@/utils/mealPlanGenerator";
-import GoogleSignInButton from "@/components/GoogleSignInButton";
 import html2canvas from 'html2canvas';
 import { OutOfCreditDialog } from "@/components/OutOfCreditDialog";
 import { LoginDialog } from "@/components/LoginDialog";
 import MealPlanDownloadView from "@/components/MealPlanDownloadView";
-import { MealPlanPreviewDialog } from "@/components/MealPlanPreviewDialog";
 
 export const MealPlanDetails = () => {
   const { id } = useParams();
@@ -80,42 +77,6 @@ export const MealPlanDetails = () => {
 
     fetchMealPlan();
   }, [id, location.state]);
-
-  const checkAndConsumeCredit = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) {
-      setLoginDialogOpen(true);
-      return false;
-    }
-
-    const { data: credits } = await supabase
-      .from('user_credits')
-      .select('credits_available')
-      .eq('user_id', session.user.id)
-      .single();
-
-    if (!credits || credits.credits_available <= 0) {
-      setShowCreditDialog(true);
-      return false;
-    }
-
-    // Consume one credit
-    const { error: updateError } = await supabase
-      .from('user_credits')
-      .update({ credits_available: credits.credits_available - 1 })
-      .eq('user_id', session.user.id);
-
-    if (updateError) {
-      toast({
-        title: "Error updating credits",
-        description: "Failed to update credits. Please try again.",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    return true;
-  };
 
   const handleRegenerateMealPlan = async () => {
     if (!mealPlan) return;
