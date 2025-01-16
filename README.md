@@ -62,8 +62,13 @@ This project is built with .
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/bf933492-91a2-4318-8c59-0bf7d9afa1fe) and click on Share -> Publish.
+This project is configured for deployment with Vercel. Simply:
+1. Push your code to GitHub
+2. Import your repository in Vercel
+3. Vercel will automatically detect the Vite configuration and deploy your app
+
+The project is currently deployed at: https://sous-chef.in
 
 ## I want to use a custom domain - is that possible?
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+Yes! Vercel provides excellent custom domain support. You can add your domain in the Vercel project settings under the "Domains" section.
