@@ -1,22 +1,27 @@
-export interface Meal {
-  name: string;
-  time: string;
-  recipeLink: string;
-  nutritionInfo: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    fiber: number;
-    sugar: number;
-  };
-}
-
-export interface DailyPlan {
-  day: string;
-  meals: Meal[];
-}
-
 export interface MealPlan {
-  days: DailyPlan[];
+  id: string;
+  name: string;
+  description: string;
+  meals: Meal[];
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+}
+
+export interface Meal {
+  id: string;
+  name: string;
+  ingredients: Ingredient[];
+  instructions: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+export interface Ingredient {
+  id: string;
+  name: string;
+  quantity: string;
+  unit: string;
 }

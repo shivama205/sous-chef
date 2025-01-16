@@ -44,8 +44,8 @@ const NavigationBar = () => {
   const menuItems = [
     { path: "/meal-plan", label: "Create Plan", icon: <ChefHat className="w-4 h-4" /> },
     { path: "/healthy-swap", label: "Healthy Swap", icon: <Apple className="w-4 h-4" /> },
+    { path: "/blog", label: "Blog", icon: <Leaf className="w-4 h-4" /> },
     { path: "/pricing", label: "Pricing", icon: <Sparkles className="w-4 h-4" /> },
-    { path: "/faq", label: "FAQ", icon: <Leaf className="w-4 h-4" /> },
   ];
 
   return (
