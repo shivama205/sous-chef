@@ -144,154 +144,91 @@ const MealPlan = () => {
     <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
       <NavigationBar />
       
-      <main className="container mx-auto px-4 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Create Your Perfect Meal Plan
-          </h1>
-          
-          <div className="max-w-3xl mx-auto">
-            <PreferencesForm 
-              onSubmit={handleSubmit} 
-              disabled={isGenerating}
-            />
-          </div>
+      <main className="container mx-auto px-4 py-12">
+        <div className="grid lg:grid-cols-2 gap-12 items-start">
+          {/* Left Column - Content */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-8"
+          >
+            <div>
+              <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                Create Your Perfect Meal Plan
+              </h1>
+              <p className="text-lg text-muted-foreground">
+                Tell us your preferences, and we'll create a personalized meal plan just for you.
+              </p>
+            </div>
 
-          {mealPlan && (
-            <motion.div
-              ref={mealPlanRef}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="mt-12"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                  Your Generated Meal Plan
-                </h2>
-                <div className="flex gap-4">
-                  <Button
-                    onClick={handleRegenerateMealPlan}
-                    variant="outline"
-                    disabled={isGenerating}
-                    className="flex items-center gap-2"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                    Regenerate Plan
-                  </Button>
-                  <Button
-                    onClick={() => setOpen(true)}
-                    className="flex items-center gap-2"
-                  >
-                    <Save className="w-4 h-4" />
-                    Save Plan
-                  </Button>
-                </div>
+            <div className="space-y-6">
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg">
+                <h2 className="text-xl font-semibold mb-3">Why Use Our Meal Planner?</h2>
+                <ul className="space-y-3">
+                  <li className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-primary" />
+                    <span>Personalized to your dietary needs and preferences</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-primary" />
+                    <span>Balanced nutrition with every meal</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-primary" />
+                    <span>Save time on meal planning and grocery shopping</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-primary" />
+                    <span>Reduce food waste with smart planning</span>
+                  </li>
+                </ul>
               </div>
 
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-xl overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gradient-to-r from-primary to-primary/80">
-                      <tr>
-                        <th className="py-4 px-6 text-left text-white font-semibold">Day</th>
-                        <th className="py-4 px-6 text-left text-white font-semibold">Meal</th>
-                        <th className="py-4 px-6 text-center text-white font-semibold">Protein (g)</th>
-                        <th className="py-4 px-6 text-center text-white font-semibold">Fat (g)</th>
-                        <th className="py-4 px-6 text-center text-white font-semibold">Carbs (g)</th>
-                        <th className="py-4 px-6 text-center text-white font-semibold">Calories</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {mealPlan.days.map((day, dayIndex) => (
-                        <React.Fragment key={`day-${dayIndex}`}>
-                          {day.meals.map((meal, mealIndex) => (
-                            <tr 
-                              key={`${dayIndex}-${mealIndex}`}
-                              className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
-                            >
-                              {mealIndex === 0 && (
-                                <td 
-                                  className="py-4 px-6 font-medium"
-                                  rowSpan={day.meals.length}
-                                >
-                                  {day.day}
-                                </td>
-                              )}
-                              <td className="py-4 px-6">
-                                <div className="font-medium">{meal.name}</div>
-                                <div className="text-sm text-gray-500">{meal.time}</div>
-                              </td>
-                              <td className="py-4 px-6 text-center">{meal.nutritionInfo.protein}</td>
-                              <td className="py-4 px-6 text-center">{meal.nutritionInfo.fat}</td>
-                              <td className="py-4 px-6 text-center">{meal.nutritionInfo.carbs}</td>
-                              <td className="py-4 px-6 text-center">{meal.nutritionInfo.calories}</td>
-                            </tr>
-                          ))}
-                          <tr className="bg-gray-50/80 font-semibold">
-                            <td colSpan={2} className="py-3 px-6">Daily Total</td>
-                            <td className="py-3 px-6 text-center">
-                              {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.protein, 0)}g
-                            </td>
-                            <td className="py-3 px-6 text-center">
-                              {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.fat, 0)}g
-                            </td>
-                            <td className="py-3 px-6 text-center">
-                              {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.carbs, 0)}g
-                            </td>
-                            <td className="py-3 px-6 text-center">
-                              {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.calories, 0)}
-                            </td>
-                          </tr>
-                        </React.Fragment>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg">
+                <h2 className="text-xl font-semibold mb-3">Not Sure About Your Needs?</h2>
+                <p className="text-muted-foreground mb-4">
+                  Let us help you calculate your daily nutritional requirements based on your goals.
+                </p>
+                <Button
+                  onClick={() => setShowMacroCalculator(true)}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Calculate Your Macros
+                </Button>
               </div>
-            </motion.div>
-          )}
-        </motion.div>
+            </div>
+          </motion.div>
 
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Save Meal Plan</DialogTitle>
-              <DialogDescription>
-                Enter a name for your meal plan.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4">
-              <Label htmlFor="meal-plan-name">Meal Plan Name</Label>
-              <Input
-                id="meal-plan-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter meal plan name"
+          {/* Right Column - Form */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="lg:sticky lg:top-24"
+          >
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6">
+              <PreferencesForm 
+                onSubmit={handleSubmit} 
+                disabled={isGenerating}
               />
             </div>
-            <DialogFooter>
-              <Button variant="secondary" onClick={() => setOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSaveMealPlan}>Save</Button>
-            </DialogFooter>
+          </motion.div>
+        </div>
+
+        {/* Macro Calculator Dialog */}
+        <Dialog open={showMacroCalculator} onOpenChange={setShowMacroCalculator}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Calculate Your Daily Needs</DialogTitle>
+              <DialogDescription>
+                Let's find out your optimal macro nutrient ratios.
+              </DialogDescription>
+            </DialogHeader>
+            <MacroCalculator />
           </DialogContent>
         </Dialog>
-
-        <LoginDialog 
-          open={loginDialogOpen} 
-          onOpenChange={setLoginDialogOpen} 
-        />
-
-        <OutOfCreditDialog 
-          open={showCreditDialog} 
-          onOpenChange={setShowCreditDialog} 
-        />
       </main>
     </div>
   );

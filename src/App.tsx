@@ -13,6 +13,8 @@ import FAQ from "./pages/FAQ";
 import Footer from "@/components/Footer";
 import MealPlanDetails from "./pages/MealPlanDetails";
 import SharedMealPlan from "./pages/SharedMealPlan";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +34,8 @@ const App = () => (
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/billing" element={<Billing />} />
           <Route path="/faq" element={<FAQ />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
         </Routes>
       </BrowserRouter>
       <Footer />
