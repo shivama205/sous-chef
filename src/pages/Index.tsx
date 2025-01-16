@@ -1,7 +1,26 @@
 import { useNavigate } from "react-router-dom";
 import NavigationBar from "@/components/NavigationBar";
 import { motion } from "framer-motion";
-import { Leaf, Apple, Sparkles, Users, Star, Package, ArrowRight, ChefHat, Coins, CalendarCheck, Repeat, Save, Lightbulb, Settings, CircleDot, Circle, ShoppingCart, Smartphone } from "lucide-react";
+import { 
+  Leaf, 
+  Apple, 
+  Sparkles, 
+  Users, 
+  Star, 
+  Package as PackageIcon, 
+  ArrowRight as ArrowRightIcon, 
+  ChefHat, 
+  Coins, 
+  CalendarCheck, 
+  Repeat, 
+  Save, 
+  Lightbulb, 
+  Settings, 
+  CircleDot, 
+  Circle, 
+  ShoppingCart, 
+  Smartphone 
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
@@ -9,6 +28,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { MacroCalculator } from "@/components/MacroCalculator";
 
 interface PricingPlan {
   id: string;
@@ -38,7 +58,7 @@ interface UserCredits {
 
 const features = [
   {
-    icon: <Package className="w-6 h-6" />,
+    icon: <PackageIcon className="w-6 h-6" />,
     title: "Personalized Meal Plans",
     description: "Get AI-powered meal plans tailored to your dietary preferences and nutritional goals"
   },
@@ -324,7 +344,7 @@ export function Index() {
                         className="w-full text-sm text-muted-foreground hover:text-primary hover:bg-primary/5"
                       >
                         Upgrade to get {pricingPlans.find(plan => plan.slug === 'STANDARD')?.credits_per_month} credits/month{' '}
-                        <ArrowRight className="w-3 h-3 ml-1" />
+                        <ArrowRightIcon className="w-3 h-3 ml-1" />
                       </Button>
                     )}
                   </div>
@@ -720,7 +740,7 @@ export function Index() {
               onClick={() => navigate("/meal-plan")}
               className="text-lg px-8 py-6 bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 transition-all duration-200"
             >
-              Get Started Now <ArrowRight className="ml-2" />
+              Get Started Now <ArrowRightIcon className="ml-2" />
             </Button>
           </motion.div>
         </div>
