@@ -192,24 +192,27 @@ export const MealPlanDetails = () => {
   };
 
   const handleDownload = async () => {
-    if (!previewRef.current) return;
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const targetRef = isMobile ? downloadRef : previewRef;
+    
+    if (!targetRef.current) return;
 
     try {
-      const canvas = await html2canvas(previewRef.current, {
+      const canvas = await html2canvas(targetRef.current, {
         scale: 2,
         backgroundColor: '#ffffff',
         useCORS: true,
         logging: false,
-        width: previewRef.current.offsetWidth,
-        height: previewRef.current.offsetHeight,
-        windowWidth: previewRef.current.offsetWidth,
-        windowHeight: previewRef.current.offsetHeight,
+        width: targetRef.current.offsetWidth,
+        height: targetRef.current.offsetHeight,
+        windowWidth: targetRef.current.offsetWidth,
+        windowHeight: targetRef.current.offsetHeight,
       });
       
       const imageUrl = canvas.toDataURL('image/png', 1.0);
       
       // For mobile devices, open in new tab
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      if (isMobile) {
         window.open(imageUrl);
         setPreviewOpen(false);
         toast({
@@ -355,6 +358,17 @@ export const MealPlanDetails = () => {
     }
   };
 
+  const handleDownloadClick = () => {
+    // Check if mobile device
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      // On mobile, trigger download directly
+      handleDownload();
+    } else {
+      // On desktop, show preview dialog
+      setPreviewOpen(true);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
@@ -419,7 +433,7 @@ export const MealPlanDetails = () => {
                   <Button
                     variant="outline"
                     className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 text-primary border-primary/20 hover:border-primary/30"
-                    onClick={() => setPreviewOpen(true)}
+                    onClick={handleDownloadClick}
                   >
                     <Download className="w-4 h-4" />
                     Download

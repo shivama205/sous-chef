@@ -7,61 +7,79 @@ interface MealPlanDownloadViewProps {
   planName: string;
 }
 
+interface LayoutConfig {
+  gridCols: number;
+  width: string;
+  maxWidth: string;
+  dayClass: string;
+  gridAreas?: string;
+}
+
 export const MealPlanDownloadView = React.forwardRef<HTMLDivElement, MealPlanDownloadViewProps>(
   ({ mealPlan, planName }, ref) => {
     // Get layout configuration based on number of days
-    const getLayoutConfig = (dayCount: number) => {
+    const getLayoutConfig = (dayCount: number): LayoutConfig => {
       switch (dayCount) {
         case 1:
           return {
             gridCols: 1,
-            width: '400px',
-            dayClass: 'p-5'
+            width: '100%',
+            maxWidth: '400px',
+            dayClass: 'p-4'
           };
         case 2:
           return {
-            gridCols: 2,
-            width: '700px',
-            dayClass: 'p-5'
+            gridCols: 1,
+            width: '100%',
+            maxWidth: '600px',
+            dayClass: 'p-4',
+            gridAreas: "'d1' 'd2'"
           };
         case 3:
           return {
-            gridCols: 3,
-            width: '800px',
-            dayClass: 'p-5'
+            gridCols: 1,
+            width: '100%',
+            maxWidth: '600px',
+            dayClass: 'p-4',
+            gridAreas: "'d1' 'd2' 'd3'"
           };
         case 4:
           return {
             gridCols: 2,
-            width: '700px',
-            dayClass: 'p-5',
+            width: '100%',
+            maxWidth: '700px',
+            dayClass: 'p-4',
             gridAreas: "'d1 d2' 'd3 d4'"
           };
         case 5:
           return {
-            gridCols: 3,
-            width: '800px',
+            gridCols: 2,
+            width: '100%',
+            maxWidth: '700px',
             dayClass: 'p-4',
-            gridAreas: "'d1 d2 d3' 'd4 d5 .'"
+            gridAreas: "'d1 d2' 'd3 d4' 'd5 .'"
           };
         case 6:
           return {
-            gridCols: 3,
-            width: '800px',
+            gridCols: 2,
+            width: '100%',
+            maxWidth: '700px',
             dayClass: 'p-4',
-            gridAreas: "'d1 d2 d3' 'd4 d5 d6'"
+            gridAreas: "'d1 d2' 'd3 d4' 'd5 d6'"
           };
         case 7:
           return {
-            gridCols: 3,
-            width: '800px',
+            gridCols: 2,
+            width: '100%',
+            maxWidth: '700px',
             dayClass: 'p-4',
-            gridAreas: "'d1 d2 d3' 'd4 d5 d6' 'd7 . .'"
+            gridAreas: "'d1 d2' 'd3 d4' 'd5 d6' 'd7 .'"
           };
         default:
           return {
-            gridCols: 3,
-            width: '800px',
+            gridCols: 2,
+            width: '100%',
+            maxWidth: '700px',
             dayClass: 'p-4'
           };
       }
@@ -72,32 +90,33 @@ export const MealPlanDownloadView = React.forwardRef<HTMLDivElement, MealPlanDow
     return (
       <div 
         ref={ref}
-        className="bg-gradient-to-br from-white to-gray-50 p-6 rounded-lg shadow-sm"
+        className="bg-white p-4 sm:p-6 rounded-lg shadow-sm"
         style={{ 
           fontFamily: 'Inter, system-ui, sans-serif',
-          maxWidth: layout.width,
-          width: '100%'
+          width: layout.width,
+          maxWidth: layout.maxWidth,
+          margin: '0 auto'
         }}
       >
         {/* Modern Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-br from-primary/20 to-primary/10 p-2 rounded-lg">
-              <Utensils className="w-5 h-5 text-primary" />
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="bg-primary/10 p-2 rounded-lg">
+              <Utensils className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-gray-900">Preview Meal Plan</h1>
-              <p className="text-xs text-gray-500">This is how your meal plan will look when shared</p>
+              <h1 className="text-base sm:text-lg font-bold text-gray-900">Preview Meal Plan</h1>
+              <p className="text-[10px] sm:text-xs text-gray-500">This is how your meal plan will look when shared</p>
             </div>
           </div>
-          <div className="text-xs text-right text-gray-500 bg-gray-100/80 px-3 py-1 rounded-full">
+          <div className="text-[10px] sm:text-xs text-right text-gray-500 bg-gray-100 px-2 sm:px-3 py-1 rounded-full">
             {mealPlan.days.length} days
           </div>
         </div>
 
         {/* Dynamic Grid Layout */}
         <div 
-          className="grid gap-4"
+          className="grid gap-3 sm:gap-4"
           style={{ 
             gridTemplateColumns: `repeat(${layout.gridCols}, minmax(0, 1fr))`,
             ...(layout.gridAreas && {
@@ -108,22 +127,22 @@ export const MealPlanDownloadView = React.forwardRef<HTMLDivElement, MealPlanDow
           {mealPlan.days.map((day, dayIndex) => (
             <div 
               key={dayIndex}
-              className={`${layout.dayClass} rounded-lg bg-gradient-to-br from-primary/[0.08] to-primary/[0.02] border border-primary/10 hover:border-primary/20 transition-colors`}
+              className={`${layout.dayClass} rounded-lg bg-primary/5 border border-primary/10 hover:border-primary/20 transition-colors`}
               style={layout.gridAreas ? { gridArea: `d${dayIndex + 1}` } : {}}
             >
-              <div className="font-medium text-primary/90 mb-4 pb-2 border-b border-primary/10">
+              <div className="font-medium text-primary mb-3 pb-2 border-b border-primary/10 text-sm">
                 {day.day}
               </div>
-              <div className="grid gap-3">
+              <div className="grid gap-2 sm:gap-3">
                 {day.meals.map((meal, mealIndex) => (
                   <div 
                     key={mealIndex} 
                     className="grid gap-1 group"
                   >
-                    <span className={`text-gray-500 font-medium ${mealPlan.days.length <= 4 ? 'text-sm' : 'text-xs'}`}>
+                    <span className="text-gray-500 font-medium text-xs">
                       {meal.time}
                     </span>
-                    <span className={`text-gray-900 group-hover:text-primary/90 transition-colors ${mealPlan.days.length <= 4 ? 'text-sm' : 'text-xs'}`}>
+                    <span className="text-gray-900 group-hover:text-primary transition-colors text-xs sm:text-sm line-clamp-2">
                       {meal.name}
                     </span>
                   </div>
@@ -134,7 +153,7 @@ export const MealPlanDownloadView = React.forwardRef<HTMLDivElement, MealPlanDow
         </div>
 
         {/* Branded Footer */}
-        <div className="mt-6 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
+        <div className="mt-4 sm:mt-6 pt-3 border-t border-gray-100 flex items-center justify-between text-[10px] sm:text-xs">
           <span className="text-primary font-medium">SousChef AI</span>
           <span className="text-gray-400">sous-chef.in</span>
         </div>
