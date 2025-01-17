@@ -1,37 +1,59 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { ChefHat, Search, Leaf } from "lucide-react";
+import { motion } from "framer-motion";
 
-export const QuickActions = () => {
+export function QuickActions() {
   const navigate = useNavigate();
-  
+
+  const actions = [
+    {
+      title: "Create Meal Plan",
+      description: "Generate personalized meal plans with AI",
+      icon: ChefHat,
+      path: "/meal-plan",
+      color: "bg-primary/10"
+    },
+    {
+      title: "Recipe Finder",
+      description: "Discover recipes based on ingredients",
+      icon: Search,
+      path: "/recipe-finder",
+      color: "bg-secondary/10"
+    },
+    {
+      title: "Healthy Alternatives",
+      description: "Find healthier versions of your meals",
+      icon: Leaf,
+      path: "/healthy-alternative",
+      color: "bg-accent/10"
+    }
+  ];
+
   return (
-    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-      <CardHeader>
-        <CardTitle className="text-xl sm:text-2xl">Quick Actions</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-3">
-        <Button
-          onClick={() => navigate('/meal-plan')}
-          className="w-full bg-gradient-to-r from-primary to-primary/80 text-sm sm:text-base"
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {actions.map((action, index) => (
+        <motion.div
+          key={action.title}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.1 }}
         >
-          Create New Meal Plan
-        </Button>
-        <Button
-          onClick={() => navigate('/healthy-swap')}
-          variant="secondary"
-          className="w-full bg-gradient-to-r from-secondary to-secondary/80 text-sm sm:text-base"
-        >
-          Find Healthy Alternatives
-        </Button>
-        <Button
-          onClick={() => navigate('/pricing')}
-          variant="outline"
-          className="w-full border-primary text-primary hover:bg-primary/10 text-sm sm:text-base sm:col-span-2 lg:col-span-1"
-        >
-          View Premium Features
-        </Button>
-      </CardContent>
-    </Card>
+          <Button
+            variant="outline"
+            className="w-full h-auto p-6 flex flex-col items-center gap-4 bg-white/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-all"
+            onClick={() => navigate(action.path)}
+          >
+            <div className={`w-12 h-12 rounded-lg ${action.color} flex items-center justify-center`}>
+              <action.icon className="w-6 h-6 text-foreground/80" />
+            </div>
+            <div className="text-center">
+              <h3 className="font-semibold mb-1">{action.title}</h3>
+              <p className="text-sm text-muted-foreground">{action.description}</p>
+            </div>
+          </Button>
+        </motion.div>
+      ))}
+    </div>
   );
-};
+}

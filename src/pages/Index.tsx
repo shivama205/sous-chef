@@ -1,174 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { 
-  Leaf, 
-  Apple, 
-  Users, 
-  ChefHat,
-  Star,
-  Package as PackageIcon,
-  CalendarCheck,
-  History,
-  ArrowUpRight,
-  Sparkles,
-  Calculator,
-  Utensils
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { User } from "@supabase/supabase-js";
-import { Button } from "@/components/ui/button";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
-import { StatsCard } from "@/components/ui/StatsCard";
-import { FeatureCard } from "@/components/ui/FeatureCard";
+import { QuickActions } from "@/components/dashboard/QuickActions";
+import { ComingSoon } from "@/components/dashboard/ComingSoon";
+import { DashboardStats } from "@/components/dashboard/DashboardStats";
+import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-
-interface SavedMealPlan {
-  id: string;
-  name: string;
-  created_at: string;
-}
-
-interface UserMetrics {
-  savedPlans: number;
-  recentPlans: SavedMealPlan[];
-  currentPlan: string;
-  macros: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-  } | null;
-}
-
-const features = [
-  {
-    icon: PackageIcon,
-    title: "Personalized Meal Plans",
-    description: "Get AI-powered meal plans tailored to your dietary preferences and nutritional goals"
-  },
-  {
-    icon: Leaf,
-    title: "Healthy Alternatives",
-    description: "Discover healthier versions of your favorite meals without compromising on taste"
-  },
-  {
-    icon: Apple,
-    title: "Nutritional Tracking",
-    description: "Track your daily nutritional intake with detailed breakdowns of macros and calories"
-  }
-];
-
-const testimonials = [
-  {
-    name: "Priya R.",
-    role: "Fitness Enthusiast",
-    content: "This app has transformed how I plan my meals. The AI suggestions are spot-on!"
-  },
-  {
-    name: "Rahul M.",
-    role: "Busy Professional",
-    content: "Finally, an app that makes healthy eating simple and achievable."
-  },
-  {
-    name: "Anjali S.",
-    role: "Health Coach",
-    content: "I recommend this to all my clients. The meal plans are fantastic!"
-  }
-];
-
-const featureHighlights = [
-  {
-    icon: ChefHat,
-    title: "AI-Powered Meal Planning",
-    description: "Get personalized meal plans tailored to your preferences and nutritional goals",
-    cta: "Create Plan",
-    path: "/meal-plan"
-  },
-  {
-    icon: Utensils,
-    title: "Recipe Finder",
-    description: "Discover delicious recipes using ingredients you already have in your kitchen",
-    cta: "Find Recipes",
-    path: "/recipe-finder"
-  },
-  {
-    icon: Leaf,
-    title: "Healthy Alternatives",
-    description: "Transform your favorite meals into nutritious versions without sacrificing taste",
-    cta: "Find Alternatives",
-    path: "/healthy-alternative"
-  },
-  {
-    icon: Users,
-    title: "Community & Sharing",
-    description: "Share your meal plans and discover recipes from other health enthusiasts",
-    cta: "Join Community",
-    path: "/blog"
-  }
-];
+import { Sparkles } from "lucide-react";
+import { useUser } from "@/hooks/useUser";
 
 function Index() {
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
-  const [metrics, setMetrics] = useState<UserMetrics>({
-    savedPlans: 0,
-    recentPlans: [],
-    currentPlan: 'BASIC',
-    macros: null
-  });
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        setIsLoading(true);
-        try {
-          // Fetch user metrics
-          const [savedPlansResult, recentPlansResult, userCreditsResult, macrosResult] = await Promise.all([
-            supabase
-              .from('saved_meal_plans')
-              .select('*', { count: 'exact' })
-              .eq('user_id', session.user.id),
-            supabase
-              .from('saved_meal_plans')
-              .select('id, name, created_at')
-              .eq('user_id', session.user.id)
-              .order('created_at', { ascending: false })
-              .limit(2),
-            supabase
-              .from('user_credits')
-              .select('pricing_plan_id')
-              .eq('user_id', session.user.id)
-              .single(),
-            supabase
-              .from('user_macros')
-              .select('calories, protein, carbs, fat')
-              .eq('user_id', session.user.id)
-              .single()
-          ]);
-
-          setMetrics({
-            savedPlans: savedPlansResult.count ?? 0,
-            recentPlans: recentPlansResult.data ?? [],
-            currentPlan: userCreditsResult.data?.pricing_plan_id ?? 'BASIC',
-            macros: macrosResult.data
-          });
-        } catch (error) {
-          console.error('Error fetching metrics:', error);
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    getUser();
-  }, []);
+  const { user } = useUser();
 
   const LoggedInView = () => (
     <div className="container mx-auto py-8 sm:py-10">
@@ -176,87 +19,26 @@ function Index() {
         <div className="pt-4">
           <PageHeader
             icon={Sparkles}
-            title={`Welcome back, ${user?.user_metadata.full_name}!`}
-            description="Track your progress and manage your meal plans"
+            title={`Welcome back, ${user?.user_metadata.full_name || 'User'}!`}
+            description="Your personal AI-powered meal planning assistant"
             className="text-left"
           />
         </div>
+
+        {/* Quick Actions */}
+        <section className="space-y-6">
+          <h2 className="text-xl font-semibold">Quick Actions</h2>
+          <QuickActions />
+        </section>
+
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <StatsCard
-            icon={CalendarCheck}
-            label="Saved Meal Plans"
-            value={metrics.savedPlans}
-            subtext="Click to view all"
-            onClick={() => navigate('/profile')}
-          />
-          {metrics.macros && (
-            <StatsCard
-              icon={Calculator}
-              label="Daily Calories"
-              value={metrics.macros.calories}
-              subtext="Click to recalculate"
-              onClick={() => navigate('/meal-plan')}
-            />
-          )}
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-primary" />
-                </div>
-                Current Plan
-                <Badge variant="secondary" className="ml-auto">
-                  {metrics.currentPlan}
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => navigate('/pricing')}
-                className="w-full"
-              >
-                Upgrade Plan
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+        <DashboardStats />
 
         {/* Recent Activity */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <History className="w-4 h-4 text-primary" />
-              </div>
-              Recent Meal Plans
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {metrics.recentPlans.map(plan => (
-              <div 
-                key={plan.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer"
-                onClick={() => navigate(`/meal-plan/${plan.id}`)}
-              >
-                <div>
-                  <p className="font-medium">{plan.name || 'Untitled Plan'}</p>
-                  <p className="text-sm text-gray-500">
-                    {new Date(plan.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-                <ArrowUpRight className="w-4 h-4 text-gray-400" />
-              </div>
-            ))}
-            {metrics.recentPlans.length === 0 && (
-              <p className="text-sm text-gray-500 text-center py-4">
-                No meal plans created yet. Create your first plan now!
-              </p>
-            )}
-          </CardContent>
-        </Card>
+        <RecentActivity />
+
+        {/* Coming Soon */}
+        <ComingSoon />
       </div>
     </div>
   );
@@ -265,12 +47,18 @@ function Index() {
     <div className="container mx-auto px-4 py-8 space-y-12">
       {/* Hero Section */}
       <section className="text-center space-y-6">
-        <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          Your Personal AI Chef
-        </h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Create personalized meal plans, discover healthy alternatives, and achieve your nutritional goals with AI-powered assistance.
-        </p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            Your Personal AI Chef
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto mt-4">
+            Create personalized meal plans, discover healthy alternatives, and achieve your nutritional goals with AI-powered assistance.
+          </p>
+        </motion.div>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Button 
             size="lg" 
