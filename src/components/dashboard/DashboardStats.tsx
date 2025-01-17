@@ -14,59 +14,61 @@ export const DashboardStats = ({ savedPlansCount, creditsUsed, maxCredits }: Das
   const navigate = useNavigate();
   
   return (
-    <div className="grid gap-6 md:grid-cols-3">
-      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="w-5 h-5 text-primary" />
-            Saved Meal Plans
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold">{savedPlansCount}</div>
-          <Button 
-            variant="link" 
-            onClick={() => navigate('/profile')}
-            className="p-0 h-auto font-normal text-sm text-muted-foreground"
-          >
-            View all plans →
-          </Button>
-        </CardContent>
-      </Card>
+    <div className="grid gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Package className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+              Saved Meal Plans
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+            <div className="text-2xl sm:text-3xl font-bold">{savedPlansCount}</div>
+            <Button 
+              variant="link" 
+              onClick={() => navigate('/profile')}
+              className="p-0 h-auto font-normal text-xs sm:text-sm text-muted-foreground"
+            >
+              View all plans →
+            </Button>
+          </CardContent>
+        </Card>
 
-      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ChartBar className="w-5 h-5 text-primary" />
-            Credits Used
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold">{creditsUsed}</div>
-          <Progress value={(creditsUsed / maxCredits) * 100} className="mt-2" />
-          <p className="text-sm text-muted-foreground mt-2">
-            {maxCredits - creditsUsed} credits remaining
-          </p>
-        </CardContent>
-      </Card>
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <ChartBar className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+              Credits Used
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+            <div className="text-2xl sm:text-3xl font-bold">{creditsUsed}</div>
+            <Progress value={(creditsUsed / maxCredits) * 100} className="mt-2" />
+            <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+              {maxCredits - creditsUsed} credits remaining
+            </p>
+          </CardContent>
+        </Card>
 
-      <Card className="bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-primary" />
-            Current Plan
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold">Free</div>
-          <Button 
-            onClick={() => navigate('/pricing')}
-            className="mt-4 bg-gradient-to-r from-primary to-primary/80"
-          >
-            Upgrade Now
-          </Button>
-        </CardContent>
-      </Card>
+        <Card className="bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all sm:col-span-2 lg:col-span-1">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+              Current Plan
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+            <div className="text-2xl sm:text-3xl font-bold">Free</div>
+            <Button 
+              onClick={() => navigate('/pricing')}
+              className="mt-4 w-full sm:w-auto bg-gradient-to-r from-primary to-primary/80"
+            >
+              Upgrade Now
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

@@ -36,19 +36,19 @@ const features = [
 
 export function Features() {
   return (
-    <section className="py-12 bg-accent/30">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-12">Why Choose SousChef?</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <section className="py-8 sm:py-12 bg-accent/30">
+      <div className="container px-4 mx-auto">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">Why Choose SousChef?</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {features.map((feature, index) => (
-            <Card key={index} className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-sm">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <feature.icon className="w-6 h-6 text-primary" />
+            <Card key={index} className="p-4 sm:p-6 bg-white/80 backdrop-blur-sm border-0 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-primary/10 flex items-center justify-center mx-auto sm:mx-0">
+                  <feature.icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                 </div>
-                <div>
-                  <h3 className="font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
+                <div className="text-center sm:text-left">
+                  <h3 className="font-semibold text-base sm:text-lg mb-2">{feature.title}</h3>
+                  <p className="text-sm sm:text-base text-gray-600">{feature.description}</p>
                 </div>
               </div>
             </Card>
