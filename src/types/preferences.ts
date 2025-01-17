@@ -1,3 +1,17 @@
+export type Cuisine = 
+  | "italian"
+  | "mexican"
+  | "chinese"
+  | "japanese"
+  | "indian"
+  | "mediterranean"
+  | "american"
+  | "thai"
+  | "korean"
+  | "vietnamese"
+  | "indonesian"
+  | "greek";
+
 export interface MealTargets {
   protein: number;
   calories: number;
@@ -14,7 +28,7 @@ export interface Preferences {
   targetCarbs?: number;
   targetFat?: number;
   dietaryRestrictions: string;
-  cuisinePreferences: string[];
+  cuisinePreferences: Cuisine[];
   mealTargets?: MealTargets;
   proteinGoal?: number;
   calorieIntakeGoal?: number;

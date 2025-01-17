@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { toast } from '../components/ui/use-toast';
-import { Button } from '../components/ui/button';
+import { StandardButton } from '../components/ui/StandardButton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog';
 import { generateMealPlan } from '../utils/mealPlanGenerator';
 import { Preferences, Cuisine } from '../types/preferences';
-import { LoadingOverlay } from '../components/LoadingOverlay';
 import { MealPlanLoadingOverlay } from '@/components/MealPlanLoadingOverlay';
 
 const GenerateMealPlan: React.FC = () => {
@@ -16,6 +15,8 @@ const GenerateMealPlan: React.FC = () => {
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [preferences, setPreferences] = useState<Preferences>({
     days: 7,
+    targetCalories: 2000,
+    targetProtein: 100,
     dietaryRestrictions: "",
     cuisinePreferences: [] as Cuisine[]
   });
@@ -25,7 +26,6 @@ const GenerateMealPlan: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Check if user is logged in and has credits
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         setLoginDialogOpen(true);
@@ -43,7 +43,6 @@ const GenerateMealPlan: React.FC = () => {
         return;
       }
 
-      // Consume one credit
       const { error: updateError } = await supabase
         .from('user_credits')
         .update({ credits: credits.credits - 1 })
@@ -72,15 +71,13 @@ const GenerateMealPlan: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="container mx-auto px-4 py-8">
       <MealPlanLoadingOverlay isLoading={isLoading} />
       
-      {/* Rest of the component code */}
-
       <Dialog open={showCreditDialog} onOpenChange={setShowCreditDialog}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <DialogTitle className="text-xl font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               Out of Credits
             </DialogTitle>
             <DialogDescription className="text-base text-muted-foreground">
@@ -88,23 +85,22 @@ const GenerateMealPlan: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Button 
-                onClick={() => navigate('/pricing')} 
-                className="w-full bg-gradient-to-r from-primary to-primary/80"
-              >
-                View Pricing Plans
-              </Button>
-            </div>
+            <StandardButton 
+              onClick={() => navigate('/pricing')} 
+              className="w-full bg-gradient-to-r from-primary to-primary/80"
+              size="default"
+            >
+              View Pricing Plans
+            </StandardButton>
           </div>
           <DialogFooter>
-            <Button
-              type="button"
+            <StandardButton
               variant="outline"
               onClick={() => setShowCreditDialog(false)}
+              size="default"
             >
               Cancel
-            </Button>
+            </StandardButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -112,4 +108,4 @@ const GenerateMealPlan: React.FC = () => {
   );
 };
 
-export default GenerateMealPlan; 
+export default GenerateMealPlan;

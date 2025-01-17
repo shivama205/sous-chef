@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { StandardButton } from "@/components/ui/StandardButton";
 import { Card } from "@/components/ui/card";
 import { Preferences, Cuisine } from "../types/preferences";
 import { CuisineSelector } from "./preferences/CuisineSelector";
@@ -16,8 +16,6 @@ interface PreferencesFormProps {
   setPreferences: (preferences: Preferences) => void;
 }
 
-type PreferenceValue = string | number | Cuisine[];
-
 export function PreferencesForm({ onSubmit, isLoading, preferences, setPreferences }: PreferencesFormProps) {
   const [showPerMealTargets, setShowPerMealTargets] = useState(false);
 
@@ -28,7 +26,7 @@ export function PreferencesForm({ onSubmit, isLoading, preferences, setPreferenc
     }
   };
 
-  const handlePreferenceChange = (key: keyof Preferences, value: PreferenceValue) => {
+  const handlePreferenceChange = (key: keyof Preferences, value: string | number | Cuisine[]) => {
     if (preferences) {
       setPreferences({
         ...preferences,
@@ -40,9 +38,9 @@ export function PreferencesForm({ onSubmit, isLoading, preferences, setPreferenc
   if (!preferences) return null;
 
   return (
-    <Card className="w-full backdrop-blur-sm bg-white/80 border-0 shadow-xl rounded-2xl p-6">
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="space-y-6">
+    <Card className="w-full backdrop-blur-sm bg-white/80 border-0 shadow-xl rounded-2xl p-4 sm:p-6">
+      <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
+        <div className="space-y-4 sm:space-y-6">
           <div className="space-y-2">
             <Label htmlFor="days" className="text-base font-semibold">Days to Plan</Label>
             <Select 
@@ -64,7 +62,7 @@ export function PreferencesForm({ onSubmit, isLoading, preferences, setPreferenc
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label className="text-base font-semibold">Nutritional Targets</Label>
-              <Button
+              <StandardButton
                 type="button"
                 variant="ghost"
                 size="sm"
@@ -73,9 +71,9 @@ export function PreferencesForm({ onSubmit, isLoading, preferences, setPreferenc
               >
                 {showPerMealTargets ? "Switch to Daily Totals" : "Switch to Per Meal"}
                 <ChevronDown className={`ml-1 h-4 w-4 transition-transform ${showPerMealTargets ? "rotate-180" : ""}`} />
-              </Button>
+              </StandardButton>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="targetCalories" className="text-sm text-muted-foreground">
                   {showPerMealTargets ? "Calories per Meal" : "Daily Calories"}
@@ -112,47 +110,10 @@ export function PreferencesForm({ onSubmit, isLoading, preferences, setPreferenc
                   className="h-11"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="targetCarbs" className="text-sm text-muted-foreground">
-                  {showPerMealTargets ? "Carbs per Meal (g)" : "Daily Carbs (g)"}
-                </Label>
-                <Input
-                  id="targetCarbs"
-                  type="number"
-                  value={showPerMealTargets && preferences.targetCarbs 
-                    ? Math.round(preferences.targetCarbs / 5) 
-                    : preferences.targetCarbs}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value);
-                    handlePreferenceChange('targetCarbs', showPerMealTargets ? value * 5 : value);
-                  }}
-                  placeholder={showPerMealTargets ? "e.g. 40" : "e.g. 200"}
-                  className="h-11"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="targetFat" className="text-sm text-muted-foreground">
-                  {showPerMealTargets ? "Fat per Meal (g)" : "Daily Fat (g)"}
-                </Label>
-                <Input
-                  id="targetFat"
-                  type="number"
-                  value={showPerMealTargets && preferences.targetFat 
-                    ? Math.round(preferences.targetFat / 5) 
-                    : preferences.targetFat}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value);
-                    handlePreferenceChange('targetFat', showPerMealTargets ? value * 5 : value);
-                  }}
-                  placeholder={showPerMealTargets ? "e.g. 13" : "e.g. 65"}
-                  className="h-11"
-                />
-              </div>
             </div>
           </div>
 
           <div className="space-y-4">
-            <Label className="text-base font-semibold">Cuisine Preferences</Label>
             <CuisineSelector 
               cuisinePreferences={preferences.cuisinePreferences} 
               setCuisinePreferences={(cuisines) => handlePreferenceChange('cuisinePreferences', cuisines)} 
@@ -174,7 +135,12 @@ export function PreferencesForm({ onSubmit, isLoading, preferences, setPreferenc
           </div>
         </div>
 
-        <Button type="submit" disabled={isLoading} className="w-full h-11 text-base font-medium">
+        <StandardButton 
+          type="submit" 
+          disabled={isLoading} 
+          size="lg"
+          className="w-full font-medium"
+        >
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -183,7 +149,7 @@ export function PreferencesForm({ onSubmit, isLoading, preferences, setPreferenc
           ) : (
             'Generate Meal Plan'
           )}
-        </Button>
+        </StandardButton>
       </form>
     </Card>
   );

@@ -1,5 +1,5 @@
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { StandardButton } from "@/components/ui/StandardButton";
 import { Cuisine } from "@/types/preferences";
 
 interface CuisineSelectorProps {
@@ -36,24 +36,25 @@ export function CuisineSelector({
 
   return (
     <div className="space-y-4">
-      <Label className="text-base sm:text-lg font-semibold">
+      <Label className="text-base font-semibold">
         Cuisine Preferences
-        <span className="text-xs sm:text-sm text-muted-foreground font-normal ml-2">(Optional)</span>
+        <span className="text-sm font-normal text-muted-foreground ml-2">(Optional)</span>
       </Label>
       <p className="text-sm text-muted-foreground">
         Select your preferred cuisines. We'll prioritize recipes from these cuisines in your meal plan.
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {cuisines.map((cuisine) => (
-          <Button
+          <StandardButton
             key={cuisine}
             type="button"
             variant={cuisinePreferences.includes(cuisine) ? "default" : "outline"}
             onClick={() => toggleCuisine(cuisine)}
-            className="h-auto py-2 px-4 justify-start font-normal"
+            size="default"
+            className="justify-start font-normal capitalize"
           >
             {cuisine}
-          </Button>
+          </StandardButton>
         ))}
       </div>
     </div>
