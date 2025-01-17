@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
 import { ShoppingCart, Save, Download } from "lucide-react";
 import type { MealPlan } from "@/types/mealPlan";
+import { trackFeatureUsage } from "@/utils/analytics";
 
 interface GroceryItem {
   id: string;
@@ -25,7 +26,7 @@ export function GroceryList({ mealPlan }: Props) {
   const [groceryItems, setGroceryItems] = useState<GroceryItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
-  const generateGroceryList = () => {
+  const generateGroceryList = async () => {
     // This is a placeholder implementation
     // In a real app, you would parse the meal plan and extract ingredients
     const items: GroceryItem[] = [
@@ -33,6 +34,7 @@ export function GroceryList({ mealPlan }: Props) {
       { id: "2", name: "Brown rice", category: "Grains", checked: false, quantity: "2 cups" },
       { id: "3", name: "Broccoli", category: "Vegetables", checked: false, quantity: "2 heads" },
     ];
+    await trackFeatureUsage("grocery_list_generated");
     setGroceryItems(items);
   };
 
@@ -68,6 +70,7 @@ export function GroceryList({ mealPlan }: Props) {
         variant: "destructive",
       });
     } else {
+      await trackFeatureUsage("grocery_list_saved");
       toast({
         title: "Success",
         description: "Your grocery list has been saved!",
