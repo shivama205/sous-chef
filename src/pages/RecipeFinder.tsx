@@ -16,6 +16,7 @@ import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { useAuth } from "@/providers/AuthProvider";
 import { useDropzone } from "react-dropzone";
 import { UserMacros } from "@/types/macros";
+import { trackFeatureUsage } from "@/utils/analytics";
 
 interface Recipe {
   name: string;
@@ -232,6 +233,8 @@ export default function RecipeFinder() {
     setIsLoading(true);
 
     try {
+      await trackFeatureUsage("recipe_finder_used");
+      
       const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -295,17 +298,17 @@ export default function RecipeFinder() {
   return (
     <BaseLayout>
       {user ? (
-        <div className="container mx-auto px-4 py-6 sm:py-8 space-y-6 sm:space-y-8">
+        <div className="container mx-auto px-4 py-8 space-y-12">
           <PageHeader
             icon={Sparkles}
             title="Recipe Finder"
             description="Discover delicious recipes using ingredients you already have"
           />
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Form */}
-            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-sm p-4 sm:p-6">
+            <div className="lg:col-span-2">
+              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-sm p-6">
                 <h2 className="text-lg font-semibold mb-4">Find Recipes</h2>
                 <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                   <div className="space-y-2">
@@ -532,4 +535,4 @@ export default function RecipeFinder() {
       {isLoading && <MealPlanLoadingOverlay isLoading={isLoading} />}
     </BaseLayout>
   );
-} 
+}

@@ -14,6 +14,7 @@ import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { MacroCalculator } from "@/components/MacroCalculator";
 import { PreferencesForm } from "@/components/PreferencesForm";
 import { generateMealPlan } from "@/utils/mealPlanGenerator";
+import { trackFeatureUsage } from "@/utils/analytics";
 import type { Preferences } from "@/types/preferences";
 import type { UserMacros } from "@/types/macros";
 import type { User } from "@supabase/supabase-js";
@@ -248,9 +249,9 @@ export function MealPlan() {
         return;
       }
 
+      await trackFeatureUsage("meal_plan_generated");
       const newMealPlan = await generateMealPlan(preferences);
       
-      // Navigate to the new meal plan page with the generated plan
       navigate("/meal-plan/new", { 
         state: { 
           mealPlan: newMealPlan,
