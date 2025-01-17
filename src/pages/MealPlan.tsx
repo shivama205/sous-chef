@@ -9,17 +9,20 @@ import { LoginDialog } from "@/components/LoginDialog";
 import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { FeatureCard } from "@/components/ui/FeatureCard";
-import { Calculator, RefreshCw, Save, Sparkles } from "lucide-react";
+import { Calculator, RefreshCw, Save, Sparkles, ShoppingBag } from "lucide-react";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { MacroCalculator } from "@/components/MacroCalculator";
 import { PreferencesForm } from "@/components/PreferencesForm";
 import { generateMealPlan } from "@/utils/mealPlanGenerator";
 import type { Preferences } from "@/types/preferences";
-import type { UserMacros } from "@/types/macros";
+import type { UserMacros, GroceryList, GroceryItem } from "@/types/macros";
 import type { User } from "@supabase/supabase-js";
 import { Input } from "@/components/ui/input";
 import { CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import type { MealPlan as MealPlanType } from "@/types/mealPlan";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { createGroceryList, generateGroceryList } from '@/services/groceryList'
 
 const features = [
   {
@@ -81,6 +84,7 @@ export function MealPlan() {
   const [user, setUser] = useState<User | null>(null);
   const [generatedPlan, setGeneratedPlan] = useState<MealPlanType | null>(null);
   const [planName, setPlanName] = useState("My Meal Plan");
+  const [isGeneratingGroceryList, setIsGeneratingGroceryList] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -279,20 +283,25 @@ export function MealPlan() {
     if (!generatedPlan || !user) return;
 
     try {
-      // Save the meal plan
-      const { data: savedPlan, error: saveError } = await supabase
-        .from("saved_meal_plans")
+      // Save meal plan first
+      const { data: mealPlan, error: mealPlanError } = await supabase
+        .from('saved_meal_plans')
         .insert([
           {
             user_id: user.id,
             name: planName,
-            plan: generatedPlan
+            meals: generatedPlan,
+            preferences: currentPreferences
           }
         ])
         .select()
         .single();
 
-      if (saveError) throw saveError;
+      if (mealPlanError) throw mealPlanError;
+
+      // Generate and save grocery list
+      const groceryItems = await generateGroceryList(generatedPlan);
+      await createGroceryList(mealPlan.id, groceryItems);
 
       // Deduct credits
       const { data: credits } = await supabase
@@ -310,11 +319,11 @@ export function MealPlan() {
 
       toast({
         title: "Success",
-        description: "Your meal plan has been saved successfully!",
+        description: "Your meal plan and grocery list have been saved!",
       });
 
       // Navigate to the saved meal plan
-      navigate(`/meal-plan/${savedPlan.id}`);
+      navigate(`/meal-plan/${mealPlan.id}`);
     } catch (error) {
       console.error("Error saving meal plan:", error);
       toast({
@@ -323,6 +332,87 @@ export function MealPlan() {
         variant: "destructive"
       });
     }
+  };
+
+  const handleGenerateGroceryList = async () => {
+    if (!generatedPlan) return;
+    
+    setIsGeneratingGroceryList(true);
+    try {
+      const items = await generateGroceryList(generatedPlan);
+      await createGroceryList(generatedPlan.id, items);
+      toast({
+        title: 'Grocery list generated',
+        description: 'Your grocery list has been created and saved.'
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to generate grocery list. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsGeneratingGroceryList(false);
+    }
+  };
+
+  const GroceryListView = ({ items, onToggle }: { items: GroceryItem[], onToggle: (id: string) => void }) => {
+    // Group items by category
+    const groupedItems = items.reduce((acc, item) => {
+      if (!acc[item.category]) {
+        acc[item.category] = [];
+      }
+      acc[item.category].push(item);
+      return acc;
+    }, {} as Record<string, GroceryItem[]>);
+
+    return (
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ShoppingBag className="w-5 h-5 text-primary" />
+            Grocery List
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="h-[400px] pr-4">
+            <div className="space-y-6">
+              {Object.entries(groupedItems).map(([category, items]) => (
+                <div key={category}>
+                  <h3 className="font-medium text-sm text-muted-foreground mb-2">
+                    {category}
+                  </h3>
+                  <div className="space-y-2">
+                    {items.map((item) => (
+                      <div key={item.id} className="flex items-start gap-2">
+                        <Checkbox
+                          id={item.id}
+                          checked={item.checked}
+                          onCheckedChange={() => onToggle(item.id)}
+                        />
+                        <label
+                          htmlFor={item.id}
+                          className={`text-sm leading-none pt-0.5 ${
+                            item.checked ? 'line-through text-muted-foreground' : ''
+                          }`}
+                        >
+                          {item.name}
+                          {item.quantity && (
+                            <span className="text-muted-foreground ml-1">
+                              ({item.quantity})
+                            </span>
+                          )}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </CardContent>
+      </Card>
+    );
   };
 
   const LoggedInView = () => (

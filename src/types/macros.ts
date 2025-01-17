@@ -32,16 +32,28 @@ export interface UserMacros {
   user_inputs?: UserInputs;
 }
 
+export interface GroceryItem {
+  id: string;
+  grocery_list_id: string;
+  name: string;
+  category: string;
+  quantity?: string;
+  unit?: string;
+  checked: boolean;
+  notes?: string;
+  custom_added: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface GroceryList {
   id: string;
   user_id: string;
   meal_plan_id: string;
-  items: {
-    id: string;
-    name: string;
-    category: string;
-    checked: boolean;
-    quantity?: string;
-  }[];
+  name: string;
+  is_synced_externally: boolean;
+  external_service_id?: string;
   created_at: string;
+  updated_at: string;
+  items?: GroceryItem[]; // For when we join with items
 }
