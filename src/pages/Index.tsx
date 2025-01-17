@@ -6,12 +6,112 @@ import { ComingSoon } from "@/components/dashboard/ComingSoon";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FeatureCard } from "@/components/ui/FeatureCard";
+import { Sparkles, Star, ChefHat, Brain, Carrot } from "lucide-react";
 import { useUser } from "@/hooks/useUser";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+
+// Feature highlights data
+const featureHighlights = [
+  {
+    icon: ChefHat,
+    title: "AI Meal Planning",
+    description: "Get personalized meal plans tailored to your preferences and goals",
+    path: "/meal-plan"
+  },
+  {
+    icon: Brain,
+    title: "Smart Alternatives",
+    description: "Discover healthy alternatives to your favorite dishes",
+    path: "/healthy-alternative"
+  },
+  {
+    icon: Carrot,
+    title: "Nutrition Tracking",
+    description: "Track your nutrition goals with our smart macro calculator",
+    path: "/meal-plan"
+  }
+];
+
+// Testimonials data
+const testimonials = [
+  {
+    name: "Sarah Johnson",
+    role: "Fitness Enthusiast",
+    content: "SousChef has transformed how I plan my meals. The AI suggestions are spot-on!"
+  },
+  {
+    name: "Mike Chen",
+    role: "Busy Professional",
+    content: "Finally, a meal planning app that understands my dietary restrictions and schedule."
+  },
+  {
+    name: "Emma Davis",
+    role: "Health Coach",
+    content: "I recommend SousChef to all my clients. The healthy alternatives feature is amazing!"
+  }
+];
 
 function Index() {
   const navigate = useNavigate();
   const { user } = useUser();
+  const [stats, setStats] = useState({
+    savedPlansCount: 0,
+    creditsUsed: 0,
+    maxCredits: 10
+  });
+  const [activities, setActivities] = useState([]);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserStats();
+      fetchRecentActivity();
+    }
+  }, [user]);
+
+  const fetchUserStats = async () => {
+    if (!user) return;
+    
+    try {
+      const { data: plans } = await supabase
+        .from('meal_plans')
+        .select('*')
+        .eq('user_id', user.id);
+
+      const { data: credits } = await supabase
+        .from('user_credits')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      setStats({
+        savedPlansCount: plans?.length || 0,
+        creditsUsed: credits?.used || 0,
+        maxCredits: credits?.max || 10
+      });
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+    }
+  };
+
+  const fetchRecentActivity = async () => {
+    if (!user) return;
+    
+    try {
+      const { data } = await supabase
+        .from('user_activity')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      setActivities(data || []);
+    } catch (error) {
+      console.error('Error fetching recent activity:', error);
+    }
+  };
 
   const LoggedInView = () => (
     <div className="container mx-auto py-8 sm:py-10">
@@ -32,10 +132,14 @@ function Index() {
         </section>
 
         {/* Stats Grid */}
-        <DashboardStats />
+        <DashboardStats
+          savedPlansCount={stats.savedPlansCount}
+          creditsUsed={stats.creditsUsed}
+          maxCredits={stats.maxCredits}
+        />
 
         {/* Recent Activity */}
-        <RecentActivity />
+        <RecentActivity activities={activities} />
 
         {/* Coming Soon */}
         <ComingSoon />
