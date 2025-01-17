@@ -1,29 +1,13 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Preferences, Cuisine } from "../types/preferences";
-import { MacroCalculator } from "./MacroCalculator";
-import { DaysSelector } from "./preferences/DaysSelector";
-import { NutritionalTargets } from "./preferences/NutritionalTargets";
 import { CuisineSelector } from "./preferences/CuisineSelector";
-import { DietaryRestrictions } from "./preferences/DietaryRestrictions";
 import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, ChevronDown } from "lucide-react";
-
-const loadingMessages = [
-  "Cooking up your perfect meal plan... 🍳",
-  "Mixing healthy ingredients... 🥗",
-  "Balancing your macros... 💪",
-  "Sprinkling some nutrition magic... ✨",
-  "Taste-testing your menu... 😋",
-  "Adding a pinch of variety... 🌮",
-  "Making sure everything is delicious... 🍽️",
-  "Almost ready to serve... 🍽️"
-];
 
 interface PreferencesFormProps {
   onSubmit: (preferences: Preferences) => void;
