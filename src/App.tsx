@@ -4,13 +4,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
-import MealPlan from "./pages/MealPlan";
-import HealthySwap from "./pages/HealthySwap";
+import { MealPlan } from "./pages/MealPlan";
+import HealthyAlternative from "./pages/HealthyAlternative";
 import Profile from "./pages/Profile";
-import Pricing from "./pages/Pricing";
+import { Pricing } from "./pages/Pricing";
 import Billing from "./pages/Billing";
 import FAQ from "./pages/FAQ";
-import Footer from "@/components/Footer";
 import MealPlanDetails from "./pages/MealPlanDetails";
 import SharedMealPlan from "./pages/SharedMealPlan";
 import Blog from "./pages/Blog";
@@ -29,7 +28,7 @@ const App = () => (
           <Route path="/meal-plan" element={<MealPlan />} />
           <Route path="/meal-plan/:id" element={<MealPlanDetails />} />
           <Route path="/shared/meal-plan/:id" element={<SharedMealPlan />} />
-          <Route path="/healthy-swap" element={<HealthySwap />} />
+          <Route path="/healthy-alternative" element={<HealthyAlternative />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/billing" element={<Billing />} />
@@ -38,7 +37,6 @@ const App = () => (
           <Route path="/blog/:slug" element={<BlogPost />} />
         </Routes>
       </BrowserRouter>
-      <Footer />
     </TooltipProvider>
   </QueryClientProvider>
 );

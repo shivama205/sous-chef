@@ -92,11 +92,11 @@ export const MealPlanDetails = () => {
 
     const { data: credits } = await supabase
       .from('user_credits')
-      .select('credits_available, credits_used')
+      .select('credits, credits_used')
       .eq('user_id', session.user.id)
       .single();
 
-    if (!credits || credits.credits_available <= 0) {
+    if (!credits || credits.credits <= 0) {
       setShowCreditDialog(true);
       return;
     }
@@ -104,7 +104,7 @@ export const MealPlanDetails = () => {
     // Consume one credit
     const { error: updateError } = await supabase
       .from('user_credits')
-      .update({ credits_available: credits.credits_available - 1, credits_used: credits.credits_used + 1 })
+      .update({ credits: credits.credits - 1, credits_used: credits.credits_used + 1 })
       .eq('user_id', session.user.id);
 
     if (updateError) {

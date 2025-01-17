@@ -1,10 +1,11 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { BaseLayout } from "@/components/layouts/BaseLayout";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import NavigationBar from "@/components/NavigationBar";
+import { Switch } from "@/components/ui/switch";
 import { Check } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
-import { toast } from "@/components/ui/use-toast";
 
 interface PricingPlan {
   id: string;
@@ -19,127 +20,182 @@ interface PricingPlan {
   sort_order: number;
 }
 
-const Pricing = () => {
-  const [plans, setPlans] = useState<PricingPlan[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function Pricing() {
+  const [isYearly, setIsYearly] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchPlans = async () => {
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('pricing_plans')
-          .select('*')
-          .order('sort_order', { ascending: true });
+  const plans: PricingPlan[] = [
+    {
+      id: "1",
+      slug: "basic",
+      name: "Basic",
+      description: "Perfect for getting started with meal planning",
+      price_monthly: 9.99,
+      price_yearly: 99.99,
+      features: [
+        "5 meal plans per month",
+        "Basic nutrition tracking",
+        "Email support",
+        "Access to recipe database"
+      ],
+      credits_per_month: 5,
+      is_popular: false,
+      sort_order: 1
+    },
+    {
+      id: "2",
+      slug: "pro",
+      name: "Pro",
+      description: "Best for active meal planners",
+      price_monthly: 19.99,
+      price_yearly: 199.99,
+      features: [
+        "15 meal plans per month",
+        "Advanced nutrition tracking",
+        "Priority support",
+        "Custom recipe suggestions",
+        "Shopping list generation",
+        "Meal prep guides"
+      ],
+      credits_per_month: 15,
+      is_popular: true,
+      sort_order: 2
+    },
+    {
+      id: "3",
+      slug: "unlimited",
+      name: "Unlimited",
+      description: "For nutrition professionals",
+      price_monthly: 39.99,
+      price_yearly: 399.99,
+      features: [
+        "Unlimited meal plans",
+        "Professional nutrition tools",
+        "24/7 priority support",
+        "API access",
+        "White-label options",
+        "Team collaboration",
+        "Custom branding"
+      ],
+      credits_per_month: 999999,
+      is_popular: false,
+      sort_order: 3
+    }
+  ];
 
-        if (error) {
-          throw error;
-        }
-
-        if (data) {
-          console.log('Fetched plans:', data); // For debugging
-          setPlans(data);
-        }
-      } catch (error) {
-        console.error('Error fetching pricing plans:', error);
+  const handleSubscribe = async (plan: PricingPlan) => {
+    setIsLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
         toast({
-          title: "Error",
-          description: "Failed to load pricing plans. Please try again later.",
+          title: "Not Logged In",
+          description: "Please log in to subscribe to a plan.",
           variant: "destructive"
         });
-      } finally {
-        setIsLoading(false);
+        return;
       }
-    };
 
-    fetchPlans();
-  }, []);
+      // Here you would typically redirect to a payment processor
+      toast({
+        title: "Coming Soon",
+        description: "Subscription functionality will be available soon!",
+      });
+    } catch (error) {
+      console.error("Error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to process subscription. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
-      <NavigationBar />
-      
-      <main className="container mx-auto px-4 py-16">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-12"
-        >
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Choose Your Plan
-          </h1>
-          <p className="text-lg text-gray-600">
-            Select the perfect plan for your healthy eating journey
+    <BaseLayout>
+      <div className="container mx-auto px-4 py-8 space-y-12">
+        {/* Header */}
+        <div className="text-center max-w-2xl mx-auto">
+          <h1 className="text-2xl font-medium text-foreground/90 mb-2">Simple, Transparent Pricing</h1>
+          <p className="text-base text-muted-foreground leading-relaxed">
+            Choose the perfect plan for your meal planning needs. All plans include access to our AI-powered meal planner.
           </p>
-        </motion.div>
+        </div>
 
-        {isLoading ? (
-          <div className="text-center">Loading plans...</div>
-        ) : (
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {plans.map((plan) => (
-              <motion.div
-                key={plan.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className={`relative rounded-lg bg-white/80 backdrop-blur-sm shadow-lg p-8 border ${
-                  plan.is_popular ? 'border-primary' : plan.slug === 'BASIC' ? 'border-secondary ring-2 ring-secondary/20' : 'border-gray-200'
-                }`}
-              >
-                {plan.is_popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-primary text-white text-sm px-3 py-1 rounded-full">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
-                {plan.slug === 'BASIC' && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-secondary text-white text-sm px-3 py-1 rounded-full">
-                      Current Plan
-                    </span>
-                  </div>
-                )}
-                <div className="flex flex-col h-full">
-                  <h3 className={`text-2xl font-bold mb-2 ${plan.slug === 'BASIC' ? 'text-secondary' : ''}`}>{plan.name}</h3>
-                  <div className="mb-4">
-                    <span className="text-4xl font-bold">
-                      ${(plan.price_monthly / 100).toFixed(2)}
-                    </span>
-                    <span className="text-gray-600">/month</span>
-                  </div>
-                  <p className="text-gray-600 mb-6">{plan.description}</p>
-                  <div className="flex-grow">
-                    <ul className="space-y-4 mb-8">
-                      {plan.features.map((feature, index) => (
-                        <li key={index} className="flex items-center gap-2">
-                          <Check className="h-5 w-5 text-primary" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <Button 
-                    className={`w-full ${
-                      plan.is_popular 
-                        ? 'bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70' 
-                        : plan.slug === 'BASIC'
-                          ? 'bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary/90 hover:to-secondary/70'
-                          : 'bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70'
-                    }`}
-                  >
-                    {plan.slug === 'BASIC' ? 'Current Plan' : 'Get Started'}
-                  </Button>
+        {/* Billing Toggle */}
+        <div className="flex items-center justify-center gap-4">
+          <span className={`text-sm ${!isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>Monthly</span>
+          <Switch
+            checked={isYearly}
+            onCheckedChange={setIsYearly}
+          />
+          <span className={`text-sm ${isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
+            Yearly <span className="text-xs text-primary">(Save 20%)</span>
+          </span>
+        </div>
+
+        {/* Pricing Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {plans.map((plan) => (
+            <Card 
+              key={plan.id} 
+              className={`relative overflow-hidden p-6 bg-white/80 backdrop-blur-sm border-0 shadow-sm ${
+                plan.is_popular ? 'ring-2 ring-primary' : ''
+              }`}
+            >
+              {plan.is_popular && (
+                <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs px-3 py-1 rounded-bl-lg">
+                  Most Popular
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </main>
-    </div>
-  );
-};
+              )}
 
-export default Pricing;
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold">{plan.name}</h3>
+                  <p className="text-sm text-muted-foreground">{plan.description}</p>
+                </div>
+
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-bold">
+                    ${isYearly ? plan.price_yearly : plan.price_monthly}
+                  </span>
+                  <span className="text-muted-foreground">
+                    /{isYearly ? 'year' : 'month'}
+                  </span>
+                </div>
+
+                <Button 
+                  className="w-full"
+                  onClick={() => handleSubscribe(plan)}
+                  disabled={isLoading}
+                >
+                  Get Started
+                </Button>
+
+                <ul className="space-y-2 text-sm">
+                  {plan.features.map((feature, index) => (
+                    <li key={index} className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-primary" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {/* FAQ Section */}
+        <div className="max-w-2xl mx-auto text-center">
+          <h2 className="text-lg font-semibold mb-2">Have questions?</h2>
+          <p className="text-sm text-muted-foreground">
+            Contact our support team at support@example.com
+          </p>
+        </div>
+      </div>
+    </BaseLayout>
+  );
+}

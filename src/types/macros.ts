@@ -21,6 +21,14 @@ export interface UserMacros {
   carbs: number;
   fat: number;
   last_updated: string;
+  // User input fields
+  age?: number;
+  weight?: number;
+  height?: number;
+  gender?: 'male' | 'female';
+  activity_level?: 'sedentary' | 'light' | 'moderate' | 'active' | 'veryActive';
+  fitness_goal?: 'lose' | 'maintain' | 'gain';
+  // Keep user_inputs for backward compatibility during migration
   user_inputs?: UserInputs;
 }
 

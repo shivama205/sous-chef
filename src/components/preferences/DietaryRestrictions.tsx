@@ -3,29 +3,32 @@ import { Textarea } from "@/components/ui/textarea";
 
 interface DietaryRestrictionsProps {
   dietaryRestrictions: string;
-  setDietaryRestrictions: (restrictions: string) => void;
-  isLoading: boolean;
+  setDietaryRestrictions: (value: string) => void;
+  isLoading?: boolean;
 }
 
-export const DietaryRestrictions = ({
+export function DietaryRestrictions({
   dietaryRestrictions,
   setDietaryRestrictions,
   isLoading,
-}: DietaryRestrictionsProps) => {
+}: DietaryRestrictionsProps) {
   return (
-    <div className="space-y-2 sm:space-y-4">
-      <Label htmlFor="dietaryRestrictions" className="text-base sm:text-lg font-semibold flex items-center gap-2">
+    <div className="space-y-2">
+      <Label htmlFor="dietaryRestrictions" className="text-base sm:text-lg font-semibold">
         Dietary Restrictions
-        <span className="text-xs sm:text-sm text-muted-foreground font-normal">(Optional)</span>
+        <span className="text-xs sm:text-sm text-muted-foreground font-normal ml-2">(Optional)</span>
       </Label>
       <Textarea
         id="dietaryRestrictions"
         value={dietaryRestrictions}
         onChange={(e) => setDietaryRestrictions(e.target.value)}
-        placeholder="e.g., vegetarian, gluten-free, dairy-free"
-        className="min-h-[100px] text-sm sm:text-base resize-none"
+        placeholder="Enter any dietary restrictions or allergies (e.g., gluten-free, dairy-free, nut allergies)"
+        className="min-h-[100px] text-base"
         disabled={isLoading}
       />
+      <p className="text-sm text-muted-foreground">
+        List any foods you want to avoid or can't eat. We'll ensure your meal plan accommodates these restrictions.
+      </p>
     </div>
   );
-};
+}

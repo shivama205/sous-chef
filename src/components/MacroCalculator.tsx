@@ -1,470 +1,385 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "@/components/ui/use-toast";
-import { supabase } from "@/lib/supabase";
-import { motion } from "framer-motion";
-import { Calculator, Save } from "lucide-react";
-import type { UserMacros, MacroResults } from "@/types/macros";
-import { ChevronDown } from "lucide-react";
+import { Loader2, HelpCircle } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import type { UserMacros } from "@/types/macros";
 
 interface MacroCalculatorProps {
-  onSaveMacros?: (macros: MacroResults) => void;
+  onSaveMacros: (macros: UserMacros) => void;
+  isLoading?: boolean;
 }
 
-export function MacroCalculator({ onSaveMacros }: MacroCalculatorProps) {
-  const [age, setAge] = useState(() => localStorage.getItem('macro_calc_age') || "");
-  const [weight, setWeight] = useState(() => localStorage.getItem('macro_calc_weight') || "");
-  const [height, setHeight] = useState(() => localStorage.getItem('macro_calc_height') || "");
-  const [gender, setGender] = useState<"male" | "female">(() => 
-    (localStorage.getItem('macro_calc_gender') as "male" | "female") || "male"
-  );
-  const [activityLevel, setActivityLevel] = useState(() => 
-    localStorage.getItem('macro_calc_activity') || "moderate"
-  );
-  const [goal, setGoal] = useState(() => localStorage.getItem('macro_calc_goal') || "maintain");
-  const [showPerMealTargets, setShowPerMealTargets] = useState(false);
-  const [results, setResults] = useState<MacroResults | null>(null);
-  const [savedMacros, setSavedMacros] = useState<UserMacros | null>(null);
+interface InputError {
+  age?: string;
+  weight?: string;
+  height?: string;
+}
 
-  // Save inputs to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem('macro_calc_age', age);
-    localStorage.setItem('macro_calc_weight', weight);
-    localStorage.setItem('macro_calc_height', height);
-    localStorage.setItem('macro_calc_gender', gender);
-    localStorage.setItem('macro_calc_activity', activityLevel);
-    localStorage.setItem('macro_calc_goal', goal);
-  }, [age, weight, height, gender, activityLevel, goal]);
+const activityLevels = {
+  sedentary: { label: "Sedentary", description: "Little or no exercise, desk job" },
+  light: { label: "Light Activity", description: "Light exercise 1-3 days/week" },
+  moderate: { label: "Moderate Activity", description: "Moderate exercise 3-5 days/week" },
+  active: { label: "Very Active", description: "Heavy exercise 6-7 days/week" },
+  veryActive: { label: "Extremely Active", description: "Very heavy exercise, physical job, training 2x/day" }
+};
 
-  useEffect(() => {
-    loadSavedMacros();
-  }, []);
+const goals = {
+  lose: { label: "Lose Weight", description: "500 calorie deficit per day" },
+  maintain: { label: "Maintain Weight", description: "Maintain current weight" },
+  gain: { label: "Gain Weight", description: "500 calorie surplus per day" }
+};
 
-  const loadSavedMacros = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) return;
+export function MacroCalculator({ onSaveMacros, isLoading = false }: MacroCalculatorProps) {
+  const [age, setAge] = useState("");
+  const [weight, setWeight] = useState("");
+  const [height, setHeight] = useState("");
+  const [gender, setGender] = useState<"male" | "female">("male");
+  const [activityLevel, setActivityLevel] = useState("sedentary");
+  const [goal, setGoal] = useState("maintain");
+  const [errors, setErrors] = useState<InputError>({});
+  const [calculatedMacros, setCalculatedMacros] = useState<UserMacros | null>(null);
 
-    const { data, error } = await supabase
-      .from('user_macros')
-      .select('*')
-      .eq('user_id', session.user.id)
-      .single();
-
-    if (error) {
-      console.error('Error loading saved macros:', error);
-      return;
+  const validateInputs = (): boolean => {
+    const newErrors: InputError = {};
+    
+    if (!age || parseInt(age) < 15 || parseInt(age) > 100) {
+      newErrors.age = "Age must be between 15 and 100";
     }
-
-    if (data) {
-      setSavedMacros(data);
-      setResults({
-        calories: data.calories,
-        protein: data.protein,
-        carbs: data.carbs,
-        fat: data.fat
-      });
+    
+    if (!weight || parseFloat(weight) < 30 || parseFloat(weight) > 300) {
+      newErrors.weight = "Weight must be between 30 and 300 kg";
     }
-  };
-
-  const scrollToElement = (elementId: string) => {
-    const element = document.getElementById(elementId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    if (!height || parseFloat(height) < 100 || parseFloat(height) > 250) {
+      newErrors.height = "Height must be between 100 and 250 cm";
     }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const calculateMacros = () => {
-    if (!age || !weight || !height) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!validateInputs()) return;
 
-    // BMR calculation using Mifflin-St Jeor Equation
-    let bmr = 10 * parseFloat(weight) + 6.25 * parseFloat(height) - 5 * parseFloat(age);
+    // Basic BMR calculation using Mifflin-St Jeor Equation
+    const weightInKg = parseFloat(weight);
+    const heightInCm = parseFloat(height);
+    const ageInYears = parseInt(age);
+
+    let bmr = 10 * weightInKg + 6.25 * heightInCm - 5 * ageInYears;
     bmr = gender === "male" ? bmr + 5 : bmr - 161;
 
-    // Activity multiplier
+    // Activity level multiplier
     const activityMultipliers = {
       sedentary: 1.2,
       light: 1.375,
       moderate: 1.55,
       active: 1.725,
-      veryActive: 1.9,
+      veryActive: 1.9
     };
 
-    let tdee = bmr * activityMultipliers[activityLevel as keyof typeof activityMultipliers];
+    const tdee = bmr * activityMultipliers[activityLevel as keyof typeof activityMultipliers];
 
     // Adjust based on goal
-    switch (goal) {
-      case "lose":
-        tdee *= 0.85; // 15% deficit
-        break;
-      case "gain":
-        tdee *= 1.15; // 15% surplus
-        break;
-    }
-
-    const newResults = {
-      calories: Math.round(tdee),
-      protein: Math.round(parseFloat(weight) * 2), // 2g per kg bodyweight
-      carbs: Math.round((tdee * 0.4) / 4), // 40% of calories from carbs
-      fat: Math.round((tdee * 0.3) / 9), // 30% of calories from fat
+    const goalAdjustments = {
+      lose: -500,
+      maintain: 0,
+      gain: 500
     };
 
-    // Save to localStorage
-    localStorage.setItem('calculated_macros', JSON.stringify(newResults));
-    
-    // Animate out old results if they exist
-    if (results) {
-      const element = document.querySelector('.macro-results');
-      if (element) {
-        element.classList.add('fade-out');
-        setTimeout(() => {
-          setResults(newResults);
-          element.classList.remove('fade-out');
-          element.classList.add('fade-in');
-          setTimeout(() => {
-            element.classList.remove('fade-in');
-          }, 500);
-        }, 300);
-      } else {
-        setResults(newResults);
-      }
-    } else {
-      setResults(newResults);
-    }
+    const targetCalories = Math.round(tdee + goalAdjustments[goal as keyof typeof goalAdjustments]);
 
-    // After calculation, scroll to results
-    setTimeout(() => {
-      scrollToElement('macro-results');
-    }, 100);
-  };
+    // Calculate macros
+    const protein = Math.round(weightInKg * 2); // 2g per kg of bodyweight
+    const fat = Math.round((targetCalories * 0.25) / 9); // 25% of calories from fat
+    const carbs = Math.round((targetCalories - (protein * 4 + fat * 9)) / 4); // Remaining calories from carbs
 
-  // Load calculated macros from localStorage on mount
-  useEffect(() => {
-    const savedCalculatedMacros = localStorage.getItem('calculated_macros');
-    if (savedCalculatedMacros) {
-      setResults(JSON.parse(savedCalculatedMacros));
-    }
-  }, []);
-
-  const saveMacros = async () => {
-    if (!results) return;
-
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session?.user) {
-      toast({
-        title: "Sign in required",
-        description: "Create an account to save your macro goals and get personalized meal plans!",
-        action: (
-          <Button variant="default" onClick={() => {/* Add sign in logic */}}>
-            Sign In
-          </Button>
-        ),
-      });
-      return;
-    }
-
-    // Check if user already has macros saved
-    const { data: existingMacros } = await supabase
-      .from('user_macros')
-      .select('*')
-      .eq('user_id', session.user.id)
-      .maybeSingle();
-
-    const macroData = {
-      user_id: session.user.id,
-      calories: results.calories,
-      protein: results.protein,
-      carbs: results.carbs,
-      fat: results.fat,
+    const macros: UserMacros = {
+      user_id: "", // This will be set by the parent component
+      calories: targetCalories,
+      protein,
+      carbs,
+      fat,
       last_updated: new Date().toISOString(),
-      // Save user inputs
+      age: ageInYears,
+      weight: weightInKg,
+      height: heightInCm,
+      gender,
+      activity_level: activityLevel as 'sedentary' | 'light' | 'moderate' | 'active' | 'veryActive',
+      fitness_goal: goal as 'lose' | 'maintain' | 'gain',
       user_inputs: {
         age,
         weight,
         height,
         gender,
-        activity_level: activityLevel,
+        activityLevel,
         goal
       }
     };
 
-    let error;
-    if (existingMacros) {
-      // Update existing record
-      const { error: updateError } = await supabase
-        .from('user_macros')
-        .update(macroData)
-        .eq('id', existingMacros.id);
-      error = updateError;
-    } else {
-      // Insert new record
-      const { error: insertError } = await supabase
-        .from('user_macros')
-        .insert([macroData]);
-      error = insertError;
-    }
+    setCalculatedMacros(macros);
+  };
 
-    if (error) {
-      console.error('Error saving macros:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save macro goals. Please try again.",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "Your macro goals have been saved!",
-      });
-      setSavedMacros(existingMacros ? { ...existingMacros, ...macroData } : macroData);
-      
-      // Trigger save animation and callback
-      const element = document.querySelector('.macro-results');
-      if (element) {
-        element.classList.add('save-flash');
-        setTimeout(() => {
-          element.classList.remove('save-flash');
-          onSaveMacros?.(results);
-          // After saving, trigger scroll to preferences form
-          scrollToElement('preferences-form');
-        }, 600);
-      } else {
-        onSaveMacros?.(results);
-        scrollToElement('preferences-form');
-      }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    calculateMacros();
+  };
+
+  const handleSave = () => {
+    if (calculatedMacros) {
+      onSaveMacros(calculatedMacros);
     }
   };
 
   return (
-    <Card className="w-full backdrop-blur-sm bg-white/80 border-0 shadow-xl rounded-2xl p-6">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="space-y-6"
-      >
-        <div className="flex items-center gap-2 text-primary">
-          <Calculator className="w-5 h-5" />
-          <h2 className="text-lg font-semibold">Macro Calculator</h2>
-        </div>
-
-        <div id="macro-form" className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="age">Age</Label>
-            <Input
-              id="age"
-              type="number"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              placeholder="Years"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="weight">Weight</Label>
-            <Input
-              id="weight"
-              type="number"
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-              placeholder="kg"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="height">Height</Label>
-            <Input
-              id="height"
-              type="number"
-              value={height}
-              onChange={(e) => setHeight(e.target.value)}
-              placeholder="cm"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="gender">Gender</Label>
-            <Select value={gender} onValueChange={(value: "male" | "female") => setGender(value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select gender" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="female">Female</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="activity">Activity Level</Label>
-            <Select value={activityLevel} onValueChange={setActivityLevel}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select activity level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="sedentary">Sedentary (office job)</SelectItem>
-                <SelectItem value="light">Light Exercise (1-2 days/week)</SelectItem>
-                <SelectItem value="moderate">Moderate Exercise (3-5 days/week)</SelectItem>
-                <SelectItem value="active">Active (6-7 days/week)</SelectItem>
-                <SelectItem value="veryActive">Very Active (physical job)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="goal">Goal</Label>
-            <Select value={goal} onValueChange={setGoal}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select your goal" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="lose">Lose Weight</SelectItem>
-                <SelectItem value="maintain">Maintain Weight</SelectItem>
-                <SelectItem value="gain">Gain Weight</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <div className="flex gap-4">
-          <Button onClick={calculateMacros} className="flex-1">
-            Calculate Macros
-          </Button>
-        </div>
-
-        {results && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
-            <div id="macro-results" className="space-y-4 macro-results">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-primary">
-                  {showPerMealTargets ? "Your Per Meal Targets:" : "Your Daily Targets:"}
-                </h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowPerMealTargets(!showPerMealTargets)}
-                  className="text-sm text-muted-foreground hover:text-primary"
-                >
-                  {showPerMealTargets ? "Show Daily Totals" : "Show Per Meal"}
-                  <ChevronDown className={`ml-1 h-4 w-4 transition-transform ${showPerMealTargets ? "rotate-180" : ""}`} />
-                </Button>
+    <TooltipProvider>
+      <div className="space-y-8">
+        {!calculatedMacros ? (
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Age Input */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="age">Age</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Enter your age (15-100 years)</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Input
+                  id="age"
+                  type="number"
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
+                  required
+                  min="15"
+                  max="100"
+                  disabled={isLoading}
+                  className={errors.age ? "border-destructive" : ""}
+                />
+                {errors.age && <p className="text-sm text-destructive">{errors.age}</p>}
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-4 bg-primary/5 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    {showPerMealTargets ? "Calories per Meal" : "Daily Calories"}
-                  </p>
-                  <p className="text-xl font-semibold">
-                    {showPerMealTargets ? Math.round(results.calories / 5) : results.calories}
-                  </p>
+              {/* Weight Input */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="weight">Weight (kg)</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Enter your weight in kilograms (30-300 kg)</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
-                <div className="p-4 bg-primary/5 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    {showPerMealTargets ? "Protein per Meal" : "Daily Protein"}
-                  </p>
-                  <p className="text-xl font-semibold">
-                    {showPerMealTargets ? Math.round(results.protein / 5) : results.protein}g
-                  </p>
+                <Input
+                  id="weight"
+                  type="number"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  required
+                  min="30"
+                  max="300"
+                  step="0.1"
+                  disabled={isLoading}
+                  className={errors.weight ? "border-destructive" : ""}
+                />
+                {errors.weight && <p className="text-sm text-destructive">{errors.weight}</p>}
+              </div>
+
+              {/* Height Input */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="height">Height (cm)</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Enter your height in centimeters (100-250 cm)</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
-                <div className="p-4 bg-primary/5 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    {showPerMealTargets ? "Carbs per Meal" : "Daily Carbs"}
-                  </p>
-                  <p className="text-xl font-semibold">
-                    {showPerMealTargets ? Math.round(results.carbs / 5) : results.carbs}g
-                  </p>
+                <Input
+                  id="height"
+                  type="number"
+                  value={height}
+                  onChange={(e) => setHeight(e.target.value)}
+                  required
+                  min="100"
+                  max="250"
+                  disabled={isLoading}
+                  className={errors.height ? "border-destructive" : ""}
+                />
+                {errors.height && <p className="text-sm text-destructive">{errors.height}</p>}
+              </div>
+
+              {/* Gender Selection */}
+              <div className="space-y-2">
+                <Label>Gender</Label>
+                <RadioGroup
+                  value={gender}
+                  onValueChange={(value) => setGender(value as "male" | "female")}
+                  className="flex gap-4"
+                  disabled={isLoading}
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="male" id="male" />
+                    <Label htmlFor="male">Male</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="female" id="female" />
+                    <Label htmlFor="female">Female</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {/* Activity Level Selection */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="activity">Activity Level</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Select your typical activity level</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
-                <div className="p-4 bg-primary/5 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    {showPerMealTargets ? "Fat per Meal" : "Daily Fat"}
-                  </p>
-                  <p className="text-xl font-semibold">
-                    {showPerMealTargets ? Math.round(results.fat / 5) : results.fat}g
-                  </p>
+                <Select 
+                  value={activityLevel} 
+                  onValueChange={setActivityLevel}
+                  disabled={isLoading}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(activityLevels).map(([value, { label, description }]) => (
+                      <SelectItem key={value} value={value}>
+                        <div>
+                          <div className="font-medium">{label}</div>
+                          <div className="text-xs text-muted-foreground">{description}</div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Goal Selection */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="goal">Goal</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Select your fitness goal</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
+                <Select 
+                  value={goal} 
+                  onValueChange={setGoal}
+                  disabled={isLoading}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(goals).map(([value, { label, description }]) => (
+                      <SelectItem key={value} value={value}>
+                        <div>
+                          <div className="font-medium">{label}</div>
+                          <div className="text-xs text-muted-foreground">{description}</div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={isLoading}
             >
-              <Button onClick={saveMacros} className="w-full">
-                <Save className="w-4 h-4 mr-2" />
-                Save Results
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Calculating...
+                </>
+              ) : (
+                'Calculate Macros'
+              )}
+            </Button>
+          </form>
+        ) : (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 bg-primary/5 rounded-lg">
+                <p className="text-sm text-muted-foreground">Daily Calories</p>
+                <p className="text-xl font-semibold text-primary">{calculatedMacros.calories}</p>
+              </div>
+              <div className="p-4 bg-primary/5 rounded-lg">
+                <p className="text-sm text-muted-foreground">Protein</p>
+                <p className="text-xl font-semibold text-primary">{calculatedMacros.protein}g</p>
+              </div>
+              <div className="p-4 bg-primary/5 rounded-lg">
+                <p className="text-sm text-muted-foreground">Carbs</p>
+                <p className="text-xl font-semibold text-primary">{calculatedMacros.carbs}g</p>
+              </div>
+              <div className="p-4 bg-primary/5 rounded-lg">
+                <p className="text-sm text-muted-foreground">Fat</p>
+                <p className="text-xl font-semibold text-primary">{calculatedMacros.fat}g</p>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => setCalculatedMacros(null)}
+              >
+                Recalculate
               </Button>
-            </motion.div>
-          </motion.div>
+              <Button 
+                className="flex-1"
+                onClick={handleSave}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Macros'
+                )}
+              </Button>
+            </div>
+          </div>
         )}
-      </motion.div>
-
-      <style>{`
-        @keyframes saveFlash {
-          0% {
-            transform: scale(1);
-            filter: brightness(1);
-          }
-          50% {
-            transform: scale(1.02);
-            filter: brightness(1.1);
-          }
-          100% {
-            transform: scale(1);
-            filter: brightness(1);
-          }
-        }
-
-        .save-flash {
-          animation: saveFlash 0.6s ease-in-out;
-        }
-
-        @keyframes fadeOut {
-          from {
-            opacity: 1;
-            transform: translateY(0);
-          }
-          to {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .fade-out {
-          animation: fadeOut 0.3s ease-out forwards;
-        }
-
-        .fade-in {
-          animation: fadeIn 0.5s ease-out forwards;
-        }
-      `}</style>
-    </Card>
+      </div>
+    </TooltipProvider>
   );
 }
