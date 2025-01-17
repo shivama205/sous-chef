@@ -8,18 +8,18 @@ interface CuisineSelectorProps {
 }
 
 const cuisines: Cuisine[] = [
-  "Italian",
-  "Mexican",
-  "Chinese",
-  "Japanese",
-  "Indian",
-  "Mediterranean",
-  "American",
-  "Thai",
-  "Korean",
-  "Vietnamese",
-  "French",
-  "Greek",
+  "italian",
+  "mexican",
+  "chinese",
+  "japanese",
+  "indian",
+  "mediterranean",
+  "american",
+  "thai",
+  "korean",
+  "vietnamese",
+  "indonesian",
+  "greek",
 ];
 
 export function CuisineSelector({

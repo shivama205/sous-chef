@@ -98,14 +98,14 @@ const HealthyAlternative = () => {
   }, []);
 
   const generatePrompt = (request: HealthySwapRequest): string => {
-    return `Suggest 3 healthy alternatives for this meal:
+    return `Suggest 3 healthier possible versions for the given meal:
     Meal: ${request.mealName}
     ${request.description ? `Description: ${request.description}` : ''}
     ${request.dietaryRestrictions ? `Dietary Restrictions: ${request.dietaryRestrictions}` : ''}
     
     For each alternative, provide:
     - Name of the meal
-    - Time to cook
+    - Cooking time
     - List of ingredients
     - Step by step instructions
     - Nutritional value per serving (calories, protein, carbs, fat, fiber)

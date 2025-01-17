@@ -164,10 +164,11 @@ function Index() {
 
   const LoggedInView = () => (
     <div className="space-y-8">
-      <div className="max-w-2xl">
-        <h1 className="text-xl font-medium text-foreground/80 mb-2">Welcome back, {user?.user_metadata.full_name}!</h1>
-        <p className="text-sm text-muted-foreground leading-relaxed">Track your progress and manage your meal plans</p>
-      </div>
+      <PageHeader
+        icon={Sparkles}
+        title={`Welcome back, ${user?.user_metadata.full_name}!`}
+        description="Track your progress and manage your meal plans"
+      />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

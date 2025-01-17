@@ -8,7 +8,10 @@ export type Cuisine =
   | "mediterranean" 
   | "american" 
   | "french" 
-  | "korean";
+  | "korean"
+  | "vietnamese"
+  | "greek"
+  | "indonesian";
 
 export interface MealTargets {
   calories: number;
