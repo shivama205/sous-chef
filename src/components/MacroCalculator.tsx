@@ -143,9 +143,9 @@ export function MacroCalculator({ onSaveMacros, isLoading = false }: MacroCalcul
 
   return (
     <TooltipProvider>
-      <div className="space-y-8">
+      <div className="space-y-6">
         {!calculatedMacros ? (
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* Age Input */}
               <div className="space-y-2">
@@ -248,78 +248,82 @@ export function MacroCalculator({ onSaveMacros, isLoading = false }: MacroCalcul
                   </div>
                 </RadioGroup>
               </div>
-
-              {/* Activity Level Selection */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="activity">Activity Level</Label>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="w-4 h-4 text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Select your typical activity level</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-                <Select 
-                  value={activityLevel} 
-                  onValueChange={setActivityLevel}
-                  disabled={isLoading}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(activityLevels).map(([value, { label, description }]) => (
-                      <SelectItem key={value} value={value}>
-                        <div>
-                          <div className="font-medium">{label}</div>
-                          <div className="text-xs text-muted-foreground">{description}</div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Goal Selection */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="goal">Goal</Label>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="w-4 h-4 text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Select your fitness goal</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-                <Select 
-                  value={goal} 
-                  onValueChange={setGoal}
-                  disabled={isLoading}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(goals).map(([value, { label, description }]) => (
-                      <SelectItem key={value} value={value}>
-                        <div>
-                          <div className="font-medium">{label}</div>
-                          <div className="text-xs text-muted-foreground">{description}</div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
-            <Button 
-              type="submit" 
+            {/* Activity Level Selection */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Label className="text-base font-semibold">Activity Level</Label>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Select your typical weekly activity level</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <Select
+                value={activityLevel}
+                onValueChange={setActivityLevel}
+                disabled={isLoading}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue>
+                    {activityLevel ? activityLevels[activityLevel].label : "Select your activity level"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {Object.entries(activityLevels).map(([value, { label, description }]) => (
+                    <SelectItem key={value} value={value}>
+                      <div className="py-2">
+                        <div className="font-medium">{label}</div>
+                        <div className="text-sm text-muted-foreground mt-0.5">{description}</div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Goal Selection */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Label className="text-base font-semibold">Fitness Goal</Label>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Choose your primary fitness objective</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <Select
+                value={goal}
+                onValueChange={setGoal}
+                disabled={isLoading}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue>
+                    {goal ? goals[goal].label : "Select your goal"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {Object.entries(goals).map(([value, { label, description }]) => (
+                    <SelectItem key={value} value={value}>
+                      <div className="py-2">
+                        <div className="font-medium">{label}</div>
+                        <div className="text-sm text-muted-foreground mt-0.5">{description}</div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button
+              type="submit"
               className="w-full"
               disabled={isLoading}
             >
@@ -336,35 +340,28 @@ export function MacroCalculator({ onSaveMacros, isLoading = false }: MacroCalcul
         ) : (
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-primary/5 rounded-lg">
+              <Card className="p-4">
                 <p className="text-sm text-muted-foreground">Daily Calories</p>
-                <p className="text-xl font-semibold text-primary">{calculatedMacros.calories}</p>
-              </div>
-              <div className="p-4 bg-primary/5 rounded-lg">
+                <p className="text-2xl font-bold text-primary">{calculatedMacros.calories}</p>
+              </Card>
+              <Card className="p-4">
                 <p className="text-sm text-muted-foreground">Protein</p>
-                <p className="text-xl font-semibold text-primary">{calculatedMacros.protein}g</p>
-              </div>
-              <div className="p-4 bg-primary/5 rounded-lg">
+                <p className="text-2xl font-bold text-primary">{calculatedMacros.protein}g</p>
+              </Card>
+              <Card className="p-4">
                 <p className="text-sm text-muted-foreground">Carbs</p>
-                <p className="text-xl font-semibold text-primary">{calculatedMacros.carbs}g</p>
-              </div>
-              <div className="p-4 bg-primary/5 rounded-lg">
+                <p className="text-2xl font-bold text-primary">{calculatedMacros.carbs}g</p>
+              </Card>
+              <Card className="p-4">
                 <p className="text-sm text-muted-foreground">Fat</p>
-                <p className="text-xl font-semibold text-primary">{calculatedMacros.fat}g</p>
-              </div>
+                <p className="text-2xl font-bold text-primary">{calculatedMacros.fat}g</p>
+              </Card>
             </div>
 
-            <div className="flex gap-4">
-              <Button 
-                variant="outline" 
-                className="flex-1"
-                onClick={() => setCalculatedMacros(null)}
-              >
-                Recalculate
-              </Button>
-              <Button 
-                className="flex-1"
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
                 onClick={handleSave}
+                className="flex-1"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -375,6 +372,15 @@ export function MacroCalculator({ onSaveMacros, isLoading = false }: MacroCalcul
                 ) : (
                   'Save Macros'
                 )}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setCalculatedMacros(null)}
+                className="flex-1"
+                disabled={isLoading}
+              >
+                Recalculate
               </Button>
             </div>
           </div>

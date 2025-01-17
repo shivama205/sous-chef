@@ -388,8 +388,8 @@ export function MealPlan() {
       {/* Macro Calculator Dialog */}
       {showMacroCalculator && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
-          <div className="fixed inset-0 z-50 flex items-start sm:items-center p-0 sm:p-6">
-            <div className="relative w-full h-[100dvh] sm:h-auto sm:max-w-2xl overflow-y-auto rounded-none sm:rounded-lg border-0 sm:border bg-background shadow-lg animate-in fade-in-0 zoom-in-95">
+          <div className="fixed inset-0 z-50 flex items-start justify-center sm:items-center">
+            <div className="relative w-full h-full sm:h-auto sm:max-w-2xl overflow-hidden rounded-none sm:rounded-lg border-0 sm:border bg-background shadow-lg animate-in fade-in-0 zoom-in-95">
               <div className="sticky top-0 z-20 border-b bg-background px-4 sm:px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -423,11 +423,13 @@ export function MealPlan() {
                   </Button>
                 </div>
               </div>
-              <div className="px-4 sm:px-6 py-6 sm:py-8">
-                <MacroCalculator 
-                  onSaveMacros={handleUseMacros}
-                  isLoading={isSavingMacros}
-                />
+              <div className="flex-1 overflow-y-auto h-[calc(100vh-8rem)]">
+                <div className="px-4 sm:px-6 py-6">
+                  <MacroCalculator 
+                    onSaveMacros={handleUseMacros}
+                    isLoading={isSavingMacros}
+                  />
+                </div>
               </div>
             </div>
           </div>
