@@ -171,11 +171,12 @@ function Index() {
   }, []);
 
   const LoggedInView = () => (
-    <div className="space-y-8">
+    <div className="space-y-8 px-4 sm:px-6 lg:px-8">
       <PageHeader
         icon={Sparkles}
         title={`Welcome back, ${user?.user_metadata.full_name}!`}
         description="Track your progress and manage your meal plans"
+        className="text-left"
       />
 
       {/* Stats Grid */}
