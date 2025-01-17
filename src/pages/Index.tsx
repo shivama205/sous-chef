@@ -171,90 +171,93 @@ function Index() {
   }, []);
 
   const LoggedInView = () => (
-    <div className="space-y-8 px-4 sm:px-6 lg:px-8">
-      <PageHeader
-        icon={Sparkles}
-        title={`Welcome back, ${user?.user_metadata.full_name}!`}
-        description="Track your progress and manage your meal plans"
-        className="text-left"
-      />
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <StatsCard
-          icon={CalendarCheck}
-          label="Saved Meal Plans"
-          value={metrics.savedPlans}
-          subtext="Click to view all"
-          onClick={() => navigate('/profile')}
-        />
-        {metrics.macros && (
-          <StatsCard
-            icon={Calculator}
-            label="Daily Calories"
-            value={metrics.macros.calories}
-            subtext="Click to recalculate"
-            onClick={() => navigate('/meal-plan')}
+    <div className="container mx-auto py-8 sm:py-10">
+      <div className="space-y-8 px-4 sm:px-6">
+        <div className="pt-4">
+          <PageHeader
+            icon={Sparkles}
+            title={`Welcome back, ${user?.user_metadata.full_name}!`}
+            description="Track your progress and manage your meal plans"
+            className="text-left"
           />
-        )}
+        </div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <StatsCard
+            icon={CalendarCheck}
+            label="Saved Meal Plans"
+            value={metrics.savedPlans}
+            subtext="Click to view all"
+            onClick={() => navigate('/profile')}
+          />
+          {metrics.macros && (
+            <StatsCard
+              icon={Calculator}
+              label="Daily Calories"
+              value={metrics.macros.calories}
+              subtext="Click to recalculate"
+              onClick={() => navigate('/meal-plan')}
+            />
+          )}
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                </div>
+                Current Plan
+                <Badge variant="secondary" className="ml-auto">
+                  {metrics.currentPlan}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => navigate('/pricing')}
+                className="w-full"
+              >
+                Upgrade Plan
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Recent Activity */}
         <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-primary" />
+                <History className="w-4 h-4 text-primary" />
               </div>
-              Current Plan
-              <Badge variant="secondary" className="ml-auto">
-                {metrics.currentPlan}
-              </Badge>
+              Recent Meal Plans
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => navigate('/pricing')}
-              className="w-full"
-            >
-              Upgrade Plan
-            </Button>
+          <CardContent className="space-y-4">
+            {metrics.recentPlans.map(plan => (
+              <div 
+                key={plan.id}
+                className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer"
+                onClick={() => navigate(`/meal-plan/${plan.id}`)}
+              >
+                <div>
+                  <p className="font-medium">{plan.name || 'Untitled Plan'}</p>
+                  <p className="text-sm text-gray-500">
+                    {new Date(plan.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <ArrowUpRight className="w-4 h-4 text-gray-400" />
+              </div>
+            ))}
+            {metrics.recentPlans.length === 0 && (
+              <p className="text-sm text-gray-500 text-center py-4">
+                No meal plans created yet. Create your first plan now!
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
-
-      {/* Recent Activity */}
-      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <History className="w-4 h-4 text-primary" />
-            </div>
-            Recent Meal Plans
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {metrics.recentPlans.map(plan => (
-            <div 
-              key={plan.id}
-              className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer"
-              onClick={() => navigate(`/meal-plan/${plan.id}`)}
-            >
-              <div>
-                <p className="font-medium">{plan.name || 'Untitled Plan'}</p>
-                <p className="text-sm text-gray-500">
-                  {new Date(plan.created_at).toLocaleDateString()}
-                </p>
-              </div>
-              <ArrowUpRight className="w-4 h-4 text-gray-400" />
-            </div>
-          ))}
-          {metrics.recentPlans.length === 0 && (
-            <p className="text-sm text-gray-500 text-center py-4">
-              No meal plans created yet. Create your first plan now!
-            </p>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 
