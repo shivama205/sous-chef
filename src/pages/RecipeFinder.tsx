@@ -31,10 +31,6 @@ interface Recipe {
   };
 }
 
-interface RecipeResponse {
-  recipes: Recipe[];
-}
-
 interface NoRecipesError {
   error: string;
   suggestions: string[];
@@ -104,7 +100,6 @@ export default function RecipeFinder() {
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [ingredients, setIngredients] = useState("");
   const [userMacros, setUserMacros] = useState<UserMacros | null>(null);
-  const [showImageUpload, setShowImageUpload] = useState(false);
   const [noRecipesError, setNoRecipesError] = useState<NoRecipesError | null>(null);
 
   const onDrop = async (acceptedFiles: File[]) => {

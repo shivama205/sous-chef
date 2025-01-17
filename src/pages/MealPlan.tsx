@@ -15,14 +15,8 @@ import { MacroCalculator } from "@/components/MacroCalculator";
 import { PreferencesForm } from "@/components/PreferencesForm";
 import { generateMealPlan } from "@/utils/mealPlanGenerator";
 import type { Preferences } from "@/types/preferences";
-import type { UserMacros, GroceryList, GroceryItem } from "@/types/macros";
+import type { UserMacros } from "@/types/macros";
 import type { User } from "@supabase/supabase-js";
-import { Input } from "@/components/ui/input";
-import { CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import type { MealPlan as MealPlanType } from "@/types/mealPlan";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { createGroceryList, generateGroceryList } from '@/services/groceryList'
 
 const features = [
   {
