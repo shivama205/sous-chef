@@ -11,7 +11,8 @@ import {
   History,
   ArrowUpRight,
   Sparkles,
-  Calculator
+  Calculator,
+  Utensils
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -85,6 +86,13 @@ const featureHighlights = [
     description: "Get personalized meal plans tailored to your preferences and nutritional goals",
     cta: "Create Plan",
     path: "/meal-plan"
+  },
+  {
+    icon: Utensils,
+    title: "Recipe Finder",
+    description: "Discover delicious recipes using ingredients you already have in your kitchen",
+    cta: "Find Recipes",
+    path: "/recipe-finder"
   },
   {
     icon: Leaf,

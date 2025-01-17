@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
-import { Leaf, ChefHat, Apple, Sparkles, Menu, X } from "lucide-react";
+import { Leaf, ChefHat, Apple, Sparkles, Menu, X, Utensils } from "lucide-react";
 import GoogleSignInButton from "./GoogleSignInButton";
 
 const NavigationBar = () => {
@@ -43,6 +43,7 @@ const NavigationBar = () => {
 
   const menuItems = [
     { path: "/meal-plan", label: "Create Plan", icon: <ChefHat className="w-4 h-4" /> },
+    { path: "/recipe-finder", label: "Recipe Finder", icon: <Utensils className="w-4 h-4" /> },
     { path: "/healthy-alternative", label: "Healthy Alternative", icon: <Apple className="w-4 h-4" /> },
     { path: "/blog", label: "Blog", icon: <Leaf className="w-4 h-4" /> },
     { path: "/pricing", label: "Pricing", icon: <Sparkles className="w-4 h-4" /> },

@@ -20,69 +20,73 @@ interface PricingPlan {
   sort_order: number;
 }
 
+const plans: PricingPlan[] = [
+  {
+    id: "1",
+    slug: "basic",
+    name: "Basic",
+    description: "Perfect for trying out SousChef",
+    price_monthly: 299,
+    price_yearly: 2999,
+    features: [
+      "10 meal plans per month",
+      "5 recipe finder uses",
+      "5 healthy alternatives",
+      "Basic nutritional tracking",
+      "Email support"
+    ],
+    credits_per_month: 10,
+    is_popular: false,
+    sort_order: 1
+  },
+  {
+    id: "2",
+    slug: "pro",
+    name: "Pro",
+    description: "Best for health enthusiasts",
+    price_monthly: 599,
+    price_yearly: 5999,
+    features: [
+      "30 meal plans per month",
+      "20 recipe finder uses",
+      "20 healthy alternatives",
+      "Advanced macro tracking",
+      "Priority support",
+      "Save & share meal plans",
+      "Custom meal preferences"
+    ],
+    credits_per_month: 30,
+    is_popular: true,
+    sort_order: 2
+  },
+  {
+    id: "3",
+    slug: "ultimate",
+    name: "Ultimate",
+    description: "For professionals and families",
+    price_monthly: 999,
+    price_yearly: 9999,
+    features: [
+      "Unlimited meal plans",
+      "Unlimited recipe finder",
+      "Unlimited alternatives",
+      "Advanced macro tracking",
+      "24/7 priority support",
+      "Save & share meal plans",
+      "Custom meal preferences",
+      "API access",
+      "Team collaboration"
+    ],
+    credits_per_month: 999999,
+    is_popular: false,
+    sort_order: 3
+  }
+];
+
 export function Pricing() {
   const [isYearly, setIsYearly] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-
-  const plans: PricingPlan[] = [
-    {
-      id: "1",
-      slug: "basic",
-      name: "Basic",
-      description: "Perfect for getting started with meal planning",
-      price_monthly: 9.99,
-      price_yearly: 99.99,
-      features: [
-        "5 meal plans per month",
-        "Basic nutrition tracking",
-        "Email support",
-        "Access to recipe database"
-      ],
-      credits_per_month: 5,
-      is_popular: false,
-      sort_order: 1
-    },
-    {
-      id: "2",
-      slug: "pro",
-      name: "Pro",
-      description: "Best for active meal planners",
-      price_monthly: 19.99,
-      price_yearly: 199.99,
-      features: [
-        "15 meal plans per month",
-        "Advanced nutrition tracking",
-        "Priority support",
-        "Custom recipe suggestions",
-        "Shopping list generation",
-        "Meal prep guides"
-      ],
-      credits_per_month: 15,
-      is_popular: true,
-      sort_order: 2
-    },
-    {
-      id: "3",
-      slug: "unlimited",
-      name: "Unlimited",
-      description: "For nutrition professionals",
-      price_monthly: 39.99,
-      price_yearly: 399.99,
-      features: [
-        "Unlimited meal plans",
-        "Professional nutrition tools",
-        "24/7 priority support",
-        "API access",
-        "White-label options",
-        "Team collaboration",
-        "Custom branding"
-      ],
-      credits_per_month: 999999,
-      is_popular: false,
-      sort_order: 3
-    }
-  ];
 
   const handleSubscribe = async (plan: PricingPlan) => {
     setIsLoading(true);
@@ -118,82 +122,117 @@ export function Pricing() {
     <BaseLayout>
       <div className="container mx-auto px-4 py-8 space-y-12">
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto">
-          <h1 className="text-2xl font-medium text-foreground/90 mb-2">Simple, Transparent Pricing</h1>
-          <p className="text-base text-muted-foreground leading-relaxed">
-            Choose the perfect plan for your meal planning needs. All plans include access to our AI-powered meal planner.
+        <div className="text-center max-w-3xl mx-auto">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4">
+            Simple, Transparent Pricing
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            Choose the perfect plan for your meal planning needs. All plans include access to our AI-powered features.
           </p>
-        </div>
-
-        {/* Billing Toggle */}
-        <div className="flex items-center justify-center gap-4">
-          <span className={`text-sm ${!isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>Monthly</span>
-          <Switch
-            checked={isYearly}
-            onCheckedChange={setIsYearly}
-          />
-          <span className={`text-sm ${isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
-            Yearly <span className="text-xs text-primary">(Save 20%)</span>
-          </span>
+          
+          {/* Billing Toggle */}
+          <div className="flex items-center justify-center gap-4 mt-8">
+            <span className={!isYearly ? "text-primary font-medium" : "text-muted-foreground"}>
+              Monthly
+            </span>
+            <Switch
+              checked={isYearly}
+              onCheckedChange={setIsYearly}
+              className="data-[state=checked]:bg-primary"
+            />
+            <span className={isYearly ? "text-primary font-medium" : "text-muted-foreground"}>
+              Yearly
+              <span className="ml-1.5 text-xs inline-block py-0.5 px-2 bg-primary/10 text-primary rounded-full">
+                Save 20%
+              </span>
+            </span>
+          </div>
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {plans.map((plan) => (
-            <Card 
-              key={plan.id} 
-              className={`relative overflow-hidden p-6 bg-white/80 backdrop-blur-sm border-0 shadow-sm ${
-                plan.is_popular ? 'ring-2 ring-primary' : ''
+            <Card
+              key={plan.id}
+              className={`relative bg-white/80 backdrop-blur-sm border-0 shadow-sm p-8 ${
+                plan.is_popular ? "ring-2 ring-primary" : ""
               }`}
             >
               {plan.is_popular && (
-                <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs px-3 py-1 rounded-bl-lg">
-                  Most Popular
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                  <span className="bg-primary text-primary-foreground text-sm font-medium px-3 py-1 rounded-full">
+                    Most Popular
+                  </span>
                 </div>
               )}
 
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-lg font-semibold">{plan.name}</h3>
-                  <p className="text-sm text-muted-foreground">{plan.description}</p>
-                </div>
-
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-bold">
-                    ${isYearly ? plan.price_yearly : plan.price_monthly}
-                  </span>
-                  <span className="text-muted-foreground">
-                    /{isYearly ? 'year' : 'month'}
-                  </span>
-                </div>
-
-                <Button 
-                  className="w-full"
-                  onClick={() => handleSubscribe(plan)}
-                  disabled={isLoading}
-                >
-                  Get Started
-                </Button>
-
-                <ul className="space-y-2 text-sm">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-primary" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold">{plan.name}</h3>
+                <p className="text-muted-foreground">{plan.description}</p>
               </div>
+
+              <div className="mb-6">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold">₹{isYearly ? plan.price_yearly : plan.price_monthly}</span>
+                  <span className="text-muted-foreground">/{isYearly ? "year" : "month"}</span>
+                </div>
+                {isYearly && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    ₹{Math.round(plan.price_yearly / 12)} per month, billed annually
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-4 mb-8">
+                {plan.features.map((feature, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                    <span className="text-sm">{feature}</span>
+                  </div>
+                ))}
+              </div>
+
+              <Button
+                onClick={() => handleSubscribe(plan)}
+                className="w-full"
+                variant={plan.is_popular ? "default" : "outline"}
+                disabled={isLoading}
+              >
+                Get Started
+              </Button>
             </Card>
           ))}
         </div>
 
         {/* FAQ Section */}
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-lg font-semibold mb-2">Have questions?</h2>
-          <p className="text-sm text-muted-foreground">
-            Contact our support team at support@example.com
-          </p>
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold mb-2">What payment methods do you accept?</h3>
+              <p className="text-muted-foreground">
+                We accept all major credit/debit cards, UPI, and net banking through our secure payment gateway.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Can I change plans later?</h3>
+              <p className="text-muted-foreground">
+                Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in your next billing cycle.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">What happens if I run out of credits?</h3>
+              <p className="text-muted-foreground">
+                You can purchase additional credits or wait until your next billing cycle when your credits refresh.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Do you offer refunds?</h3>
+              <p className="text-muted-foreground">
+                We do not offer refunds for subscriptions. All sales are final. Please try our free features before subscribing.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </BaseLayout>
