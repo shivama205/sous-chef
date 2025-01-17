@@ -4,12 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
-import { OutOfCreditDialog } from "@/components/OutOfCreditDialog";
 import { LoginDialog } from "@/components/LoginDialog";
 import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { FeatureCard } from "@/components/ui/FeatureCard";
-import { Calculator, RefreshCw, Save, Sparkles, ShoppingBag } from "lucide-react";
+import { Calculator, RefreshCw, Save, Sparkles } from "lucide-react";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { MacroCalculator } from "@/components/MacroCalculator";
 import { PreferencesForm } from "@/components/PreferencesForm";
@@ -70,7 +69,6 @@ export function MealPlan() {
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSavingMacros, setIsSavingMacros] = useState(false);
-  const [showCreditDialog, setShowCreditDialog] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [showMacroCalculator, setShowMacroCalculator] = useState(false);
   const [calculatedMacros, setCalculatedMacros] = useState<UserMacros | null>(null);
@@ -134,6 +132,36 @@ export function MealPlan() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const handleSubmit = async (preferences: Preferences) => {
+    if (!user) {
+      setLoginDialogOpen(true);
+      return;
+    }
+
+    setIsGenerating(true);
+
+    try {
+      await trackFeatureUsage("meal_plan_generated");
+      const newMealPlan = await generateMealPlan(preferences);
+      
+      navigate("/meal-plan/new", { 
+        state: { 
+          mealPlan: newMealPlan,
+          preferences 
+        }
+      });
+    } catch (error) {
+      console.error("Error generating meal plan:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate meal plan. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleUseMacros = async (macros: UserMacros) => {
     if (!user) {
@@ -226,48 +254,6 @@ export function MealPlan() {
       });
     } finally {
       setIsSavingMacros(false);
-    }
-  };
-
-  const handleSubmit = async (preferences: Preferences) => {
-    if (!user) {
-      setLoginDialogOpen(true);
-      return;
-    }
-
-    setIsGenerating(true);
-
-    try {
-      const { data: credits } = await supabase
-        .from("user_credits")
-        .select("credits")
-        .eq("user_id", user.id)
-        .single();
-
-      if (!credits || credits.credits <= 0) {
-        setShowCreditDialog(true);
-        return;
-      }
-
-      await trackFeatureUsage("meal_plan_generated");
-      const newMealPlan = await generateMealPlan(preferences);
-      
-      navigate("/meal-plan/new", { 
-        state: { 
-          mealPlan: newMealPlan,
-          preferences 
-        }
-      });
-
-    } catch (error) {
-      console.error("Error generating meal plan:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate meal plan. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsGenerating(false);
     }
   };
 
@@ -534,11 +520,6 @@ export function MealPlan() {
       <LoginDialog 
         open={loginDialogOpen} 
         onOpenChange={setLoginDialogOpen} 
-      />
-
-      <OutOfCreditDialog 
-        open={showCreditDialog} 
-        onOpenChange={setShowCreditDialog}
       />
     </BaseLayout>
   );

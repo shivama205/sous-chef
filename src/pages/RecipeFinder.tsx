@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { supabase } from "@/lib/supabase";
-import { OutOfCreditDialog } from "@/components/OutOfCreditDialog";
 import { LoginDialog } from "@/components/LoginDialog";
 import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -97,7 +96,6 @@ export default function RecipeFinder() {
   const [isLoading, setIsLoading] = useState(false);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const resultsRef = useRef<HTMLDivElement>(null);
-  const [showCreditDialog, setShowCreditDialog] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [ingredients, setIngredients] = useState("");
   const [userMacros, setUserMacros] = useState<UserMacros | null>(null);
@@ -219,17 +217,6 @@ export default function RecipeFinder() {
       return;
     }
 
-    const { data: credits } = await supabase
-      .from('user_credits')
-      .select('credits, credits_used')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!credits || credits.credits <= 0) {
-      setShowCreditDialog(true);
-      return;
-    }
-    
     setIsLoading(true);
 
     try {
@@ -256,20 +243,6 @@ export default function RecipeFinder() {
       setRecipes(data.recipes);
       setNoRecipesError(null);
 
-      // Consume one credit
-      const { error: updateError } = await supabase
-        .from('user_credits')
-        .update({ credits: credits.credits - 1, credits_used: credits.credits_used + 1 })
-        .eq('user_id', user.id);
-
-      if (updateError) {
-        toast({
-          title: "Error updating credits",
-          description: "Failed to update credits, but your recipes were generated.",
-          variant: "destructive",
-        });
-      }
-      
       toast({
         title: "Success",
         description: "Found recipes for your ingredients!",
@@ -279,16 +252,11 @@ export default function RecipeFinder() {
         resultsRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 100);
     } catch (error) {
-      console.error("Error generating recipes:", error);
-      setRecipes([]);
-      setNoRecipesError({
-        error: "Error generating recipes",
-        suggestions: [
-          "Check if your ingredients are spelled correctly",
-          "Try using more common ingredient names",
-          "Make sure to separate ingredients with commas",
-          "Include some basic ingredients like salt, pepper, or oil"
-        ]
+      console.error("Error finding recipes:", error);
+      toast({
+        title: "Error",
+        description: "Failed to find recipes. Please try again.",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
@@ -524,10 +492,6 @@ export default function RecipeFinder() {
         </div>
       )}
 
-      <OutOfCreditDialog 
-        open={showCreditDialog} 
-        onOpenChange={setShowCreditDialog}
-      />
       <LoginDialog 
         open={loginDialogOpen} 
         onOpenChange={setLoginDialogOpen}

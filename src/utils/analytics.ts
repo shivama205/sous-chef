@@ -19,8 +19,8 @@ export const trackFeatureUsage = async (featureEvent: FeatureEvent) => {
       .from('feature_analytics')
       .insert({
         user_id: session.user.id,
-        feature: featureEvent,
-        timestamp: new Date().toISOString()
+        feature_name: featureEvent,
+        used_at: new Date().toISOString(),
       });
 
     if (error) {
