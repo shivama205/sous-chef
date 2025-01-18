@@ -6,14 +6,76 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import NavigationBar from "@/components/NavigationBar";
 import { format } from "date-fns";
-import { Calculator, Settings, ChefHat, History, Star, Clock, Calendar, Utensils } from "lucide-react";
+import { Calculator, Settings, ChefHat, History, Star, Clock, Calendar, Utensils, ShoppingCart, Leaf } from "lucide-react";
 import { SavedRecipes } from "@/components/profile/SavedRecipes";
 import { SavedMealPlans } from "@/components/profile/SavedMealPlans";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/lib/supabase";
+import { Activity } from "@/types/activity";
+import { RecentActivity } from "@/components/dashboard/RecentActivity";
+
+interface UserStats {
+  recipesCount: number;
+  plansCount: number;
+  recentActivities: Activity[];
+}
 
 export default function Profile() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("recipes");
+  const [stats, setStats] = useState<UserStats>({
+    recipesCount: 0,
+    plansCount: 0,
+    recentActivities: []
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserStats = async () => {
+      if (!user) return;
+      
+      try {
+        // Get recipes count
+        const { count: recipesCount, error: recipesError } = await supabase
+          .from("saved_recipes")
+          .select("*", { count: "exact" })
+          .eq("user_id", user.id);
+
+        if (recipesError) throw recipesError;
+
+        // Get meal plans count
+        const { count: plansCount, error: plansError } = await supabase
+          .from("saved_meal_plans")
+          .select("*", { count: "exact" })
+          .eq("user_id", user.id);
+
+        if (plansError) throw plansError;
+
+        // Get recent activities
+        const { data: activities, error: activitiesError } = await supabase
+          .from("user_activity")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(3);
+
+        if (activitiesError) throw activitiesError;
+
+        setStats({
+          recipesCount: recipesCount || 0,
+          plansCount: plansCount || 0,
+          recentActivities: (activities as Activity[]) || []
+        });
+      } catch (error) {
+        console.error("Error fetching user stats:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserStats();
+  }, [user]);
 
   if (!user) {
     navigate("/");
@@ -45,11 +107,11 @@ export default function Profile() {
                 </div>
                 <div className="flex items-center gap-1">
                   <Star className="w-4 h-4" />
-                  <span>12 Recipes</span>
+                  <span>{stats.recipesCount} {stats.recipesCount === 1 ? 'Recipe' : 'Recipes'}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
-                  <span>5 Plans</span>
+                  <span>{stats.plansCount} {stats.plansCount === 1 ? 'Plan' : 'Plans'}</span>
                 </div>
               </div>
             </div>
@@ -170,31 +232,38 @@ export default function Profile() {
 
             <TabsContent value="activity" className="mt-0 space-y-4 sm:space-y-6 focus-visible:outline-none">
               <Card className="border-none shadow-sm">
-                <CardHeader>
-                  <CardTitle>Recent Activity</CardTitle>
-                  <CardDescription>
-                    Your recent interactions and achievements
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-8">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="flex gap-4">
-                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <Star className="w-4 h-4 text-primary" />
-                        </div>
-                        <div className="flex-1 space-y-1">
-                          <p className="text-sm font-medium">Saved a new recipe</p>
-                          <p className="text-sm text-muted-foreground">
-                            You saved "Grilled Chicken Salad" to your collection
-                          </p>
-                          <p className="text-xs text-muted-foreground">2 days ago</p>
-                        </div>
+                {
+                  stats.recentActivities.length > 0 ? (
+                    <RecentActivity activities={stats.recentActivities} />
+                  ) : (
+                    <div className="text-center py-6">
+                      <History className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">No Recent Activity</h3>
+                      <p className="text-gray-600 mb-6">
+                        Start exploring our features to see your activity here!
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto">
+                        <Button 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={() => navigate("/recipe-finder")}
+                        >
+                          <ChefHat className="w-4 h-4 mr-2" />
+                          Find Recipes
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={() => navigate("/meal-plan")}
+                        >
+                          <Utensils className="w-4 h-4 mr-2" />
+                          Plan Meals
+                        </Button>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                    </div>
+                  )
+                }
+              </Card> 
             </TabsContent>
           </div>
         </Tabs>

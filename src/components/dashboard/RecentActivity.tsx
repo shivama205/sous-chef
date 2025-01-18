@@ -1,34 +1,27 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Leaf, Utensils, Apple, Calculator } from "lucide-react";
+import { Leaf, Utensils, Apple, Calculator, ChefHat, Search } from "lucide-react";
 import { 
   FeatureName, 
   FeatureMetadata, 
-  MealPlanMetadata, 
+  MealPlanGenerationMetadata, 
   HealthyAlternativeMetadata,
-  featureDescriptions 
+  featureDescriptions, 
+  RecipeFinderMetadata,
+  MacroCalculatorMetadata
 } from "@/types/features";
+import { Activity } from "@/types/activity";
 
-interface Activity<T extends FeatureName = FeatureName> {
-  id: number;
-  user_id: string;
-  activity_type: string;
-  feature_name: T;
-  metadata: FeatureMetadata[T];
-  created_at: string;
-}
 
-interface RecentActivityProps {
-  activities: Activity[];
-}
-
-export const RecentActivity = ({ activities }: RecentActivityProps) => {
+export const RecentActivity = ({ activities }: { activities: Activity[] }) => {
   const getIcon = (featureName: FeatureName) => {
     switch (featureName) {
-      case "meal_plan_generation":
-        return <Utensils className="w-5 h-5 text-primary" />;
-      case "healthy_alternative":
-        return <Apple className="w-5 h-5 text-green-500" />;
-      case "macro_calculator":
+      case FeatureName.MEAL_PLAN_GENERATION:
+        return <ChefHat className="w-5 h-5 text-primary" />;
+      case FeatureName.HEALTHY_ALTERNATIVE:
+        return <Leaf className="w-5 h-5 text-green-500" />;
+      case FeatureName.RECIPE_FINDER:
+        return <Search className="w-5 h-5 text-primary" />;
+      case FeatureName.MACRO_CALCULATOR:
         return <Calculator className="w-5 h-5 text-blue-500" />;
       default:
         return <Leaf className="w-5 h-5 text-primary" />;
@@ -38,19 +31,31 @@ export const RecentActivity = ({ activities }: RecentActivityProps) => {
   const getActivityDescription = (activity: Activity) => {
     const baseDescription = featureDescriptions[activity.feature_name];
     
-    if (activity.feature_name === 'meal_plan_generation') {
-      const metadata = activity.metadata as MealPlanMetadata;
-      if (metadata.days) {
-        return `${baseDescription} for ${metadata.days} days`;
+    if (activity.feature_name === FeatureName.MEAL_PLAN_GENERATION) {
+      const metadata = activity.metadata as MealPlanGenerationMetadata;
+      if (metadata.input.days) {
+        return `${baseDescription} for ${metadata.input.days} days`;
       }
     }
 
-    if (activity.feature_name === 'healthy_alternative') {
+    if (activity.feature_name === FeatureName.HEALTHY_ALTERNATIVE) {
       const metadata = activity.metadata as HealthyAlternativeMetadata;
-      const status = metadata.success ? 'Found' : 'Searched for';
-      return `${status} healthy alternatives for ${metadata.mealName}`;
+      const status = metadata.input.mealName ? 'Found' : 'Searched for';
+      return `${status} healthy alternatives for ${metadata.input.mealName}`;
     }
-    
+
+    if (activity.feature_name === FeatureName.RECIPE_FINDER) {
+      const metadata = activity.metadata as RecipeFinderMetadata;
+      const status = metadata.input.ingredients.length > 0 ? 'Found' : 'Searched for';
+      return `${status} recipe suggestions for ${metadata.input.ingredients.join(', ')}`;
+    }
+
+    if (activity.feature_name === FeatureName.MACRO_CALCULATOR) {
+      const metadata = activity.metadata as MacroCalculatorMetadata;
+      const status = metadata.age ? 'Calculated' : 'Set';
+      return `${status} macro targets for ${metadata.age} year old ${metadata.gender} with ${metadata.activityLevel} activity level`;
+    }
+
     return baseDescription;
   };
 

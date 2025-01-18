@@ -13,6 +13,7 @@ import { useUser } from "@/hooks/useUser";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
+import { Activity } from "@/types/activity";
 
 // Feature highlights data
 const featureHighlights = [
@@ -63,7 +64,7 @@ export default function Index() {
     savedRecipesCount: 0,
     totalActivities: 0,
   });
-  const [activities, setActivities] = useState([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Handle user authentication
@@ -169,7 +170,7 @@ export default function Index() {
 
         {/* Quick Actions */}
         <section className="space-y-6">
-          <h2 className="text-xl font-semibold">Quick Actions</h2>
+          <h2 className="text-xl font-semibold">Quick Actions</h2>act
           <QuickActions />
         </section>
 
