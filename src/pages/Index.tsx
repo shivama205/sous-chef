@@ -7,37 +7,48 @@ import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
-import { FeatureCard } from "@/components/ui/FeatureCard";
-import { Sparkles, Star, ChefHat, Brain, Carrot } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { 
+  Sparkles, 
+  ChefHat, 
+  Brain, 
+  Carrot, 
+  ArrowRight, 
+  Star,
+  Utensils,
+  Apple,
+  Clock
+} from "lucide-react";
 import { useUser } from "@/hooks/useUser";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 import { Activity } from "@/types/activity";
 
-// Feature highlights data
 const featureHighlights = [
   {
     icon: ChefHat,
     title: "AI Meal Planning",
-    description: "Get personalized meal plans tailored to your preferences and goals",
-    path: "/meal-plan"
+    description: "Get personalized meal plans based on your preferences and dietary needs",
+    path: "/meal-plan",
+    gradient: "from-blue-500/20 to-blue-500/5"
   },
   {
     icon: Brain,
     title: "Smart Alternatives",
-    description: "Discover healthy alternatives to your favorite dishes",
-    path: "/healthy-alternative"
+    description: "Discover healthier versions of your favorite dishes",
+    path: "/healthy-alternative",
+    gradient: "from-green-500/20 to-green-500/5"
   },
   {
-    icon: Carrot,
-    title: "Nutrition Tracking",
-    description: "Track your nutrition goals with our smart macro calculator",
-    path: "/meal-plan"
+    icon: Utensils,
+    title: "Recipe Finder",
+    description: "Find recipes that match your ingredients and preferences",
+    path: "/recipe-finder",
+    gradient: "from-purple-500/20 to-purple-500/5"
   }
 ];
 
-// Testimonials data
 const testimonials = [
   {
     name: "Sarah Johnson",
@@ -157,52 +168,80 @@ export default function Index() {
   }, [user]);
 
   const LoggedInView = () => (
-    <div className="container mx-auto py-8 sm:py-10">
-      <div className="space-y-8 px-4 sm:px-6">
-        <div className="pt-4">
+    <div className="container mx-auto py-6 sm:py-8">
+      <div className="space-y-6 px-4 sm:px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="pt-4"
+        >
           <PageHeader
             icon={Sparkles}
-            title={`Welcome back, ${user?.user_metadata?.full_name || 'User'}!`}
+            title={`Welcome back, ${user?.user_metadata?.full_name?.split(' ')[0] || 'User'}!`}
             description="Your personal AI-powered meal planning assistant"
             className="text-left"
           />
-        </div>
+        </motion.div>
 
-        {/* Quick Actions */}
-        <section className="space-y-6">
-          <h2 className="text-xl font-semibold">Quick Actions</h2>
+        {/* Quick Actions with improved visuals */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Quick Actions</h2>
+            <Clock className="w-5 h-5 text-muted-foreground" />
+          </div>
           <QuickActions />
         </section>
 
-        {/* Stats Grid */}
-        <DashboardStats
-          savedPlansCount={stats.savedPlansCount}
-          savedRecipesCount={stats.savedRecipesCount}
-          totalActivities={stats.totalActivities}
-        />
+        {/* Stats Grid with animation */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <DashboardStats
+            savedPlansCount={stats.savedPlansCount}
+            savedRecipesCount={stats.savedRecipesCount}
+            totalActivities={stats.totalActivities}
+          />
+        </motion.div>
 
-        {/* Recent Activity */}
-        <RecentActivity activities={activities} />
+        {/* Recent Activity with improved header */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Recent Activity</h2>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
+              View All <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+          <RecentActivity activities={activities} />
+        </section>
 
-        {/* Coming Soon */}
-        <ComingSoon />
+        {/* Coming Soon with subtle animation */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <ComingSoon />
+        </motion.div>
       </div>
     </div>
   );
 
   const LoggedOutView = () => (
     <div className="container mx-auto px-4 py-8 space-y-12">
-      {/* Hero Section */}
-      <section className="text-center space-y-6">
+      {/* Hero Section with gradient text and animation */}
+      <section className="text-center space-y-6 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          className="max-w-3xl mx-auto"
         >
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Your Personal AI Chef
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent pb-2">
+            Your Personal AI Chef Assistant
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto mt-4">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mt-4">
             Create personalized meal plans, discover healthy alternatives, and achieve your nutritional goals with AI-powered assistance.
           </p>
         </motion.div>
@@ -212,6 +251,7 @@ export default function Index() {
             onClick={() => navigate('/meal-plan')}
             className="w-full sm:w-auto"
           >
+            <ChefHat className="w-5 h-5 mr-2" />
             Create Your Meal Plan
           </Button>
           <Button 
@@ -220,13 +260,14 @@ export default function Index() {
             onClick={() => navigate('/healthy-alternative')}
             className="w-full sm:w-auto"
           >
+            <Apple className="w-5 h-5 mr-2" />
             Try Healthy Alternatives
           </Button>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="space-y-6">
+      {/* Features Section with gradient cards */}
+      <section className="space-y-8">
         <h2 className="text-3xl font-bold text-center">Discover Our Features</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {featureHighlights.map((feature, index) => (
@@ -235,21 +276,25 @@ export default function Index() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
+              onClick={() => navigate(feature.path)}
+              className="cursor-pointer"
             >
-              <FeatureCard
-                icon={feature.icon}
-                title={feature.title}
-                description={feature.description}
-                onClick={() => navigate(feature.path)}
-                className="h-full cursor-pointer hover:shadow-lg transition-shadow duration-200"
-              />
+              <Card className={`h-full p-6 bg-gradient-to-b ${feature.gradient} hover:scale-105 transition-transform duration-200`}>
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="p-3 rounded-full bg-background">
+                    <feature.icon className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-lg font-semibold">{feature.title}</h3>
+                  <p className="text-muted-foreground">{feature.description}</p>
+                </div>
+              </Card>
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="space-y-6">
+      {/* Testimonials Section with improved cards */}
+      <section className="space-y-8">
         <h2 className="text-3xl font-bold text-center">What Our Users Say</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {testimonials.map((testimonial, index) => (
@@ -258,20 +303,21 @@ export default function Index() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white/80 backdrop-blur-sm p-6 rounded-lg shadow-sm"
             >
-              <div className="flex items-center gap-2 mb-4">
-                <Star className="w-5 h-5 text-yellow-400" />
-                <Star className="w-5 h-5 text-yellow-400" />
-                <Star className="w-5 h-5 text-yellow-400" />
-                <Star className="w-5 h-5 text-yellow-400" />
-                <Star className="w-5 h-5 text-yellow-400" />
-              </div>
-              <p className="text-gray-600 mb-4">{testimonial.content}</p>
-              <div>
-                <p className="font-semibold">{testimonial.name}</p>
-                <p className="text-sm text-gray-500">{testimonial.role}</p>
-              </div>
+              <Card className="h-full p-6 bg-white/80 backdrop-blur-sm hover:shadow-lg transition-all duration-200">
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <p className="text-muted-foreground flex-grow">{testimonial.content}</p>
+                  <div>
+                    <p className="font-semibold">{testimonial.name}</p>
+                    <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                  </div>
+                </div>
+              </Card>
             </motion.div>
           ))}
         </div>
