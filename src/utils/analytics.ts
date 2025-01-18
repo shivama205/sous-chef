@@ -1,29 +1,23 @@
 import { supabase } from "@/lib/supabase";
-import type { ActivityType, ActivityMetadata } from "@/types/activity";
+import { FeatureName, FeatureMetadata } from "@/types/features";
 
-export const trackFeatureUsage = async (
-  activityType: ActivityType,
-  metadata: ActivityMetadata = {}
-) => {
+export async function trackFeatureUsage<T extends FeatureName>(
+  featureName: T,
+  metadata: FeatureMetadata[T]
+) {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return;
 
-    console.log(`Tracking feature usage: ${activityType}`, metadata);
-
-    const { error } = await supabase
+    await supabase
       .from('user_activity')
-      .insert({
+      .insert([{
         user_id: session.user.id,
-        activity_type: activityType,
-        metadata,
-        created_at: new Date().toISOString(),
-      });
-
-    if (error) {
-      console.error('Error tracking feature usage:', error);
-    }
+        activity_type: 'feature_use',
+        feature_name: featureName,
+        metadata
+      }]);
   } catch (error) {
-    console.error('Error in trackFeatureUsage:', error);
+    console.error('Error tracking feature usage:', error);
   }
-};
+}

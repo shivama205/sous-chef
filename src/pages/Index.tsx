@@ -95,10 +95,11 @@ export default function Index() {
     
     try {
       const { data } = await supabase
-        .from('feature_analytics')
+        .from('user_activity')
         .select('*')
         .eq('user_id', user.id)
-        .order('used_at', { ascending: false })
+        .eq('activity_type', 'feature_use')
+        .order('created_at', { ascending: false })
         .limit(5);
 
       setActivities(data || []);

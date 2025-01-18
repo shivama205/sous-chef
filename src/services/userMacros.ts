@@ -18,7 +18,7 @@ export async function saveUserMacros(userId: string, macros: Omit<UserMacros, 'u
     .from("user_macros")
     .select("id")
     .eq("user_id", userId)
-    .single();
+    .maybeSingle();
 
   const macrosData = {
     ...macros,

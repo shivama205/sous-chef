@@ -145,7 +145,7 @@ export default function RecipeFinder() {
         .from("user_macros")
         .select("*")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (macros) {
         setUserMacros(macros);

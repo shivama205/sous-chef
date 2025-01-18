@@ -68,8 +68,6 @@ export default function HealthyAlternative() {
     setIsLoading(true);
 
     try {
-      await trackFeatureUsage("healthy_alternative_used");
-      
       const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -102,12 +100,33 @@ export default function HealthyAlternative() {
       const data = JSON.parse(jsonString);
       setAlternatives(data.alternatives);
 
+      // Track successful feature usage with detailed metadata
+      await trackFeatureUsage("healthy_alternative", {
+        mealName: ingredients,
+        success: true,
+        alternativesFound: data.alternatives.length,
+        alternatives: data.alternatives.map(alt => ({
+          original: alt.original,
+          substitute: alt.substitute
+        })),
+        error: undefined
+      });
+
       toast({
         title: "Success",
         description: "Found healthy alternatives for your ingredients!",
       });
     } catch (error) {
       console.error("Error finding alternatives:", error);
+
+      // Track failed feature usage with error details
+      await trackFeatureUsage("healthy_alternative", {
+        mealName: ingredients,
+        success: false,
+        alternativesFound: 0,
+        error: error instanceof Error ? error.message : "Unknown error occurred"
+      });
+
       toast({
         title: "Error",
         description: "Failed to find alternatives. Please try again.",

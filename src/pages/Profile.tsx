@@ -25,6 +25,7 @@ const Profile = () => {
   const [savedMealPlans, setSavedMealPlans] = useState<SavedMealPlan[]>([]);
   const [savedMacros, setSavedMacros] = useState<UserMacros | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [activities, setActivities] = useState([]);
 
   useEffect(() => {
     const getUser = async () => {
@@ -52,7 +53,7 @@ const Profile = () => {
         .from('user_macros')
         .select('*')
         .eq('user_id', session.user.id)
-        .single();
+        .maybeSingle();
 
       if (!macrosError && macros) {
         setSavedMacros(macros);
@@ -63,6 +64,24 @@ const Profile = () => {
 
     getUser();
   }, [navigate]);
+
+  const fetchRecentActivity = async () => {
+    if (!user) return;
+    
+    try {
+      const { data } = await supabase
+        .from('user_activity')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('activity_type', 'feature_use')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      setActivities(data || []);
+    } catch (error) {
+      console.error('Error fetching recent activity:', error);
+    }
+  };
 
   if (!user) return null;
 

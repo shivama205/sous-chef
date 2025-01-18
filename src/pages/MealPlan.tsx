@@ -75,6 +75,10 @@ export function MealPlan() {
   const [savedMacros, setSavedMacros] = useState<UserMacros | null>(null);
   const [currentPreferences, setCurrentPreferences] = useState<Preferences>(initialPreferences);
   const [user, setUser] = useState<User | null>(null);
+  const [stats, setStats] = useState({
+    savedPlansCount: 0,
+    totalFeatureUsage: 0
+  });
 
   useEffect(() => {
     const getUser = async () => {
@@ -87,7 +91,7 @@ export function MealPlan() {
           .from("user_macros")
           .select("*")
           .eq("user_id", session.user.id)
-          .single();
+          .maybeSingle();
 
         if (userMacros) {
           setSavedMacros(userMacros);
@@ -114,7 +118,7 @@ export function MealPlan() {
           .from("user_macros")
           .select("*")
           .eq("user_id", session.user.id)
-          .single();
+          .maybeSingle();
 
         if (userMacros) {
           setSavedMacros(userMacros);
@@ -177,7 +181,7 @@ export function MealPlan() {
         .from("user_macros")
         .select("id")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       let error;
       if (existingMacros) {
@@ -254,6 +258,30 @@ export function MealPlan() {
       });
     } finally {
       setIsSavingMacros(false);
+    }
+  };
+
+  const fetchUserStats = async () => {
+    if (!user) return;
+    
+    try {
+      const { data: plans } = await supabase
+        .from('meal_plans')
+        .select('*')
+        .eq('user_id', user.id);
+
+      const { data: activities } = await supabase
+        .from('user_activity')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('activity_type', 'feature_use');
+
+      setStats({
+        savedPlansCount: plans?.length || 0,
+        totalFeatureUsage: activities?.length || 0
+      });
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
     }
   };
 
