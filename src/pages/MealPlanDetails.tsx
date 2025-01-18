@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { MealPlan } from "@/types/mealPlan";
@@ -6,7 +6,6 @@ import NavigationBar from "@/components/NavigationBar";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Save, Trash2, Share2, Download, ShoppingCart } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { LoadingOverlay } from "@/components/LoadingOverlay";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
-import { generateMealPlan } from "@/utils/mealPlanGenerator";
+import { generateMealPlan } from "@/services/mealPlan";
 import { OutOfCreditDialog } from "@/components/OutOfCreditDialog";
 import { LoginDialog } from "@/components/LoginDialog";
 import MealPlanDownloadView from "@/components/MealPlanDownloadView";
@@ -90,58 +89,80 @@ export const MealPlanDetails = () => {
       return;
     }
 
-    const { data: credits } = await supabase
-      .from('user_credits')
-      .select('credits, credits_used')
-      .eq('user_id', session.user.id)
-      .single();
-
-    if (!credits || credits.credits <= 0) {
-      setShowCreditDialog(true);
-      return;
-    }
-
-    // Consume one credit
-    const { error: updateError } = await supabase
-      .from('user_credits')
-      .update({ credits: credits.credits - 1, credits_used: credits.credits_used + 1 })
-      .eq('user_id', session.user.id);
-
-    if (updateError) {
-      toast({
-        title: "Error updating credits",
-        description: "Failed to update credits. Please try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     setIsRegenerating(true);
 
     try {
-      // Get the saved meal plan to access its preferences
-      const { data: savedPlan } = await supabase
-        .from('saved_meal_plans')
-        .select('plan')
-        .eq('id', id)
-        .single();
-
-      const preferences = {
+      // Get the original request from location state or saved plan
+      const request = location.state?.request || {
         days: mealPlan.days.length,
-        cuisinePreferences: savedPlan?.plan?.preferences?.cuisinePreferences || [],
-        dietaryRestrictions: savedPlan?.plan?.preferences?.dietaryRestrictions || "",
-        targetCalories: savedPlan?.plan?.preferences?.targetCalories,
-        targetProtein: savedPlan?.plan?.preferences?.targetProtein,
-        targetCarbs: savedPlan?.plan?.preferences?.targetCarbs,
-        targetFat: savedPlan?.plan?.preferences?.targetFat,
-        mealTargets: savedPlan?.plan?.preferences?.mealTargets,
+        userMacros: null,
+        cuisinePreferences: [],
+        dietaryRestrictions: ""
       };
 
-      const newMealPlan = await generateMealPlan(preferences);
-      setMealPlan(newMealPlan);
-    } catch (error) {
+      // If we have an ID, get the preferences from the saved plan
+      if (id) {
+        const { data: savedPlan } = await supabase
+          .from('saved_meal_plans')
+          .select('plan')
+          .eq('id', id)
+          .single();
+
+        if (savedPlan?.plan?.preferences) {
+          request.cuisinePreferences = savedPlan.plan.preferences.cuisinePreferences || [];
+          request.dietaryRestrictions = savedPlan.plan.preferences.dietaryRestrictions || "";
+          request.userMacros = {
+            calories: savedPlan.plan.preferences.targetCalories,
+            protein: savedPlan.plan.preferences.targetProtein,
+            carbs: savedPlan.plan.preferences.targetCarbs,
+            fat: savedPlan.plan.preferences.targetFat,
+          };
+        }
+      }
+
+      const newMealPlan = await generateMealPlan(request);
+      
+      // Update the meal plan while keeping the name if it exists
+      setMealPlan({
+        ...newMealPlan,
+        name: mealPlan.name
+      });
+
+      // If this was a saved plan, update it in the database
+      if (id) {
+        const { error: updateError } = await supabase
+          .from('saved_meal_plans')
+          .update({ 
+            plan: {
+              ...newMealPlan,
+              name: mealPlan.name,
+              preferences: request
+            }
+          })
+          .eq('id', id);
+
+        if (updateError) {
+          console.error('Error updating meal plan:', updateError);
+          toast({
+            title: "Warning",
+            description: "Meal plan regenerated but changes weren't saved. Please try saving again.",
+            variant: "destructive",
+          });
+        }
+      }
+
       toast({
-        title: "Error regenerating meal plan",
+        title: "Success",
+        description: "Meal plan regenerated successfully!",
+      });
+
+      // Scroll to top to show the new plan
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    } catch (error) {
+      console.error('Error regenerating meal plan:', error);
+      toast({
+        title: "Error",
         description: "Failed to regenerate meal plan. Please try again.",
         variant: "destructive",
       });
@@ -495,19 +516,19 @@ export const MealPlanDetails = () => {
                           <div className="grid grid-cols-2 gap-2 text-sm">
                             <div className="bg-primary/5 p-2 rounded">
                               <div className="text-gray-500 text-xs">Protein</div>
-                              <div className="font-medium text-gray-900">{meal.nutritionInfo.protein}g</div>
+                              <div className="font-medium text-gray-900">{meal.nutritionalValue.protein}g</div>
                             </div>
                             <div className="bg-primary/5 p-2 rounded">
                               <div className="text-gray-500 text-xs">Fat</div>
-                              <div className="font-medium text-gray-900">{meal.nutritionInfo.fat}g</div>
+                              <div className="font-medium text-gray-900">{meal.nutritionalValue.fat}g</div>
                             </div>
                             <div className="bg-primary/5 p-2 rounded">
                               <div className="text-gray-500 text-xs">Carbs</div>
-                              <div className="font-medium text-gray-900">{meal.nutritionInfo.carbs}g</div>
+                              <div className="font-medium text-gray-900">{meal.nutritionalValue.carbs}g</div>
                             </div>
                             <div className="bg-primary/5 p-2 rounded">
                               <div className="text-gray-500 text-xs">Calories</div>
-                              <div className="font-medium text-gray-900">{meal.nutritionInfo.calories}</div>
+                              <div className="font-medium text-gray-900">{meal.nutritionalValue.calories}</div>
                             </div>
                           </div>
                         </div>
@@ -519,25 +540,25 @@ export const MealPlanDetails = () => {
                         <div className="bg-white p-2 rounded shadow-sm">
                           <div className="text-gray-500 text-xs">Protein</div>
                           <div className="font-medium text-gray-900">
-                            {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.protein, 0)}g
+                            {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.protein, 0)}g
                           </div>
                         </div>
                         <div className="bg-white p-2 rounded shadow-sm">
                           <div className="text-gray-500 text-xs">Fat</div>
                           <div className="font-medium text-gray-900">
-                            {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.fat, 0)}g
+                            {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.fat, 0)}g
                           </div>
                         </div>
                         <div className="bg-white p-2 rounded shadow-sm">
                           <div className="text-gray-500 text-xs">Carbs</div>
                           <div className="font-medium text-gray-900">
-                            {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.carbs, 0)}g
+                            {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.carbs, 0)}g
                           </div>
                         </div>
                         <div className="bg-white p-2 rounded shadow-sm">
                           <div className="text-gray-500 text-xs">Calories</div>
                           <div className="font-medium text-gray-900">
-                            {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.calories, 0)}
+                            {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.calories, 0)}
                           </div>
                         </div>
                       </div>

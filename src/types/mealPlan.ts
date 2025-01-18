@@ -1,9 +1,12 @@
+import { NutritionalValue } from "./healthyAlternative";
+import { UserMacros } from "./macros";
+
 export enum MealTime {
-  Breakfast = "breakfast",
-  MorningSnack = "morning snack",
-  Lunch = "lunch",
-  AfternoonSnack = "afternoon snack",
-  Dinner = "dinner"
+  Breakfast = "Breakfast",
+  MorningSnack = "Morning Snack",
+  Lunch = "Lunch",
+  AfternoonSnack = "Afternoon Snack",
+  Dinner = "Dinner"
 }
 
 export enum DayOfWeek {
@@ -16,20 +19,11 @@ export enum DayOfWeek {
   Sunday = "Sunday"
 }
 
-export interface NutritionInfo {
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  fiber: number;
-  sugar: number;
-}
-
 export interface Meal {
   name: string;
   time: MealTime;
   recipeLink?: string;
-  nutritionInfo: NutritionInfo;
+  nutritionalValue: NutritionalValue;
 }
 
 export interface MealPlanDay {
@@ -39,17 +33,15 @@ export interface MealPlanDay {
 
 export interface MealPlan {
   id: string;
-  name: string;
-  description: string;
-  days: MealPlanDay[];
-  createdAt: string;
-  updatedAt: string;
   userId: string;
+  name: string;
+  days: MealPlanDay[];
 }
 
-export interface Ingredient {
-  id: string;
-  name: string;
-  quantity: string;
-  unit: string;
+export interface MealPlanGenerationRequest {
+  days: number;
+  dietaryRestrictions?: string;
+  cuisinePreferences?: string[];
+  userMacros?: UserMacros;
 }
+

@@ -12,12 +12,12 @@ import { Calculator, RefreshCw, Save, Sparkles } from "lucide-react";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { MacroCalculator } from "@/components/MacroCalculator";
 import { PreferencesForm } from "@/components/PreferencesForm";
-import { generateMealPlan } from "@/utils/mealPlanGenerator";
-import { trackFeatureUsage } from "@/utils/analytics";
+import { generateMealPlan } from "@/services/mealPlan";
 import { mealPlanLoadingMessages } from "@/lib/loadingMessages";
 import type { Preferences } from "@/types/preferences";
 import type { UserMacros } from "@/types/macros";
 import type { User } from "@supabase/supabase-js";
+import { MealPlanGenerationRequest } from "@/types/mealPlan";
 
 const features = [
   {
@@ -138,7 +138,8 @@ export function MealPlan() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleSubmit = async (preferences: Preferences) => {
+  const handleSubmit = async (request: MealPlanGenerationRequest) => {
+    // check if user is logged in, if not, show login dialog
     if (!user) {
       setLoginDialogOpen(true);
       return;
@@ -147,18 +148,12 @@ export function MealPlan() {
     setIsGenerating(true);
 
     try {
-      await trackFeatureUsage("meal_plan_generation", {
-        days: preferences.days,
-        dietaryRestrictions: preferences.dietaryRestrictions ? [preferences.dietaryRestrictions] : undefined,
-        cuisinePreferences: preferences.cuisinePreferences,
-        targetCalories: preferences.targetCalories
-      });
-      const newMealPlan = await generateMealPlan(preferences);
+      const newMealPlan = await generateMealPlan(request);
       
       navigate("/meal-plan/new", { 
         state: { 
           mealPlan: newMealPlan,
-          preferences 
+          request: request
         }
       });
     } catch (error) {
@@ -173,7 +168,7 @@ export function MealPlan() {
     }
   };
 
-  const handleUseMacros = async (macros: UserMacros) => {
+  const handleUserMacros = async (macros: UserMacros) => {
     if (!user) {
       setLoginDialogOpen(true);
       return;
@@ -264,30 +259,6 @@ export function MealPlan() {
       });
     } finally {
       setIsSavingMacros(false);
-    }
-  };
-
-  const fetchUserStats = async () => {
-    if (!user) return;
-    
-    try {
-      const { data: plans } = await supabase
-        .from('meal_plans')
-        .select('*')
-        .eq('user_id', user.id);
-
-      const { data: activities } = await supabase
-        .from('user_activity')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('activity_type', 'feature_use');
-
-      setStats({
-        savedPlansCount: plans?.length || 0,
-        totalFeatureUsage: activities?.length || 0
-      });
-    } catch (error) {
-      console.error('Error fetching user stats:', error);
     }
   };
 
@@ -441,7 +412,7 @@ export function MealPlan() {
               <div className="flex-1 overflow-y-auto h-[calc(100vh-8rem)]">
                 <div className="px-4 sm:px-6 py-6">
                   <MacroCalculator 
-                    onSaveMacros={handleUseMacros}
+                    onSaveMacros={handleUserMacros}
                     isLoading={isSavingMacros}
                   />
                 </div>

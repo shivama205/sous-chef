@@ -342,31 +342,17 @@ export default function RecipeFinder() {
                 <div ref={resultsRef} className="space-y-4 sm:space-y-6 mt-6">
                   <h2 className="text-xl font-semibold">Found Recipes</h2>
                   {recipes.map((recipe, index) => (
-                    <Card key={index} className="bg-white/80 backdrop-blur-sm border-0 shadow-sm overflow-hidden">
-                      <div className="p-4 sm:p-6 space-y-6">
-                        {/* Header */}
-                        <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-                          <div className="space-y-1 sm:space-y-2">
-                            <div className="flex items-center gap-3">
-                              <h3 className="text-lg sm:text-xl font-semibold text-primary">
-                                {recipe.mealName}
-                              </h3>
-                              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                <ChefHat className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Timer className="w-4 h-4" />
-                              <span>Cooking Time: {recipe.cookingTime} minutes</span>
-                            </div>
-                          </div>
+                    <Card key={index} className="bg-white rounded-lg shadow-sm overflow-hidden">
+                      <div className="bg-gradient-to-r from-primary to-primary/80 py-3 px-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold text-white">{recipe.mealName}</h3>
                           <Button
-                            variant={savedRecipeIds.has(recipe.id ?? '') ? "default" : "outline"}
+                            variant={savedRecipeIds.has(recipe.id ?? '') ? "secondary" : "outline"}
                             size="sm"
                             className={`flex items-center gap-2 ${
                               savedRecipeIds.has(recipe.id ?? '') 
-                                ? "bg-primary text-white hover:bg-primary/90 cursor-not-allowed" 
-                                : "text-primary border-primary/20 hover:border-primary/40"
+                                ? "bg-white/10 text-white hover:bg-white/20" 
+                                : "bg-white text-primary hover:bg-white/90"
                             }`}
                             onClick={() => handleSaveRecipe(recipe)}
                             disabled={savedRecipeIds.has(recipe.id ?? '')}
@@ -375,70 +361,67 @@ export default function RecipeFinder() {
                             {savedRecipeIds.has(recipe.id ?? '') ? "Saved" : "Save Recipe"}
                           </Button>
                         </div>
+                        <div className="flex items-center gap-2 text-sm text-white/80 mt-1">
+                          <Timer className="w-4 h-4" />
+                          <span>Cooking Time: {recipe.cookingTime} minutes</span>
+                        </div>
+                      </div>
 
-                        {/* Content Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          {/* Left Column: Ingredients and Instructions */}
-                          <div className="space-y-6">
-                            {/* Ingredients */}
-                            <div className="space-y-3">
-                              <div className="flex items-center gap-2">
-                                <UtensilsCrossed className="w-5 h-5 text-primary" />
-                                <h4 className="font-medium text-gray-900">Ingredients</h4>
-                              </div>
-                              <ul className="space-y-2">
-                                {recipe.ingredients.map((ingredient, i) => (
-                                  <li key={i} className="flex items-start gap-3">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary/60 flex-shrink-0 mt-2" />
-                                    <span className="text-sm text-gray-600">{ingredient}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-
-                            {/* Instructions */}
-                            <div className="space-y-3">
-                              <div className="flex items-center gap-2">
-                                <ListChecks className="w-5 h-5 text-primary" />
-                                <h4 className="font-medium text-gray-900">Instructions</h4>
-                              </div>
-                              <ol className="space-y-2">
-                                {recipe.instructions.map((instruction, i) => (
-                                  <li key={i} className="flex items-start gap-3">
-                                    <span className="text-sm font-medium text-primary/60">{i + 1}.</span>
-                                    <span className="text-sm text-gray-600">{instruction}</span>
-                                  </li>
-                                ))}
-                              </ol>
-                            </div>
+                      <div className="divide-y divide-gray-100">
+                        {/* Ingredients Section */}
+                        <div className="p-4 space-y-3">
+                          <div className="flex items-center gap-2 mb-3">
+                            <UtensilsCrossed className="w-5 h-5 text-primary" />
+                            <h4 className="font-medium text-gray-900">Ingredients</h4>
                           </div>
+                          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {recipe.ingredients.map((ingredient, i) => (
+                              <li key={i} className="flex items-start gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary/60 flex-shrink-0 mt-2" />
+                                <span className="text-sm text-gray-600">{ingredient}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
 
-                          {/* Right Column: Nutritional Info */}
-                          <div className="space-y-6">
-                            {/* Nutritional Info */}
-                            <div className="space-y-3">
-                              <div className="flex items-center gap-2">
-                                <Dumbbell className="w-5 h-5 text-primary" />
-                                <h4 className="font-medium text-gray-900">Nutritional Value</h4>
-                              </div>
-                              <div className="grid grid-cols-2 gap-3">
-                                <div className="bg-primary/5 rounded-lg p-3">
-                                  <p className="text-sm text-gray-600">Calories</p>
-                                  <p className="text-lg font-semibold text-primary">{recipe.nutritionalValue.calories}</p>
-                                </div>
-                                <div className="bg-primary/5 rounded-lg p-3">
-                                  <p className="text-sm text-gray-600">Protein</p>
-                                  <p className="text-lg font-semibold text-primary">{recipe.nutritionalValue.protein}g</p>
-                                </div>
-                                <div className="bg-primary/5 rounded-lg p-3">
-                                  <p className="text-sm text-gray-600">Carbs</p>
-                                  <p className="text-lg font-semibold text-primary">{recipe.nutritionalValue.carbs}g</p>
-                                </div>
-                                <div className="bg-primary/5 rounded-lg p-3">
-                                  <p className="text-sm text-gray-600">Fat</p>
-                                  <p className="text-lg font-semibold text-primary">{recipe.nutritionalValue.fat}g</p>
-                                </div>
-                              </div>
+                        {/* Instructions Section */}
+                        <div className="p-4 space-y-3">
+                          <div className="flex items-center gap-2 mb-3">
+                            <ListChecks className="w-5 h-5 text-primary" />
+                            <h4 className="font-medium text-gray-900">Instructions</h4>
+                          </div>
+                          <ol className="space-y-2">
+                            {recipe.instructions.map((instruction, i) => (
+                              <li key={i} className="flex items-start gap-3">
+                                <span className="text-sm font-medium text-primary/60">{i + 1}.</span>
+                                <span className="text-sm text-gray-600">{instruction}</span>
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+
+                        {/* Nutritional Info Section */}
+                        <div className="bg-gray-50 p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Dumbbell className="w-5 h-5 text-primary" />
+                            <h4 className="font-medium text-gray-900">Nutritional Value</h4>
+                          </div>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <div className="bg-white p-2 rounded shadow-sm">
+                              <div className="text-gray-500 text-xs">Calories</div>
+                              <div className="font-medium text-gray-900">{recipe.nutritionalValue.calories}</div>
+                            </div>
+                            <div className="bg-white p-2 rounded shadow-sm">
+                              <div className="text-gray-500 text-xs">Protein</div>
+                              <div className="font-medium text-gray-900">{recipe.nutritionalValue.protein}g</div>
+                            </div>
+                            <div className="bg-white p-2 rounded shadow-sm">
+                              <div className="text-gray-500 text-xs">Carbs</div>
+                              <div className="font-medium text-gray-900">{recipe.nutritionalValue.carbs}g</div>
+                            </div>
+                            <div className="bg-white p-2 rounded shadow-sm">
+                              <div className="text-gray-500 text-xs">Fat</div>
+                              <div className="font-medium text-gray-900">{recipe.nutritionalValue.fat}g</div>
                             </div>
                           </div>
                         </div>

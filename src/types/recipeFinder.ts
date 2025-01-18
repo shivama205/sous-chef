@@ -18,9 +18,3 @@ export interface Recipe {
   instructions: string[];
   nutritionalValue: NutritionalValue;
 }
-
-// RecipeFinderMetadata is the metadata object for the RecipeFinder service
-export interface RecipeFinderMetadata {
-  input: RecipeFinderRequest;
-  output: Recipe[];
-}

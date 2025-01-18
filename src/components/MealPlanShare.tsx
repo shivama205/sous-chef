@@ -56,35 +56,27 @@ export const MealPlanShare: React.FC<MealPlanShareProps> = ({
       // Calculate total nutrition values
       const totalNutrition = mealPlanData.days.reduce((total, day) => {
         const dayTotal = day.meals.reduce((mealTotal, meal) => ({
-          calories: mealTotal.calories + meal.nutritionInfo.calories,
-          protein: mealTotal.protein + meal.nutritionInfo.protein,
-          carbs: mealTotal.carbs + meal.nutritionInfo.carbs,
-          fat: mealTotal.fat + meal.nutritionInfo.fat,
-          fiber: mealTotal.fiber + meal.nutritionInfo.fiber,
-          sugar: mealTotal.sugar + meal.nutritionInfo.sugar,
+          calories: mealTotal.calories + meal.nutritionalValue.calories,
+          protein: mealTotal.protein + meal.nutritionalValue.protein,
+          carbs: mealTotal.carbs + meal.nutritionalValue.carbs,
+          fat: mealTotal.fat + meal.nutritionalValue.fat,
         }), {
           calories: 0,
           protein: 0,
           carbs: 0,
           fat: 0,
-          fiber: 0,
-          sugar: 0,
         });
         return {
           calories: total.calories + dayTotal.calories,
           protein: total.protein + dayTotal.protein,
           carbs: total.carbs + dayTotal.carbs,
           fat: total.fat + dayTotal.fat,
-          fiber: total.fiber + dayTotal.fiber,
-          sugar: total.sugar + dayTotal.sugar,
         };
       }, {
         calories: 0,
         protein: 0,
         carbs: 0,
         fat: 0,
-        fiber: 0,
-        sugar: 0,
       });
 
       // Format the meal plan data for better readability
@@ -95,8 +87,6 @@ export const MealPlanShare: React.FC<MealPlanShareProps> = ({
           protein: `${totalNutrition.protein}g`,
           carbs: `${totalNutrition.carbs}g`,
           fat: `${totalNutrition.fat}g`,
-          fiber: `${totalNutrition.fiber}g`,
-          sugar: `${totalNutrition.sugar}g`,
         },
         days: mealPlanData.days.map(day => ({
           day: day.day,
@@ -104,13 +94,11 @@ export const MealPlanShare: React.FC<MealPlanShareProps> = ({
             name: meal.name,
             time: meal.time,
             recipeLink: meal.recipeLink,
-            nutritionInfo: {
-              calories: meal.nutritionInfo.calories,
-              protein: `${meal.nutritionInfo.protein}g`,
-              carbs: `${meal.nutritionInfo.carbs}g`,
-              fat: `${meal.nutritionInfo.fat}g`,
-              fiber: `${meal.nutritionInfo.fiber}g`,
-              sugar: `${meal.nutritionInfo.sugar}g`,
+            nutritionalValue: {
+              calories: meal.nutritionalValue.calories,
+              protein: `${meal.nutritionalValue.protein}g`,
+              carbs: `${meal.nutritionalValue.carbs}g`,
+              fat: `${meal.nutritionalValue.fat}g`,
             }
           }))
         }))

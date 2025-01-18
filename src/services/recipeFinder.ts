@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { RecipeFinderRequest, Recipe, RecipeFinderMetadata } from '@/types/recipeFinder';
-import { FeatureName } from '@/types/features';
+import { RecipeFinderRequest, Recipe } from '@/types/recipeFinder';
+import { FeatureName, RecipeFinderMetadata } from '@/types/features';
 import { trackFeatureUsage } from '@/utils/analytics';
 
 export async function findRecipes(request: RecipeFinderRequest): Promise<Recipe[]> {

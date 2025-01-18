@@ -14,13 +14,13 @@ import { toast } from "sonner";
 import html2canvas from "html2canvas";
 import { MealPlan } from "@/types/mealPlan";
 
-interface MealPlanDetailsProps {
+interface MealPlanActionsProps {
   mealPlan: MealPlan;
   planName: string;
   mealPlanId: string;
 }
 
-export function MealPlanDetails({ mealPlan, planName, mealPlanId }: MealPlanDetailsProps) {
+export function MealPlanActions({ mealPlan, planName, mealPlanId }: MealPlanActionsProps) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -124,4 +124,6 @@ export function MealPlanDetails({ mealPlan, planName, mealPlanId }: MealPlanDeta
       </Dialog>
     </div>
   );
-} 
+}
+
+export default MealPlanActions; 

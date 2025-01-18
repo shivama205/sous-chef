@@ -1,5 +1,7 @@
 import { HealthyAlternative, HealthyAlternativeRequest, NutritionalValue } from "./healthyAlternative";
-import { RecipeFinderMetadata } from "./recipeFinder";
+import { MealPlanGenerationRequest } from "./mealPlan";
+import { MealPlan } from "./mealPlan";
+import { Recipe, RecipeFinderRequest } from "./recipeFinder";
 
 // Feature Names
 export enum FeatureName {
@@ -9,16 +11,19 @@ export enum FeatureName {
   RECIPE_FINDER = 'recipe_finder'
 }
 
-// Metadata Interfaces
-export interface MealPlanMetadata {
-  days: number;
-  cuisinePreferences?: string[];
-  dietaryRestrictions?: string[];
-  targetCalories?: number;
+// MealPlanGenerationMetadata is the metadata object for the MealPlanGeneration service
+export interface MealPlanGenerationMetadata {
+  input: MealPlanGenerationRequest;
+  output: MealPlan;
 }
 
+// RecipeFinderMetadata is the metadata object for the RecipeFinder service
+export interface RecipeFinderMetadata {
+  input: RecipeFinderRequest;
+  output: Recipe[];
+}
 
-// Healthy Alternative Metadata to be stored in the user activity log
+// HealthyAlternativeMetadata is the metadata object for the HealthyAlternative service
 export interface HealthyAlternativeMetadata {
   input: HealthyAlternativeRequest;
   output: HealthyAlternative[];
@@ -35,7 +40,7 @@ export interface MacroCalculatorMetadata {
 
 // Combined Metadata Type
 export type FeatureMetadata = {
-  meal_plan_generation: MealPlanMetadata;
+  meal_plan_generation: MealPlanGenerationMetadata;
   healthy_alternative: HealthyAlternativeMetadata;
   macro_calculator: MacroCalculatorMetadata;
   recipe_finder: RecipeFinderMetadata;
