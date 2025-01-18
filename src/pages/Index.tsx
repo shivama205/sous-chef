@@ -54,7 +54,7 @@ const testimonials = [
   }
 ];
 
-function Index() {
+export default function Index() {
   const navigate = useNavigate();
   const { user } = useUser();
   const [stats, setStats] = useState({
@@ -80,16 +80,10 @@ function Index() {
         .select('*')
         .eq('user_id', user.id);
 
-      const { data: credits } = await supabase
-        .from('user_credits')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
       setStats({
         savedPlansCount: plans?.length || 0,
-        creditsUsed: credits?.used || 0,
-        maxCredits: credits?.max || 10
+        creditsUsed: 0,
+        maxCredits: 0
       });
     } catch (error) {
       console.error('Error fetching user stats:', error);
@@ -101,10 +95,10 @@ function Index() {
     
     try {
       const { data } = await supabase
-        .from('user_activity')
+        .from('feature_analytics')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
+        .order('used_at', { ascending: false })
         .limit(5);
 
       setActivities(data || []);
@@ -119,7 +113,7 @@ function Index() {
         <div className="pt-4">
           <PageHeader
             icon={Sparkles}
-            title={`Welcome back, ${user?.user_metadata.full_name || 'User'}!`}
+            title={`Welcome back, ${user?.user_metadata?.full_name || 'User'}!`}
             description="Your personal AI-powered meal planning assistant"
             className="text-left"
           />
@@ -134,8 +128,7 @@ function Index() {
         {/* Stats Grid */}
         <DashboardStats
           savedPlansCount={stats.savedPlansCount}
-          creditsUsed={stats.creditsUsed}
-          maxCredits={stats.maxCredits}
+          totalFeatureUsage={stats.creditsUsed}
         />
 
         {/* Recent Activity */}
@@ -215,12 +208,14 @@ function Index() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white rounded-lg p-6 shadow-sm"
+              className="bg-white/80 backdrop-blur-sm p-6 rounded-lg shadow-sm"
             >
               <div className="flex items-center gap-2 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
-                ))}
+                <Star className="w-5 h-5 text-yellow-400" />
+                <Star className="w-5 h-5 text-yellow-400" />
+                <Star className="w-5 h-5 text-yellow-400" />
+                <Star className="w-5 h-5 text-yellow-400" />
+                <Star className="w-5 h-5 text-yellow-400" />
               </div>
               <p className="text-gray-600 mb-4">{testimonial.content}</p>
               <div>
@@ -231,21 +226,6 @@ function Index() {
           ))}
         </div>
       </section>
-
-      {/* CTA Section */}
-      <section className="text-center space-y-6">
-        <h2 className="text-3xl font-bold">Ready to Start Your Journey?</h2>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Join thousands of users who have transformed their eating habits with SousChef.
-        </p>
-        <Button 
-          size="lg" 
-          onClick={() => navigate('/meal-plan')}
-          className="w-full sm:w-auto"
-        >
-          Get Started Now
-        </Button>
-      </section>
     </div>
   );
 
@@ -255,5 +235,3 @@ function Index() {
     </BaseLayout>
   );
 }
-
-export default Index;

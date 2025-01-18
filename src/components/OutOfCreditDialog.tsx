@@ -8,12 +8,12 @@ import {
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 
-interface UpgradeDialogProps {
+interface OutOfCreditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
+export const OutOfCreditDialog = ({ open, onOpenChange }: OutOfCreditDialogProps) => {
   const navigate = useNavigate();
   
   const handleViewPricing = () => {
