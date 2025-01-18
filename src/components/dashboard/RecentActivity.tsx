@@ -1,8 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Leaf, Utensils, Apple, Calculator, ChefHat, Search } from "lucide-react";
+import { Leaf, Calculator, ChefHat, Search } from "lucide-react";
 import { 
   FeatureName, 
-  FeatureMetadata, 
   MealPlanGenerationMetadata, 
   HealthyAlternativeMetadata,
   featureDescriptions, 

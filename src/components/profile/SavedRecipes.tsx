@@ -122,7 +122,12 @@ export function SavedRecipes() {
                   </div>
                   {recipe.created_at && (
                     <p className="text-xs text-muted-foreground">
-                      Saved on {new Date(recipe.created_at).toLocaleDateString()}
+                      Saved on {new Date(recipe.created_at).toLocaleString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric', 
+                        month: 'short',
+                        day: 'numeric'
+                      })}
                     </p>
                   )}
                   <div className="flex flex-wrap gap-1 mt-2">

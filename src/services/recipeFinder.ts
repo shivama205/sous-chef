@@ -48,11 +48,11 @@ function generatePrompt(request: RecipeFinderRequest): string {
 
   Format the response as a JSON object with this structure:
   [{
-    "mealName": string,
-    "cookingTime": number,
+    "meal_name": string,
+    "cooking_time": number,
     "ingredients": string[],
     "instructions": string[],
-    "nutritionalValue": {
+    "nutritional_value": {
       "calories": number,
       "protein": number, 
       "carbs": number,

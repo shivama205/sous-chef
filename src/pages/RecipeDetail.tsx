@@ -100,7 +100,12 @@ export default function RecipeDetail() {
           </div>
           {recipe.created_at && (
             <p className="text-sm text-muted-foreground">
-              Saved on {new Date(recipe.created_at).toLocaleDateString()}
+              Saved on {new Date(recipe.created_at).toLocaleString('en-US', {
+                weekday: 'long',
+                year: 'numeric', 
+                month: 'short',
+                day: 'numeric'
+              })}
             </p>
           )}
         </div>

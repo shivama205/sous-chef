@@ -239,7 +239,6 @@ export default function RecipeFinder() {
       setSavedRecipeIds(prev => {
         const newSet = new Set(prev);
         newSet.add(savedRecipe.id);
-        console.log("Updated saved recipe ids:", Array.from(newSet));
         return newSet;
       });
       

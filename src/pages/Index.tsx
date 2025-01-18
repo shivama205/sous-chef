@@ -170,7 +170,7 @@ export default function Index() {
 
         {/* Quick Actions */}
         <section className="space-y-6">
-          <h2 className="text-xl font-semibold">Quick Actions</h2>act
+          <h2 className="text-xl font-semibold">Quick Actions</h2>
           <QuickActions />
         </section>
 
