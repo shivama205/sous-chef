@@ -82,7 +82,7 @@ export const MealPlanDetails = () => {
   const handleRegenerateMealPlan = async () => {
     if (!mealPlan) return;
 
-    // Check if user is logged in and has credits
+    // Check if user is logged in
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) {
       setLoginDialogOpen(true);
@@ -92,16 +92,14 @@ export const MealPlanDetails = () => {
     setIsRegenerating(true);
 
     try {
-      // Get the original request from location state or saved plan
-      const request = location.state?.request || {
-        days: mealPlan.days.length,
-        userMacros: null,
-        cuisinePreferences: [],
-        dietaryRestrictions: ""
-      };
-
-      // If we have an ID, get the preferences from the saved plan
-      if (id) {
+      let request;
+      
+      // For new meal plans, use the request from location state
+      if (location.state?.request) {
+        request = location.state.request;
+      } 
+      // For saved meal plans, get preferences from the database
+      else if (id && id !== 'new') {
         const { data: savedPlan } = await supabase
           .from('saved_meal_plans')
           .select('plan')
@@ -109,15 +107,27 @@ export const MealPlanDetails = () => {
           .single();
 
         if (savedPlan?.plan?.preferences) {
-          request.cuisinePreferences = savedPlan.plan.preferences.cuisinePreferences || [];
-          request.dietaryRestrictions = savedPlan.plan.preferences.dietaryRestrictions || "";
-          request.userMacros = {
-            calories: savedPlan.plan.preferences.targetCalories,
-            protein: savedPlan.plan.preferences.targetProtein,
-            carbs: savedPlan.plan.preferences.targetCarbs,
-            fat: savedPlan.plan.preferences.targetFat,
+          request = {
+            days: mealPlan.days.length,
+            cuisinePreferences: savedPlan.plan.preferences.cuisinePreferences || [],
+            dietaryRestrictions: savedPlan.plan.preferences.dietaryRestrictions || "",
+            userMacros: savedPlan.plan.preferences.userMacros || {
+              calories: savedPlan.plan.preferences.targetCalories,
+              protein: savedPlan.plan.preferences.targetProtein,
+              carbs: savedPlan.plan.preferences.targetCarbs,
+              fat: savedPlan.plan.preferences.targetFat,
+            }
           };
         }
+      }
+      // Fallback to basic request if no preferences found
+      if (!request) {
+        request = {
+          days: mealPlan.days.length,
+          userMacros: null,
+          cuisinePreferences: [],
+          dietaryRestrictions: ""
+        };
       }
 
       const newMealPlan = await generateMealPlan(request);
@@ -128,8 +138,8 @@ export const MealPlanDetails = () => {
         name: mealPlan.name
       });
 
-      // If this was a saved plan, update it in the database
-      if (id) {
+      // If this was a saved plan (not new), update it in the database
+      if (id && id !== 'new') {
         const { error: updateError } = await supabase
           .from('saved_meal_plans')
           .update({ 

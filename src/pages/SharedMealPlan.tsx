@@ -92,20 +92,30 @@ export function SharedMealPlan() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
+        <NavigationBar />
+        <main className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin" />
+          </div>
+        </main>
       </div>
     );
   }
 
   if (!mealPlan) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <h1 className="text-2xl font-bold mb-4">Meal Plan Not Found</h1>
-        <p className="text-gray-600 mb-6">This meal plan may have been deleted or is not publicly accessible.</p>
-        <Button onClick={() => window.location.href = "/"}>
-          Go to Homepage
-        </Button>
+      <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
+        <NavigationBar />
+        <main className="container mx-auto px-4 py-8">
+          <Card className="p-6 text-center">
+            <h1 className="text-2xl font-bold mb-4">Meal Plan Not Found</h1>
+            <p className="text-gray-600 mb-6">This meal plan may have been deleted or is not publicly accessible.</p>
+            <Button onClick={() => window.location.href = "/"}>
+              Go to Homepage
+            </Button>
+          </Card>
+        </main>
       </div>
     );
   }
@@ -122,13 +132,13 @@ export function SharedMealPlan() {
       "nutrition": {
         "@type": "NutritionInformation",
         "calories": `${mealPlan?.days.reduce((total, day) => 
-          total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionInfo.calories, 0), 0)} calories`,
+          total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionalValue.calories, 0), 0)} calories`,
         "proteinContent": `${mealPlan?.days.reduce((total, day) => 
-          total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionInfo.protein, 0), 0)}g`,
+          total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionalValue.protein, 0), 0)}g`,
         "carbohydrateContent": `${mealPlan?.days.reduce((total, day) => 
-          total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionInfo.carbs, 0), 0)}g`,
+          total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionalValue.carbs, 0), 0)}g`,
         "fatContent": `${mealPlan?.days.reduce((total, day) => 
-          total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionInfo.fat, 0), 0)}g`
+          total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionalValue.fat, 0), 0)}g`
       }
     }
   };
@@ -174,71 +184,76 @@ export function SharedMealPlan() {
               transition={{ duration: 0.5 }}
               className="relative"
             >
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {mealPlan.days.map((day, dayIndex) => (
-                  <div key={dayIndex} className="bg-white rounded-lg shadow-sm overflow-hidden">
-                    <div className="bg-gradient-to-r from-primary to-primary/80 py-3 px-4">
-                      <h3 className="text-white font-semibold">{day.day}</h3>
-                    </div>
-                    <div className="divide-y divide-gray-100">
-                      {day.meals.map((meal, mealIndex) => (
-                        <div key={mealIndex} className="p-4 space-y-3">
-                          <div className="space-y-1">
-                            <div className="text-sm text-gray-500">{meal.time}</div>
-                            <div className="font-medium text-gray-900">{meal.name}</div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div className="bg-primary/5 p-2 rounded">
-                              <div className="text-gray-500 text-xs">Protein</div>
-                              <div className="font-medium text-gray-900">{meal.nutritionInfo.protein}g</div>
+              <div className="overflow-x-auto pb-4">
+                <div className="flex gap-4 min-w-max">
+                  {mealPlan.days.map((day, dayIndex) => (
+                    <div 
+                      key={dayIndex} 
+                      className="bg-white rounded-lg shadow-sm w-[300px]"
+                    >
+                      <div className="bg-gradient-to-r from-primary to-primary/80 py-3 px-4">
+                        <h3 className="text-white font-semibold">{day.day}</h3>
+                      </div>
+                      <div className="divide-y divide-gray-100">
+                        {day.meals.map((meal, mealIndex) => (
+                          <div key={mealIndex} className="p-4 space-y-3">
+                            <div className="space-y-1">
+                              <div className="text-sm text-gray-500">{meal.time}</div>
+                              <div className="font-medium text-gray-900">{meal.name}</div>
                             </div>
-                            <div className="bg-primary/5 p-2 rounded">
-                              <div className="text-gray-500 text-xs">Fat</div>
-                              <div className="font-medium text-gray-900">{meal.nutritionInfo.fat}g</div>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div className="bg-primary/5 p-2 rounded">
+                                <div className="text-gray-500 text-xs">Protein</div>
+                                <div className="font-medium text-gray-900">{meal.nutritionalValue.protein}g</div>
+                              </div>
+                              <div className="bg-primary/5 p-2 rounded">
+                                <div className="text-gray-500 text-xs">Fat</div>
+                                <div className="font-medium text-gray-900">{meal.nutritionalValue.fat}g</div>
+                              </div>
+                              <div className="bg-primary/5 p-2 rounded">
+                                <div className="text-gray-500 text-xs">Carbs</div>
+                                <div className="font-medium text-gray-900">{meal.nutritionalValue.carbs}g</div>
+                              </div>
+                              <div className="bg-primary/5 p-2 rounded">
+                                <div className="text-gray-500 text-xs">Calories</div>
+                                <div className="font-medium text-gray-900">{meal.nutritionalValue.calories}</div>
+                              </div>
                             </div>
-                            <div className="bg-primary/5 p-2 rounded">
-                              <div className="text-gray-500 text-xs">Carbs</div>
-                              <div className="font-medium text-gray-900">{meal.nutritionInfo.carbs}g</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="bg-gray-50 p-4">
+                        <div className="text-sm font-medium text-gray-900 mb-2">Daily Total</div>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div className="bg-white p-2 rounded shadow-sm">
+                            <div className="text-gray-500 text-xs">Protein</div>
+                            <div className="font-medium text-gray-900">
+                              {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.protein, 0)}g
                             </div>
-                            <div className="bg-primary/5 p-2 rounded">
-                              <div className="text-gray-500 text-xs">Calories</div>
-                              <div className="font-medium text-gray-900">{meal.nutritionInfo.calories}</div>
+                          </div>
+                          <div className="bg-white p-2 rounded shadow-sm">
+                            <div className="text-gray-500 text-xs">Fat</div>
+                            <div className="font-medium text-gray-900">
+                              {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.fat, 0)}g
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="bg-gray-50 p-4">
-                      <div className="text-sm font-medium text-gray-900 mb-2">Daily Total</div>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div className="bg-white p-2 rounded shadow-sm">
-                          <div className="text-gray-500 text-xs">Protein</div>
-                          <div className="font-medium text-gray-900">
-                            {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.protein, 0)}g
+                          <div className="bg-white p-2 rounded shadow-sm">
+                            <div className="text-gray-500 text-xs">Carbs</div>
+                            <div className="font-medium text-gray-900">
+                              {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.carbs, 0)}g
+                            </div>
                           </div>
-                        </div>
-                        <div className="bg-white p-2 rounded shadow-sm">
-                          <div className="text-gray-500 text-xs">Fat</div>
-                          <div className="font-medium text-gray-900">
-                            {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.fat, 0)}g
-                          </div>
-                        </div>
-                        <div className="bg-white p-2 rounded shadow-sm">
-                          <div className="text-gray-500 text-xs">Carbs</div>
-                          <div className="font-medium text-gray-900">
-                            {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.carbs, 0)}g
-                          </div>
-                        </div>
-                        <div className="bg-white p-2 rounded shadow-sm">
-                          <div className="text-gray-500 text-xs">Calories</div>
-                          <div className="font-medium text-gray-900">
-                            {day.meals.reduce((sum, meal) => sum + meal.nutritionInfo.calories, 0)}
+                          <div className="bg-white p-2 rounded shadow-sm">
+                            <div className="text-gray-500 text-xs">Calories</div>
+                            <div className="font-medium text-gray-900">
+                              {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.calories, 0)}
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </motion.div>
 

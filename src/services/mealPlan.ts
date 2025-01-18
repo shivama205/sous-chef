@@ -77,25 +77,24 @@ export async function generatePrompt(request: MealPlanGenerationRequest): Promis
     - Daily Carbs: ${request.userMacros?.carbs ? request.userMacros.carbs : '150'}g
     - Daily Fat: ${request.userMacros?.fat ? request.userMacros.fat : '50'}g
 
+    Do not include any other text in the response.
 
-    Format the response as a JSON object with this structure:
+    Response should follow this schema:
     {
       "days": [
         {
-          "day": "Monday",
-          "meals": [
-            {
-              "name": "Meal name",
-              "time": "Breakfast", // Breakfast, Morning Snack, Lunch, Afternoon Snack, Dinner
-              "recipeLink": "URL", // Google search url for the recipe
-              "nutritionalValue": {
-                "calories": 500,
-                "protein": 30,
-                "carbs": 50,
-                "fat": 20,
-              }
+          "day": string,
+          "meals": [{
+            "name": string,
+            "time": string, // Breakfast, Morning Snack, Lunch, Afternoon Snack, Dinner
+            "recipeLink": string, // Google search url for the recipe
+            "nutritionalValue": {
+              "calories": number,
+              "protein": number, 
+              "carbs": number,
+              "fat": number
             }
-          ]
+          }]
         }
       ]
     }`;

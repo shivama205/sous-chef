@@ -76,10 +76,6 @@ export function MealPlan() {
   const [savedMacros, setSavedMacros] = useState<UserMacros | null>(null);
   const [currentPreferences, setCurrentPreferences] = useState<Preferences>(initialPreferences);
   const [user, setUser] = useState<User | null>(null);
-  const [stats, setStats] = useState({
-    savedPlansCount: 0,
-    totalFeatureUsage: 0
-  });
 
   useEffect(() => {
     const getUser = async () => {

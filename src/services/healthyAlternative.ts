@@ -52,6 +52,8 @@ function generatePrompt(request: HealthyAlternativeRequest): string {
   Format the response as JSON with alternatives array.
   If no alternatives are found, return an empty array.
 
+  Do not include any other text in the response.
+
   Response should follow this schema (array of alternatives):
   [{
     "mealName": string,

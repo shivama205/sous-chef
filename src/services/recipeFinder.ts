@@ -43,7 +43,9 @@ function generatePrompt(request: RecipeFinderRequest): string {
 
   Also consider user's macros if provided:
   Macros: ${request.macros}
-    
+
+  Do not include any other text in the response.
+
   Format the response as a JSON object with this structure:
   [{
     "mealName": string,
