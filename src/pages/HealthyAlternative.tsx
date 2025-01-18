@@ -88,6 +88,34 @@ const faqs = [
   }
 ];
 
+const GetHealthyAlternatives = async (mealName: string, dietaryRestrictions: string, additionalInstructions: string) => {
+  const prompt = generateAlternativePrompt({
+    mealName,
+    dietaryRestrictions,
+    additionalInstructions
+  });
+
+  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  const text = response.text();
+
+  // Extract JSON from the response
+  const jsonMatch = text.match(/```json([\s\S]*?)```/) || [null, text];
+  const jsonString = jsonMatch[1]?.trim() || text.trim();
+
+  let data;
+  try {
+    data = JSON.parse(jsonString);
+  } catch (e) {
+    throw new Error('Failed to parse response from AI');
+  }
+
+  return data;
+};
+
 
 const NoAlternativesFound = ({ suggestions }: { suggestions: string[] }) => (
   <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-sm p-6 mt-8">
@@ -140,37 +168,7 @@ export default function HealthyAlternative() {
 
     setIsLoading(true);
     try {
-      await trackFeatureUsage("healthy_alternative", {
-        mealName,
-        success: false,
-        alternativesFound: 0,
-        dietaryRestrictions: dietaryRestrictions,
-        error: undefined
-      });
-
-      const prompt = generateAlternativePrompt({
-        mealName,
-        dietaryRestrictions: dietaryRestrictions,
-        additionalInstructions
-      });
-
-      const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      // Extract JSON from the response
-      const jsonMatch = text.match(/```json([\s\S]*?)```/) || [null, text];
-      const jsonString = jsonMatch[1]?.trim() || text.trim();
-      
-      let data;
-      try {
-        data = JSON.parse(jsonString);
-      } catch (e) {
-        throw new Error('Failed to parse response from AI');
-      }
+      const data = await GetHealthyAlternatives(mealName, dietaryRestrictions, additionalInstructions);
 
       if (!data || typeof data !== 'object') {
         throw new Error('Invalid response format');
@@ -189,7 +187,9 @@ export default function HealthyAlternative() {
           alternativesFound: alternatives.length,
           alternatives: alternatives.map(alt => ({
             original: mealName,
-            substitute: alt.substitute
+            substitute: alt.substitute,
+            benefits: alt.benefits,
+            nutritionalComparison: alt.nutritionalComparison
           })),
           dietaryRestrictions: dietaryRestrictions,
           error: undefined
@@ -311,18 +311,16 @@ export default function HealthyAlternative() {
                         <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                           <div className="space-y-1 sm:space-y-2">
                             <div className="flex items-center gap-3">
-                              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
-                                {alt.original}
-                              </h3>
                               <div className="hidden sm:block w-8 text-center">→</div>
                               <h3 className="text-lg sm:text-xl font-semibold text-primary">
                                 {alt.substitute}
                               </h3>
+                              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                <Leaf className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                              </div>
                             </div>
                           </div>
-                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <Leaf className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                          </div>
+                          
                         </div>
 
                         {/* Content Grid */}
@@ -351,14 +349,12 @@ export default function HealthyAlternative() {
                             </div>
                             <div className="space-y-3">
                               <div className="flex items-center gap-3">
-                                <span className="w-1.5 h-1.5 rounded-full bg-primary/60 flex-shrink-0" />
                                 <div>
                                   <p className="text-sm font-medium text-gray-900">Calories</p>
                                   <p className="text-sm text-gray-600">{alt.nutritionalComparison.calories}</p>
                                 </div>
                               </div>
                               <div className="flex items-center gap-3">
-                                <span className="w-1.5 h-1.5 rounded-full bg-primary/60 flex-shrink-0" />
                                 <div>
                                   <p className="text-sm font-medium text-gray-900">Protein</p>
                                   <p className="text-sm text-gray-600">{alt.nutritionalComparison.protein}</p>
