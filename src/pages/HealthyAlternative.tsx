@@ -1,37 +1,28 @@
 import { useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { useUser } from "@/hooks/useUser";
-import { trackFeatureUsage } from "@/utils/analytics";
-import { generateHealthySuggestions, generateAlternativePrompt, getErrorMessage } from "@/utils/healthyAlternatives";
-import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
-import { LoginDialog } from "@/components/LoginDialog";
+import { Apple, Heart, Brain, Scale, ChefHat, Leaf, HelpCircle, Star, Clock, Utensils, ListOrdered } from "lucide-react";
+import { generateHealthyAlternative } from "@/services/healthyAlternative";
+import type { HealthyAlternative } from "@/types/healthyAlternative";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { FeatureCard } from "@/components/ui/FeatureCard";
-import { Apple, Leaf, Heart, Brain, Scale, ChefHat, HelpCircle, History, Star } from "lucide-react";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
-import { 
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { History } from "lucide-react";
+import { Accordion, AccordionContent, AccordionTrigger, AccordionItem } from "@/components/ui/accordion";
+import { FeatureCard } from "@/components/ui/FeatureCard";
+import { LoginDialog } from "@/components/LoginDialog";
+import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
 
-interface Alternative {
-  original: string;
-  substitute: string;
-  benefits: string[];
-  nutritionalComparison: {
-    calories: string;
-    protein: string;
-    healthBenefits: string[];
-  };
-}
+const suggestionList = [
+  "Ensure meal name is spelled correctly",
+    "Specify the dietary restrictions and additional instructions in the input field",
+  "Try different meal names if the first one doesn't work",
+  "Try describing the meal in more detail under 'Additional Instructions'",
+]
 
 const features = [
   {
@@ -88,34 +79,6 @@ const faqs = [
   }
 ];
 
-const GetHealthyAlternatives = async (mealName: string, dietaryRestrictions: string, additionalInstructions: string) => {
-  const prompt = generateAlternativePrompt({
-    mealName,
-    dietaryRestrictions,
-    additionalInstructions
-  });
-
-  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  const text = response.text();
-
-  // Extract JSON from the response
-  const jsonMatch = text.match(/```json([\s\S]*?)```/) || [null, text];
-  const jsonString = jsonMatch[1]?.trim() || text.trim();
-
-  let data;
-  try {
-    data = JSON.parse(jsonString);
-  } catch (e) {
-    throw new Error('Failed to parse response from AI');
-  }
-
-  return data;
-};
-
 
 const NoAlternativesFound = ({ suggestions }: { suggestions: string[] }) => (
   <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-sm p-6 mt-8">
@@ -142,7 +105,7 @@ export default function HealthyAlternative() {
   const [mealName, setMealName] = useState("");
   const [dietaryRestrictions, setDietaryRestrictions] = useState("");
   const [additionalInstructions, setAdditionalInstructions] = useState("");
-  const [alternatives, setAlternatives] = useState<Alternative[]>([]);
+  const [alternatives, setAlternatives] = useState<HealthyAlternative[]>([]);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -161,6 +124,7 @@ export default function HealthyAlternative() {
       return;
     }
 
+    // Check if user is logged in, if not, open the login dialog
     if (!user) {
       setLoginDialogOpen(true);
       return;
@@ -168,71 +132,29 @@ export default function HealthyAlternative() {
 
     setIsLoading(true);
     try {
-      const data = await GetHealthyAlternatives(mealName, dietaryRestrictions, additionalInstructions);
-
-      if (!data || typeof data !== 'object') {
-        throw new Error('Invalid response format');
-      }
-
-      const alternatives = Array.isArray(data.alternatives) ? data.alternatives : [];
-      const success = alternatives.length > 0;
-
-      if (success) {
-        setAlternatives(alternatives);
-        setSuggestions([]);
-        
-        await trackFeatureUsage('healthy_alternative', {
-          mealName,
-          success: true,
-          alternativesFound: alternatives.length,
-          alternatives: alternatives.map(alt => ({
-            original: mealName,
-            substitute: alt.substitute,
-            benefits: alt.benefits,
-            nutritionalComparison: alt.nutritionalComparison
-          })),
-          dietaryRestrictions: dietaryRestrictions,
-          error: undefined
-        });
-
-        toast({
-          title: "Success",
-          description: `Found ${alternatives.length} healthy alternatives for your meal!`,
-        });
-      } else {
-        setAlternatives([]);
-        const suggestions = generateHealthySuggestions({
-          mealName,
-          dietaryRestrictions,
-          additionalInstructions
-        });
-        setSuggestions(suggestions);
-        
-        toast({
-          title: "No Alternatives Found",
-          description: "We couldn't find direct alternatives, but here are some suggestions to make your meal healthier.",
-        });
-      }
-    } catch (error) {
-      console.error('Error finding alternatives:', error);
-      const errorMessage = getErrorMessage(error);
-      setError(errorMessage);
-      setAlternatives([]);
-      setSuggestions([]);
-      
-      await trackFeatureUsage('healthy_alternative', {
+      const alternatives: HealthyAlternative[] = await generateHealthyAlternative({
         mealName,
-        success: false,
-        alternativesFound: 0,
-        dietaryRestrictions: dietaryRestrictions,
-        error: errorMessage
+        dietaryRestrictions,
+        additionalInstructions
       });
+
+      console.log('alternatives', alternatives);
+
+      setAlternatives(alternatives);
+      setSuggestions([]);
 
       toast({
-        title: "Error",
-        description: "Failed to find alternatives. Please try again.",
-        variant: "destructive"
+        title: "Success",
+        description: `Found ${alternatives.length} healthy alternatives for your meal!`,
       });
+
+    } catch (error) {
+      toast({
+        title: "No Alternatives Found",
+        description: "We couldn't find direct alternatives, but here are some suggestions to make your meal healthier.",
+      });
+      setAlternatives([]);
+      setSuggestions(suggestionList);
     } finally {
       setIsLoading(false);
     }
@@ -313,58 +235,92 @@ export default function HealthyAlternative() {
                             <div className="flex items-center gap-3">
                               <div className="hidden sm:block w-8 text-center">→</div>
                               <h3 className="text-lg sm:text-xl font-semibold text-primary">
-                                {alt.substitute}
+                                {alt.mealName}
                               </h3>
                               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                                 <Leaf className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                               </div>
                             </div>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Clock className="w-4 h-4" />
+                              <span>Cooking Time: {alt.cookingTime} minutes</span>
+                            </div>
                           </div>
-                          
                         </div>
 
                         {/* Content Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          {/* Benefits */}
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-2">
-                              <Heart className="w-5 h-5 text-primary" />
-                              <h4 className="font-medium text-gray-900">Benefits</h4>
+                          {/* Left Column: Ingredients and Instructions */}
+                          <div className="space-y-6">
+                            {/* Ingredients */}
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2">
+                                <Utensils className="w-5 h-5 text-primary" />
+                                <h4 className="font-medium text-gray-900">Ingredients</h4>
+                              </div>
+                              <ul className="space-y-2">
+                                {alt.ingredients.map((ingredient, i) => (
+                                  <li key={i} className="flex items-start gap-3">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary/60 flex-shrink-0 mt-2" />
+                                    <span className="text-sm text-gray-600">{ingredient}</span>
+                                  </li>
+                                ))}
+                              </ul>
                             </div>
-                            <ul className="space-y-3">
-                              {alt.benefits.map((benefit, i) => (
-                                <li key={i} className="flex items-start gap-3">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-primary/60 flex-shrink-0 mt-2" />
-                                  <span className="text-sm text-gray-600">{benefit}</span>
-                                </li>
-                              ))}
-                            </ul>
+
+                            {/* Instructions */}
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2">
+                                <ListOrdered className="w-5 h-5 text-primary" />
+                                <h4 className="font-medium text-gray-900">Instructions</h4>
+                              </div>
+                              <ol className="space-y-2">
+                                {alt.instructions.map((instruction, i) => (
+                                  <li key={i} className="flex items-start gap-3">
+                                    <span className="text-sm font-medium text-primary/60">{i + 1}.</span>
+                                    <span className="text-sm text-gray-600">{instruction}</span>
+                                  </li>
+                                ))}
+                              </ol>
+                            </div>
                           </div>
 
-                          {/* Nutritional Comparison */}
-                          <div className="space-y-4 pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-gray-100 md:pl-6">
-                            <div className="flex items-center gap-2">
-                              <Scale className="w-5 h-5 text-primary" />
-                              <h4 className="font-medium text-gray-900">Nutritional Comparison</h4>
-                            </div>
+                          {/* Right Column: Nutritional Info and Benefits */}
+                          <div className="space-y-6">
+                            {/* Nutritional Info */}
                             <div className="space-y-3">
-                              <div className="flex items-center gap-3">
-                                <div>
-                                  <p className="text-sm font-medium text-gray-900">Calories</p>
-                                  <p className="text-sm text-gray-600">{alt.nutritionalComparison.calories}</p>
-                                </div>
+                              <div className="flex items-center gap-2">
+                                <Scale className="w-5 h-5 text-primary" />
+                                <h4 className="font-medium text-gray-900">Nutritional Value</h4>
                               </div>
-                              <div className="flex items-center gap-3">
-                                <div>
-                                  <p className="text-sm font-medium text-gray-900">Protein</p>
-                                  <p className="text-sm text-gray-600">{alt.nutritionalComparison.protein}</p>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-primary/5 rounded-lg p-3">
+                                  <p className="text-sm text-gray-600">Calories</p>
+                                  <p className="text-lg font-semibold text-primary">{alt.nutritionalValue.calories}</p>
+                                </div>
+                                <div className="bg-primary/5 rounded-lg p-3">
+                                  <p className="text-sm text-gray-600">Protein</p>
+                                  <p className="text-lg font-semibold text-primary">{alt.nutritionalValue.protein}g</p>
+                                </div>
+                                <div className="bg-primary/5 rounded-lg p-3">
+                                  <p className="text-sm text-gray-600">Carbs</p>
+                                  <p className="text-lg font-semibold text-primary">{alt.nutritionalValue.carbs}g</p>
+                                </div>
+                                <div className="bg-primary/5 rounded-lg p-3">
+                                  <p className="text-sm text-gray-600">Fat</p>
+                                  <p className="text-lg font-semibold text-primary">{alt.nutritionalValue.fat}g</p>
                                 </div>
                               </div>
                             </div>
-                            <div className="mt-4">
-                              <h5 className="text-sm font-medium mb-3">Additional Health Benefits</h5>
-                              <ul className="space-y-3">
-                                {alt.nutritionalComparison.healthBenefits.map((benefit, i) => (
+
+                            {/* Benefits */}
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2">
+                                <Heart className="w-5 h-5 text-primary" />
+                                <h4 className="font-medium text-gray-900">Health Benefits</h4>
+                              </div>
+                              <ul className="space-y-2">
+                                {alt.nutritionComparison.map((benefit, i) => (
                                   <li key={i} className="flex items-start gap-3">
                                     <span className="w-1.5 h-1.5 rounded-full bg-primary/60 flex-shrink-0 mt-2" />
                                     <span className="text-sm text-gray-600">{benefit}</span>
@@ -502,13 +458,13 @@ const recentAlternatives = [
   {
     originalMeal: "Mac and Cheese",
     date: "1 week ago",
-    alternativeCount: 2,
+    alternativeCount: 3,
     saved: false
   },
   {
     originalMeal: "Pizza",
     date: "2 weeks ago",
-    alternativeCount: 4,
+    alternativeCount: 3,
     saved: true
   }
 ]; 

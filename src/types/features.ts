@@ -1,9 +1,12 @@
+import { HealthyAlternative, HealthyAlternativeRequest, NutritionalValue } from "./healthyAlternative";
+
 // Feature Names
-export type FeatureName = 
-  | 'meal_plan_generation'
-  | 'healthy_alternative'
-  | 'macro_calculator'
-  | 'recipe_finder';
+export enum FeatureName {
+  MEAL_PLAN_GENERATION = 'meal_plan_generation',
+  HEALTHY_ALTERNATIVE = 'healthy_alternative',
+  MACRO_CALCULATOR = 'macro_calculator',
+  RECIPE_FINDER = 'recipe_finder'
+}
 
 // Metadata Interfaces
 export interface MealPlanMetadata {
@@ -13,16 +16,11 @@ export interface MealPlanMetadata {
   targetCalories?: number;
 }
 
+
+// Healthy Alternative Metadata to be stored in the user activity log
 export interface HealthyAlternativeMetadata {
-  mealName: string;
-  success: boolean;
-  alternativesFound: number;
-  dietaryRestrictions?: string;
-  alternatives?: Array<{
-    original: string;
-    substitute: string;
-  }>;
-  error?: string;
+  input: HealthyAlternativeRequest;
+  output: HealthyAlternative[];
 }
 
 export interface MacroCalculatorMetadata {

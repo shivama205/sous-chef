@@ -1,28 +1,24 @@
+// Healthy Alternative Request
 export interface HealthyAlternativeRequest {
   mealName: string;
-  dietaryRestrictions?: string[];
-  healthGoals?: string[];
+  dietaryRestrictions?: string;
   additionalInstructions?: string;
 }
 
-export interface HealthyAlternativeResponse {
-  alternatives: string[];
-  success: boolean;
-  error?: string;
+// Healthy Alternative to the original meal
+export interface HealthyAlternative {
+  mealName: string ;
+  cookingTime: number;
+  ingredients: string[];
+  instructions: string[];
+  nutritionalValue: NutritionalValue;
+  nutritionComparison: string[];
 }
 
+// Nutritional Value of the original meal
 export interface NutritionalValue {
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
-  fiber: number;
-}
-
-export interface Recipe {
-  name: string;
-  cookingTime: string;
-  ingredients: string[];
-  instructions: string[];
-  nutritionalValue: NutritionalValue;
 }
