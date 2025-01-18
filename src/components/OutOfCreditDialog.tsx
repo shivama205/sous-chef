@@ -8,12 +8,12 @@ import {
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 
-interface OutOfCreditDialogProps {
+interface UpgradeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export const OutOfCreditDialog = ({ open, onOpenChange }: OutOfCreditDialogProps) => {
+export const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
   const navigate = useNavigate();
   
   const handleViewPricing = () => {
@@ -26,10 +26,10 @@ export const OutOfCreditDialog = ({ open, onOpenChange }: OutOfCreditDialogProps
       <DialogContent className="sm:max-w-[425px] gap-6">
         <DialogHeader className="space-y-3">
           <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Out of Credits
+            Upgrade Your Plan
           </DialogTitle>
           <DialogDescription className="text-base text-muted-foreground">
-            You've run out of credits. Purchase more credits or subscribe to continue.
+            Upgrade your plan to unlock all features and get unlimited access.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4">
@@ -50,4 +50,4 @@ export const OutOfCreditDialog = ({ open, onOpenChange }: OutOfCreditDialogProps
       </DialogContent>
     </Dialog>
   );
-}; 
+};

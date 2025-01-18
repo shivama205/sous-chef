@@ -1,26 +1,23 @@
 import { supabase } from "@/lib/supabase";
+import type { ActivityType, ActivityMetadata } from "@/types/activity";
 
-export type FeatureEvent = 
-  | "recipe_finder_used"
-  | "meal_plan_generated" 
-  | "meal_plan_saved"
-  | "grocery_list_generated"
-  | "grocery_list_saved"
-  | "healthy_alternative_used";
-
-export const trackFeatureUsage = async (featureEvent: FeatureEvent) => {
+export const trackFeatureUsage = async (
+  activityType: ActivityType,
+  metadata: ActivityMetadata = {}
+) => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return;
 
-    console.log(`Tracking feature usage: ${featureEvent}`);
+    console.log(`Tracking feature usage: ${activityType}`, metadata);
 
     const { error } = await supabase
-      .from('feature_analytics')
+      .from('user_activity')
       .insert({
         user_id: session.user.id,
-        feature_name: featureEvent,
-        used_at: new Date().toISOString(),
+        activity_type: activityType,
+        metadata,
+        created_at: new Date().toISOString(),
       });
 
     if (error) {

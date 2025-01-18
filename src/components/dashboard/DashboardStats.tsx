@@ -1,16 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Package, ChartBar, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
 interface DashboardStatsProps {
   savedPlansCount: number;
-  creditsUsed: number;
-  maxCredits: number;
+  totalFeatureUsage: number;
 }
 
-export const DashboardStats = ({ savedPlansCount, creditsUsed, maxCredits }: DashboardStatsProps) => {
+export const DashboardStats = ({ savedPlansCount, totalFeatureUsage }: DashboardStatsProps) => {
   const navigate = useNavigate();
   
   return (
@@ -39,14 +37,13 @@ export const DashboardStats = ({ savedPlansCount, creditsUsed, maxCredits }: Das
           <CardHeader className="p-4 sm:p-6">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <ChartBar className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-              Credits Used
+              Features Used
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-            <div className="text-2xl sm:text-3xl font-bold">{creditsUsed}</div>
-            <Progress value={(creditsUsed / maxCredits) * 100} className="mt-2" />
+            <div className="text-2xl sm:text-3xl font-bold">{totalFeatureUsage}</div>
             <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-              {maxCredits - creditsUsed} credits remaining
+              Total features used this month
             </p>
           </CardContent>
         </Card>
