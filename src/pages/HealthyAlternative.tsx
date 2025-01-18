@@ -19,7 +19,7 @@ import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
 
 const suggestionList = [
   "Ensure meal name is spelled correctly",
-    "Specify the dietary restrictions and additional instructions in the input field",
+  "Specify the dietary restrictions and additional instructions in the input field",
   "Try different meal names if the first one doesn't work",
   "Try describing the meal in more detail under 'Additional Instructions'",
 ]

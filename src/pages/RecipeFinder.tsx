@@ -16,25 +16,16 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useDropzone } from "react-dropzone";
 import { UserMacros } from "@/types/macros";
 import { trackFeatureUsage } from "@/utils/analytics";
+import { Recipe } from "@/types/recipeFinder";
+import { findRecipes, saveRecipe, getUserRecipes } from "@/services/recipeFinder";
+import { getUserMacros } from "@/services/userMacros";
 
-interface Recipe {
-  name: string;
-  cookingTime: string;
-  ingredients: string[];
-  instructions: string[];
-  nutritionalValue: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    fiber: number;
-  };
-}
-
-interface NoRecipesError {
-  error: string;
-  suggestions: string[];
-}
+const suggestionList = [
+  "Ensure ingredients are spelled correctly",
+  "Specify the dietary restrictions and additional instructions in the input field",
+  "Try changing the ingredients to see if you get different recipes",
+  "Try adding some common ingredients like oil, salt, or spices to get more recipe options",
+];
 
 const features = [
   {
@@ -97,9 +88,13 @@ export default function RecipeFinder() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const resultsRef = useRef<HTMLDivElement>(null);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
-  const [ingredients, setIngredients] = useState("");
+  const [ingredientsText, setIngredientsText] = useState("");
+  const [dietaryRestrictions, setDietaryRestrictions] = useState<string>("");
+  const [additionalInstructions, setAdditionalInstructions] = useState<string>("");
   const [userMacros, setUserMacros] = useState<UserMacros | null>(null);
-  const [noRecipesError, setNoRecipesError] = useState<NoRecipesError | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [savedRecipeIds, setSavedRecipeIds] = useState<Set<string>>(new Set());
 
   const onDrop = async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) {
@@ -155,55 +150,16 @@ export default function RecipeFinder() {
     fetchUserMacros();
   }, [user]);
 
-  const generatePrompt = (ingredients: string, macros: UserMacros | null): string => {
-    return `Suggest 3 possible recipes using these ingredients:
-    Ingredients: ${ingredients}
-    ${macros ? `Target Macros per meal:
-    - Calories: ~${Math.round(macros.calories / 3)}
-    - Protein: ~${Math.round(macros.protein / 3)}g
-    - Carbs: ~${Math.round(macros.carbs / 3)}g
-    - Fat: ~${Math.round(macros.fat / 3)}g` : ''}
-    
-    For each recipe, provide:
-    - Name of the dish
-    - Cooking time
-    - List of ingredients (mark which ones are from the provided list)
-    - Step by step instructions
-    - Nutritional value per serving
-
-    If you cannot find any recipes with the given ingredients, respond with:
-    {
-      "error": "No recipes found",
-      "suggestions": [
-        "Add more basic ingredients like oil, salt, or spices",
-        "Consider adding a protein source",
-        "Include some vegetables or grains"
-      ]
-    }
-    
-    Otherwise, format the response as a JSON object with this structure:
-    {
-      "recipes": [
-        {
-          "name": "Recipe name",
-          "cookingTime": "30 minutes",
-          "ingredients": ["ingredient 1", "ingredient 2"],
-          "instructions": ["step 1", "step 2"],
-          "nutritionalValue": {
-            "calories": 300,
-            "protein": 20,
-            "carbs": 30,
-            "fat": 10,
-            "fiber": 5
-          }
-        }
-      ]
-    }`;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!ingredients.trim()) {
+    setError(null);
+
+    const ingredients = ingredientsText
+      .split(',')
+      .map(i => i.trim())
+      .filter(i => i.length > 0);
+
+    if (ingredients.length === 0) {
       toast({
         title: "Error",
         description: "Please enter some ingredients",
@@ -212,6 +168,7 @@ export default function RecipeFinder() {
       return;
     }
 
+    // Check if user is logged in, if not, open the login dialog
     if (!user) {
       setLoginDialogOpen(true);
       return;
@@ -220,33 +177,15 @@ export default function RecipeFinder() {
     setIsLoading(true);
 
     try {
-      await trackFeatureUsage("recipe_finder", {
-        ingredients: ingredients.split(',').map(item => item.trim()),
-        mealType: undefined,
-        cuisineType: undefined,
-        dietaryRestrictions: undefined
+      const recipes: Recipe[] = await findRecipes({
+        ingredients,
+        dietaryRestrictions,
+        additionalInstructions,
+        macros: userMacros
       });
-      
-      const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-      const result = await model.generateContent(generatePrompt(ingredients, userMacros));
-      const response = await result.response;
-      const text = response.text();
-      
-      const jsonMatch = text.match(/```json([\s\S]*?)```/) || [null, text];
-      const jsonString = jsonMatch[1]?.trim() || text.trim();
-      
-      const data = JSON.parse(jsonString);
-      
-      if (data.error) {
-        setRecipes([]);
-        setNoRecipesError(data as NoRecipesError);
-        return;
-      }
-
-      setRecipes(data.recipes);
-      setNoRecipesError(null);
+      setRecipes(recipes);
+      setSuggestions([]);
 
       toast({
         title: "Success",
@@ -258,13 +197,65 @@ export default function RecipeFinder() {
       }, 100);
     } catch (error) {
       console.error("Error finding recipes:", error);
+      setSuggestions(suggestionList);
+
       toast({
-        title: "Error",
-        description: "Failed to find recipes. Please try again.",
-        variant: "destructive"
+        title: "No Recipes Found",
+        description: "We couldn't find recipes for your ingredients. Please try again.",
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Load saved recipes on mount
+  useEffect(() => {
+    const loadSavedRecipes = async () => {
+      if (!user) return;
+      try {
+        const recipes = await getUserRecipes(user.id);
+        setSavedRecipeIds(new Set(recipes.map(r => r.id)));
+        console.log("Loaded saved recipe ids:", recipes.map(r => r.id));
+      } catch (error) {
+        console.error("Error loading saved recipes:", error);
+      }
+    };
+    loadSavedRecipes();
+  }, [user]);
+
+  const handleSaveRecipe = async (recipe: Recipe) => {
+    if (!user) {
+      setLoginDialogOpen(true);
+      return;
+    }
+
+    try {
+      const savedRecipe = await saveRecipe(user.id, recipe);
+      // Update the recipes array with the saved recipe that has the ID
+      setRecipes(prevRecipes => 
+        prevRecipes.map(r => 
+          r.mealName === recipe.mealName ? savedRecipe : r
+        )
+      );
+      // Update the saved IDs set
+      setSavedRecipeIds(prev => {
+        const newSet = new Set(prev);
+        newSet.add(savedRecipe.id);
+        console.log("Updated saved recipe ids:", Array.from(newSet));
+        return newSet;
+      });
+      
+      toast({
+        title: "Recipe Saved",
+        description: "Recipe has been saved to your collection.",
+      });
+    } catch (error) {
+      console.error("Error saving recipe:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save recipe. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -288,10 +279,32 @@ export default function RecipeFinder() {
                     <Label htmlFor="ingredients">Your Ingredients *</Label>
                     <Textarea
                       id="ingredients"
-                      value={ingredients}
-                      onChange={(e) => setIngredients(e.target.value)}
+                      value={ingredientsText}
+                      onChange={(e) => setIngredientsText(e.target.value)}
                       placeholder="Enter ingredients separated by commas (e.g., chicken, rice, tomatoes)"
                       className="min-h-[100px] resize-none"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="dietaryRestrictions">Dietary Restrictions</Label>
+                    <Textarea
+                      id="dietaryRestrictions"
+                      value={dietaryRestrictions}
+                      onChange={(e) => setDietaryRestrictions(e.target.value)}
+                      placeholder="Enter any dietary restrictions (e.g., vegetarian, gluten-free, dairy-free)"
+                      className="min-h-[60px] resize-none"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="additionalInstructions">Additional Instructions</Label>
+                    <Textarea
+                      id="additionalInstructions"
+                      value={additionalInstructions}
+                      onChange={(e) => setAdditionalInstructions(e.target.value)}
+                      placeholder="Any specific instructions or preferences (e.g., quick meals, low-carb, high-protein)"
+                      className="min-h-[60px] resize-none"
                     />
                   </div>
 
@@ -317,7 +330,7 @@ export default function RecipeFinder() {
                   <Button 
                     type="submit" 
                     className="w-full"
-                    disabled={isLoading || !ingredients.trim()}
+                    disabled={isLoading || !ingredientsText.trim()}
                   >
                     {isLoading ? "Finding Recipes..." : "Find Recipes"}
                   </Button>
@@ -325,87 +338,107 @@ export default function RecipeFinder() {
               </Card>
 
               {/* Results Section */}
-              {recipes.length > 0 ? (
-                <div ref={resultsRef} className="space-y-4 sm:space-y-6">
+              {recipes.length > 0 && (
+                <div ref={resultsRef} className="space-y-4 sm:space-y-6 mt-6">
                   <h2 className="text-xl font-semibold">Found Recipes</h2>
                   {recipes.map((recipe, index) => (
                     <Card key={index} className="bg-white/80 backdrop-blur-sm border-0 shadow-sm overflow-hidden">
                       <div className="p-4 sm:p-6 space-y-6">
                         {/* Header */}
-                        <div className="flex items-start justify-between gap-6">
-                          <div className="space-y-2">
-                            <h3 className="text-xl font-semibold text-gray-900">{recipe.name}</h3>
-                            <div className="flex items-center gap-1.5">
-                              <Timer className="w-4 h-4 text-gray-500" />
-                              <span className="text-sm text-gray-500">{recipe.cookingTime}</span>
+                        <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                          <div className="space-y-1 sm:space-y-2">
+                            <div className="flex items-center gap-3">
+                              <h3 className="text-lg sm:text-xl font-semibold text-primary">
+                                {recipe.mealName}
+                              </h3>
+                              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                <ChefHat className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Timer className="w-4 h-4" />
+                              <span>Cooking Time: {recipe.cookingTime} minutes</span>
                             </div>
                           </div>
-                          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <UtensilsCrossed className="w-6 h-6 text-primary" />
-                          </div>
+                          <Button
+                            variant={savedRecipeIds.has(recipe.id ?? '') ? "default" : "outline"}
+                            size="sm"
+                            className={`flex items-center gap-2 ${
+                              savedRecipeIds.has(recipe.id ?? '') 
+                                ? "bg-primary text-white hover:bg-primary/90 cursor-not-allowed" 
+                                : "text-primary border-primary/20 hover:border-primary/40"
+                            }`}
+                            onClick={() => handleSaveRecipe(recipe)}
+                            disabled={savedRecipeIds.has(recipe.id ?? '')}
+                          >
+                            <Star className={`w-4 h-4 ${savedRecipeIds.has(recipe.id ?? '') ? "fill-current" : ""}`} />
+                            {savedRecipeIds.has(recipe.id ?? '') ? "Saved" : "Save Recipe"}
+                          </Button>
                         </div>
 
                         {/* Content Grid */}
-                        <div className="grid md:grid-cols-2 gap-6">
-                          {/* Ingredients */}
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-1.5">
-                              <ListChecks className="w-5 h-5 text-primary" />
-                              <h4 className="font-medium text-gray-900">Ingredients</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Left Column: Ingredients and Instructions */}
+                          <div className="space-y-6">
+                            {/* Ingredients */}
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2">
+                                <UtensilsCrossed className="w-5 h-5 text-primary" />
+                                <h4 className="font-medium text-gray-900">Ingredients</h4>
+                              </div>
+                              <ul className="space-y-2">
+                                {recipe.ingredients.map((ingredient, i) => (
+                                  <li key={i} className="flex items-start gap-3">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary/60 flex-shrink-0 mt-2" />
+                                    <span className="text-sm text-gray-600">{ingredient}</span>
+                                  </li>
+                                ))}
+                              </ul>
                             </div>
-                            <ul className="space-y-2.5">
-                              {recipe.ingredients.map((ingredient, i) => (
-                                <li key={i} className="flex items-start gap-2">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-primary/60 flex-shrink-0 mt-2" />
-                                  <span className="text-sm text-gray-600">{ingredient}</span>
-                                </li>
-                              ))}
-                            </ul>
+
+                            {/* Instructions */}
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2">
+                                <ListChecks className="w-5 h-5 text-primary" />
+                                <h4 className="font-medium text-gray-900">Instructions</h4>
+                              </div>
+                              <ol className="space-y-2">
+                                {recipe.instructions.map((instruction, i) => (
+                                  <li key={i} className="flex items-start gap-3">
+                                    <span className="text-sm font-medium text-primary/60">{i + 1}.</span>
+                                    <span className="text-sm text-gray-600">{instruction}</span>
+                                  </li>
+                                ))}
+                              </ol>
+                            </div>
                           </div>
 
-                          {/* Instructions */}
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-1.5">
-                              <ChefHat className="w-5 h-5 text-primary" />
-                              <h4 className="font-medium text-gray-900">Instructions</h4>
-                            </div>
-                            <ol className="space-y-2.5">
-                              {recipe.instructions.map((step, i) => (
-                                <li key={i} className="flex gap-2 text-sm text-gray-600">
-                                  <span className="font-medium text-primary flex-shrink-0">{i + 1}.</span>
-                                  <span>{step}</span>
-                                </li>
-                              ))}
-                            </ol>
-                          </div>
-                        </div>
-
-                        {/* Nutritional Info */}
-                        <div className="pt-6 border-t">
-                          <div className="flex items-center gap-1.5 mb-4">
-                            <Dumbbell className="w-5 h-5 text-primary" />
-                            <h4 className="font-medium text-gray-900">Nutritional Value (per serving)</h4>
-                          </div>
-                          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                            <div className="bg-gray-50 rounded-lg p-2.5 text-center">
-                              <div className="text-sm font-medium text-gray-900">{recipe.nutritionalValue.calories}</div>
-                              <div className="text-xs text-gray-500">Calories</div>
-                            </div>
-                            <div className="bg-gray-50 rounded-lg p-2.5 text-center">
-                              <div className="text-sm font-medium text-gray-900">{recipe.nutritionalValue.protein}g</div>
-                              <div className="text-xs text-gray-500">Protein</div>
-                            </div>
-                            <div className="bg-gray-50 rounded-lg p-2.5 text-center">
-                              <div className="text-sm font-medium text-gray-900">{recipe.nutritionalValue.carbs}g</div>
-                              <div className="text-xs text-gray-500">Carbs</div>
-                            </div>
-                            <div className="bg-gray-50 rounded-lg p-2.5 text-center">
-                              <div className="text-sm font-medium text-gray-900">{recipe.nutritionalValue.fat}g</div>
-                              <div className="text-xs text-gray-500">Fat</div>
-                            </div>
-                            <div className="bg-gray-50 rounded-lg p-2.5 text-center">
-                              <div className="text-sm font-medium text-gray-900">{recipe.nutritionalValue.fiber}g</div>
-                              <div className="text-xs text-gray-500">Fiber</div>
+                          {/* Right Column: Nutritional Info */}
+                          <div className="space-y-6">
+                            {/* Nutritional Info */}
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2">
+                                <Dumbbell className="w-5 h-5 text-primary" />
+                                <h4 className="font-medium text-gray-900">Nutritional Value</h4>
+                              </div>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-primary/5 rounded-lg p-3">
+                                  <p className="text-sm text-gray-600">Calories</p>
+                                  <p className="text-lg font-semibold text-primary">{recipe.nutritionalValue.calories}</p>
+                                </div>
+                                <div className="bg-primary/5 rounded-lg p-3">
+                                  <p className="text-sm text-gray-600">Protein</p>
+                                  <p className="text-lg font-semibold text-primary">{recipe.nutritionalValue.protein}g</p>
+                                </div>
+                                <div className="bg-primary/5 rounded-lg p-3">
+                                  <p className="text-sm text-gray-600">Carbs</p>
+                                  <p className="text-lg font-semibold text-primary">{recipe.nutritionalValue.carbs}g</p>
+                                </div>
+                                <div className="bg-primary/5 rounded-lg p-3">
+                                  <p className="text-sm text-gray-600">Fat</p>
+                                  <p className="text-lg font-semibold text-primary">{recipe.nutritionalValue.fat}g</p>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -413,9 +446,9 @@ export default function RecipeFinder() {
                     </Card>
                   ))}
                 </div>
-              ) : noRecipesError && (
-                <NoRecipesFound suggestions={noRecipesError.suggestions} />
               )}
+
+              {suggestions.length > 0 && <NoRecipesFound suggestions={suggestions} />}
             </div>
 
             {/* Sidebar */}

@@ -1,4 +1,5 @@
 import { HealthyAlternative, HealthyAlternativeRequest, NutritionalValue } from "./healthyAlternative";
+import { RecipeFinderMetadata } from "./recipeFinder";
 
 // Feature Names
 export enum FeatureName {
@@ -30,13 +31,6 @@ export interface MacroCalculatorMetadata {
   gender: 'male' | 'female';
   activityLevel: 'sedentary' | 'light' | 'moderate' | 'very' | 'extra';
   goal: 'lose' | 'maintain' | 'gain';
-}
-
-export interface RecipeFinderMetadata {
-  ingredients?: string[];
-  cuisineType?: string;
-  dietaryRestrictions?: string[];
-  mealType?: 'breakfast' | 'lunch' | 'dinner' | 'snack';
 }
 
 // Combined Metadata Type
