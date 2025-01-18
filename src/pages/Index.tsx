@@ -12,6 +12,7 @@ import { Sparkles, Star, ChefHat, Brain, Carrot } from "lucide-react";
 import { useUser } from "@/hooks/useUser";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { User } from "@supabase/supabase-js";
 
 // Feature highlights data
 const featureHighlights = [
@@ -56,55 +57,103 @@ const testimonials = [
 
 export default function Index() {
   const navigate = useNavigate();
-  const { user } = useUser();
+  const [user, setUser] = useState<User | null>(null);
   const [stats, setStats] = useState({
     savedPlansCount: 0,
-    totalFeatureUses: 0,
+    savedRecipesCount: 0,
+    totalActivities: 0,
   });
   const [activities, setActivities] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Handle user authentication
   useEffect(() => {
-    if (user) {
-      fetchUserStats();
-      fetchRecentActivity();
-    }
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    };
+
+    getUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch user stats and activities when user is available
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!user) return;
+      
+      setIsLoading(true);
+      try {
+        // Fetch saved plans in last week
+        const { data: plans, error: plansError } = await supabase
+          .from('saved_meal_plans')
+          .select('*')
+          .eq('user_id', user.id)
+          .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+          .order('created_at', { ascending: false });
+
+        if (plansError) throw plansError;
+
+        // Fetch saved recipes in last week
+        const { data: recipes, error: recipesError } = await supabase
+          .from('saved_recipes')
+          .select('*')
+          .eq('user_id', user.id)
+          .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+          .order('created_at', { ascending: false });
+
+        if (recipesError) throw recipesError;
+
+        // Fetch feature uses in last week
+        const { data: activities, error: activitiesError } = await supabase
+          .from('user_activity')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('activity_type', 'feature_use')
+          .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+          .order('created_at', { ascending: false });
+
+        if (activitiesError) throw activitiesError;
+
+        // Fetch recent activities
+        const { data: recentActivities, error: recentError } = await supabase
+          .from('user_activity')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        if (recentError) throw recentError;
+
+        setStats({
+          savedPlansCount: plans?.length || 0,
+          savedRecipesCount: recipes?.length || 0,
+          totalActivities: activities?.length || 0
+        });
+        setActivities(recentActivities || []);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        // Reset stats and activities on error
+        setStats({
+          savedPlansCount: 0,
+          savedRecipesCount: 0,
+          totalActivities: 0
+        });
+        setActivities([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
   }, [user]);
-
-  const fetchUserStats = async () => {
-    if (!user) return;
-    
-    try {
-      const { data: plans } = await supabase
-        .from('saved_meal_plans')
-        .select('*')
-        .eq('user_id', user.id);
-
-      setStats({
-        savedPlansCount: plans?.length || 0,
-        totalFeatureUses: 0
-      });
-    } catch (error) {
-      console.error('Error fetching user stats:', error);
-    }
-  };
-
-  const fetchRecentActivity = async () => {
-    if (!user) return;
-    
-    try {
-      const { data } = await supabase
-        .from('user_activity')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('activity_type', 'feature_use')
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      setActivities(data || []);
-    } catch (error) {
-      console.error('Error fetching recent activity:', error);
-    }
-  };
 
   const LoggedInView = () => (
     <div className="container mx-auto py-8 sm:py-10">
@@ -127,7 +176,8 @@ export default function Index() {
         {/* Stats Grid */}
         <DashboardStats
           savedPlansCount={stats.savedPlansCount}
-          totalFeatureUses={stats.totalFeatureUses}
+          savedRecipesCount={stats.savedRecipesCount}
+          totalActivities={stats.totalActivities}
         />
 
         {/* Recent Activity */}
