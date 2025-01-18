@@ -71,11 +71,11 @@ export const RecentActivity = ({ activities }: { activities: Activity[] }) => {
               <div>
                 <p className="text-sm font-medium">{getActivityDescription(activity)}</p>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(activity.created_at).toLocaleDateString(undefined, {
+                  {new Date(activity.created_at).toLocaleString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric', 
                     month: 'short',
-                    day: 'numeric',
-                    hour: 'numeric',
-                    minute: 'numeric'
+                    day: 'numeric'
                   })}
                 </p>
               </div>

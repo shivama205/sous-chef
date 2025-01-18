@@ -11,15 +11,12 @@ import { Card } from "@/components/ui/card";
 import { 
   Sparkles, 
   ChefHat, 
-  Brain, 
-  Carrot, 
   ArrowRight, 
   Star,
-  Utensils,
   Apple,
-  Clock
+  Search,
+  Leaf,
 } from "lucide-react";
-import { useUser } from "@/hooks/useUser";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
@@ -31,21 +28,21 @@ const featureHighlights = [
     title: "AI Meal Planning",
     description: "Get personalized meal plans based on your preferences and dietary needs",
     path: "/meal-plan",
-    gradient: "from-blue-500/20 to-blue-500/5"
+    gradient: "from-secondary/20 to-secondary/5"
   },
   {
-    icon: Brain,
-    title: "Smart Alternatives",
-    description: "Discover healthier versions of your favorite dishes",
-    path: "/healthy-alternative",
-    gradient: "from-green-500/20 to-green-500/5"
-  },
-  {
-    icon: Utensils,
+    icon: Search,
     title: "Recipe Finder",
     description: "Find recipes that match your ingredients and preferences",
     path: "/recipe-finder",
-    gradient: "from-purple-500/20 to-purple-500/5"
+    gradient: "from-secondary/20 to-secondary/5"
+  },
+  {
+    icon: Leaf,
+    title: "Smart Alternatives",
+    description: "Discover healthier versions of your favorite dishes",
+    path: "/healthy-alternative",
+    gradient: "from-secondary/20 to-secondary/5"
   }
 ];
 
@@ -168,12 +165,12 @@ export default function Index() {
   }, [user]);
 
   const LoggedInView = () => (
-    <div className="container mx-auto py-6 sm:py-8">
-      <div className="space-y-6 px-4 sm:px-6">
+    <div className="container mx-auto py-4 sm:py-8">
+      <div className="space-y-4 sm:space-y-6 px-2 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="pt-4"
+          className="pt-2 sm:pt-4"
         >
           <PageHeader
             icon={Sparkles}
@@ -184,10 +181,9 @@ export default function Index() {
         </motion.div>
 
         {/* Quick Actions with improved visuals */}
-        <section className="space-y-4">
+        <section className="space-y-2 sm:space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Quick Actions</h2>
-            <Clock className="w-5 h-5 text-muted-foreground" />
+            <h2 className="text-lg sm:text-xl font-semibold">Quick Actions</h2>
           </div>
           <QuickActions />
         </section>
@@ -206,9 +202,9 @@ export default function Index() {
         </motion.div>
 
         {/* Recent Activity with improved header */}
-        <section className="space-y-4">
+        <section className="space-y-2 sm:space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Recent Activity</h2>
+            <h2 className="text-lg sm:text-xl font-semibold">Recent Activity</h2>
             <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
               View All <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
@@ -229,47 +225,28 @@ export default function Index() {
   );
 
   const LoggedOutView = () => (
-    <div className="container mx-auto px-4 py-8 space-y-12">
+    <div className="container mx-auto px-2 sm:px-4 py-6 sm:py-8 space-y-8 sm:space-y-12">
       {/* Hero Section with gradient text and animation */}
-      <section className="text-center space-y-6 py-12">
+      <section className="text-center space-y-4 sm:space-y-6 py-6 sm:py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="max-w-3xl mx-auto"
+          className="max-w-3xl mx-auto px-2"
         >
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent pb-2">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent pb-2">
             Your Personal AI Chef Assistant
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mt-4">
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mt-4">
             Create personalized meal plans, discover healthy alternatives, and achieve your nutritional goals with AI-powered assistance.
           </p>
         </motion.div>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Button 
-            size="lg" 
-            onClick={() => navigate('/meal-plan')}
-            className="w-full sm:w-auto"
-          >
-            <ChefHat className="w-5 h-5 mr-2" />
-            Create Your Meal Plan
-          </Button>
-          <Button 
-            variant="outline" 
-            size="lg" 
-            onClick={() => navigate('/healthy-alternative')}
-            className="w-full sm:w-auto"
-          >
-            <Apple className="w-5 h-5 mr-2" />
-            Try Healthy Alternatives
-          </Button>
-        </div>
       </section>
 
       {/* Features Section with gradient cards */}
-      <section className="space-y-8">
-        <h2 className="text-3xl font-bold text-center">Discover Our Features</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <section className="space-y-6 sm:space-y-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center">Discover Our Features</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {featureHighlights.map((feature, index) => (
             <motion.div
               key={feature.title}
@@ -279,13 +256,13 @@ export default function Index() {
               onClick={() => navigate(feature.path)}
               className="cursor-pointer"
             >
-              <Card className={`h-full p-6 bg-gradient-to-b ${feature.gradient} hover:scale-105 transition-transform duration-200`}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-3 rounded-full bg-background">
-                    <feature.icon className="w-6 h-6" />
+              <Card className={`h-full p-4 sm:p-6 bg-gradient-to-b ${feature.gradient} hover:scale-105 transition-transform duration-200`}>
+                <div className="flex flex-col items-center text-center space-y-3 sm:space-y-4">
+                  <div className="p-2 sm:p-3 rounded-full bg-background">
+                    <feature.icon className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
-                  <h3 className="text-lg font-semibold">{feature.title}</h3>
-                  <p className="text-muted-foreground">{feature.description}</p>
+                  <h3 className="font-semibold">{feature.title}</h3>
+                  <p className="text-sm text-muted-foreground">{feature.description}</p>
                 </div>
               </Card>
             </motion.div>
@@ -294,9 +271,9 @@ export default function Index() {
       </section>
 
       {/* Testimonials Section with improved cards */}
-      <section className="space-y-8">
-        <h2 className="text-3xl font-bold text-center">What Our Users Say</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <section className="space-y-6 sm:space-y-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center">What Our Users Say</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {testimonials.map((testimonial, index) => (
             <motion.div
               key={testimonial.name}
@@ -304,17 +281,17 @@ export default function Index() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="h-full p-6 bg-white/80 backdrop-blur-sm hover:shadow-lg transition-all duration-200">
-                <div className="flex flex-col space-y-4">
+              <Card className="h-full p-4 sm:p-6 bg-white/80 backdrop-blur-sm hover:shadow-lg transition-all duration-200">
+                <div className="flex flex-col space-y-3 sm:space-y-4">
                   <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      <Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400" />
                     ))}
                   </div>
-                  <p className="text-muted-foreground flex-grow">{testimonial.content}</p>
+                  <p className="text-sm sm:text-base">{testimonial.content}</p>
                   <div>
-                    <p className="font-semibold">{testimonial.name}</p>
-                    <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                    <p className="font-semibold text-sm sm:text-base">{testimonial.name}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">{testimonial.role}</p>
                   </div>
                 </div>
               </Card>
