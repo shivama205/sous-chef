@@ -12,9 +12,10 @@ export interface RecipeFinderRequest {
 // Recipe is the response object for the RecipeFinder service
 export interface Recipe {
   id?: string;  // Optional since it only exists after saving
-  mealName: string;
-  cookingTime: number;
+  meal_name: string;
+  cooking_time: number;
   ingredients: string[];
   instructions: string[];
-  nutritionalValue: NutritionalValue;
+  nutritional_value: NutritionalValue;
+  created_at?: string; // Optional since it only exists after saving
 }

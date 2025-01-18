@@ -67,11 +67,11 @@ export async function saveRecipe(userId: string, recipe: Recipe) {
     .insert([
       {
         user_id: userId,
-        meal_name: recipe.mealName,
-        cooking_time: recipe.cookingTime,
+        meal_name: recipe.meal_name,
+        cooking_time: recipe.cooking_time,
         ingredients: recipe.ingredients,
         instructions: recipe.instructions,
-        nutritional_value: recipe.nutritionalValue
+        nutritional_value: recipe.nutritional_value
       }
     ])
     .select("*")

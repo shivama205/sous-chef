@@ -45,21 +45,6 @@ const features = [
   }
 ];
 
-const recentRecipes = [
-  {
-    date: "2 days ago",
-    name: "Quick Stir Fry",
-    ingredients: ["chicken", "broccoli", "soy sauce"],
-    saved: true
-  },
-  {
-    date: "1 week ago",
-    name: "Protein Pasta",
-    ingredients: ["pasta", "ground turkey", "tomatoes"],
-    saved: false
-  }
-];
-
 const NoRecipesFound = ({ suggestions }: { suggestions: string[] }) => (
   <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-sm p-6 mt-8">
     <div className="text-center space-y-4">
@@ -95,7 +80,7 @@ export default function RecipeFinder() {
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [savedRecipeIds, setSavedRecipeIds] = useState<Set<string>>(new Set());
-
+  const [recentRecipes, setRecentRecipes] = useState<Recipe[]>([]);
   const onDrop = async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) {
       toast({
@@ -208,19 +193,30 @@ export default function RecipeFinder() {
     }
   };
 
-  // Load saved recipes on mount
+  // Load saved recipes and recent recipes on mount
   useEffect(() => {
-    const loadSavedRecipes = async () => {
+    const loadUserData = async () => {
       if (!user) return;
       try {
-        const recipes = await getUserRecipes(user.id);
-        setSavedRecipeIds(new Set(recipes.map(r => r.id)));
-        console.log("Loaded saved recipe ids:", recipes.map(r => r.id));
+        // Load saved recipe IDs
+        const savedRecipes = await getUserRecipes(user.id);
+        setSavedRecipeIds(new Set(savedRecipes.map(r => r.id)));
+        
+        // Set recent recipes from saved recipes, sorted by created_at
+        const sortedRecipes = savedRecipes
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .slice(0, 5); // Show only last 5 recipes
+        setRecentRecipes(sortedRecipes);
       } catch (error) {
-        console.error("Error loading saved recipes:", error);
+        console.error("Error loading user data:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load your recipes. Please try again.",
+          variant: "destructive",
+        });
       }
     };
-    loadSavedRecipes();
+    loadUserData();
   }, [user]);
 
   const handleSaveRecipe = async (recipe: Recipe) => {
@@ -234,7 +230,7 @@ export default function RecipeFinder() {
       // Update the recipes array with the saved recipe that has the ID
       setRecipes(prevRecipes => 
         prevRecipes.map(r => 
-          r.mealName === recipe.mealName ? savedRecipe : r
+          r.meal_name === recipe.meal_name ? savedRecipe : r
         )
       );
       // Update the saved IDs set
@@ -345,7 +341,7 @@ export default function RecipeFinder() {
                     <Card key={index} className="bg-white rounded-lg shadow-sm overflow-hidden">
                       <div className="bg-gradient-to-r from-primary to-primary/80 py-3 px-4">
                         <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-semibold text-white">{recipe.mealName}</h3>
+                          <h3 className="text-lg font-semibold text-white">{recipe.meal_name}</h3>
                           <Button
                             variant={savedRecipeIds.has(recipe.id ?? '') ? "secondary" : "outline"}
                             size="sm"
@@ -363,7 +359,7 @@ export default function RecipeFinder() {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-white/80 mt-1">
                           <Timer className="w-4 h-4" />
-                          <span>Cooking Time: {recipe.cookingTime} minutes</span>
+                          <span>Cooking Time: {recipe.cooking_time} minutes</span>
                         </div>
                       </div>
 
@@ -409,19 +405,19 @@ export default function RecipeFinder() {
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             <div className="bg-white p-2 rounded shadow-sm">
                               <div className="text-gray-500 text-xs">Calories</div>
-                              <div className="font-medium text-gray-900">{recipe.nutritionalValue.calories}</div>
+                              <div className="font-medium text-gray-900">{recipe.nutritional_value.calories}</div>
                             </div>
                             <div className="bg-white p-2 rounded shadow-sm">
                               <div className="text-gray-500 text-xs">Protein</div>
-                              <div className="font-medium text-gray-900">{recipe.nutritionalValue.protein}g</div>
+                              <div className="font-medium text-gray-900">{recipe.nutritional_value.protein}g</div>
                             </div>
                             <div className="bg-white p-2 rounded shadow-sm">
                               <div className="text-gray-500 text-xs">Carbs</div>
-                              <div className="font-medium text-gray-900">{recipe.nutritionalValue.carbs}g</div>
+                              <div className="font-medium text-gray-900">{recipe.nutritional_value.carbs}g</div>
                             </div>
                             <div className="bg-white p-2 rounded shadow-sm">
                               <div className="text-gray-500 text-xs">Fat</div>
-                              <div className="font-medium text-gray-900">{recipe.nutritionalValue.fat}g</div>
+                              <div className="font-medium text-gray-900">{recipe.nutritional_value.fat}g</div>
                             </div>
                           </div>
                         </div>
@@ -465,16 +461,14 @@ export default function RecipeFinder() {
                         <ChefHat className="w-4 h-4 text-gray-600" />
                       </div>
                       <div>
-                        <h4 className="font-medium">{recipe.name}</h4>
-                        <p className="text-sm text-gray-500">{recipe.date}</p>
-                        <div className="flex items-center gap-1 mt-1">
-                          <p className="text-xs text-gray-400">
-                            {recipe.ingredients.join(", ")}
-                          </p>
-                          {recipe.saved && (
-                            <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                          )}
-                        </div>
+                        <h4 className="font-medium">{recipe.meal_name}</h4>
+                        <p className="text-sm text-gray-500">
+                          {new Date(recipe.created_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </p>
                       </div>
                     </div>
                   ))}

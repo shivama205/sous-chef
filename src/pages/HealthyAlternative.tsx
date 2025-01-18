@@ -233,7 +233,6 @@ export default function HealthyAlternative() {
                         <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                           <div className="space-y-1 sm:space-y-2">
                             <div className="flex items-center gap-3">
-                              <div className="hidden sm:block w-8 text-center">→</div>
                               <h3 className="text-lg sm:text-xl font-semibold text-primary">
                                 {alt.mealName}
                               </h3>
