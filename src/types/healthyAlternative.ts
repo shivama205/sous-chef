@@ -1,7 +1,14 @@
-export interface HealthySwapRequest {
+export interface HealthyAlternativeRequest {
   mealName: string;
-  description: string;
-  dietaryRestrictions: string;
+  dietaryRestrictions?: string[];
+  healthGoals?: string[];
+  additionalInstructions?: string;
+}
+
+export interface HealthyAlternativeResponse {
+  alternatives: string[];
+  success: boolean;
+  error?: string;
 }
 
 export interface NutritionalValue {
@@ -18,8 +25,4 @@ export interface Recipe {
   ingredients: string[];
   instructions: string[];
   nutritionalValue: NutritionalValue;
-}
-
-export interface HealthySwapResponse {
-  alternatives: Recipe[];
 }

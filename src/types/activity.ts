@@ -3,7 +3,19 @@ export type ActivityType =
   | "recipe_finder_used"
   | "healthy_alternative_used"
   | "grocery_list_generated"
-  | "meal_plan_saved";
+  | "meal_plan_saved"
+  | "grocery_list_saved";
+
+export interface HealthyAlternativeMetadata {
+  mealName: string;
+  dietaryRestrictions?: string[];
+  healthGoals?: string[];
+  additionalInstructions?: string;
+  success: boolean;
+  alternatives?: string[];
+  suggestions?: string[];
+  error?: string;
+}
 
 export interface ActivityMetadata {
   input?: {
@@ -22,6 +34,7 @@ export interface ActivityMetadata {
     generatedContent?: unknown;
     error?: string;
   };
+  healthyAlternative?: HealthyAlternativeMetadata;
   [key: string]: unknown;
 }
 
