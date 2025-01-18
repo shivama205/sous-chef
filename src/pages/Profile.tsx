@@ -6,8 +6,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import NavigationBar from "@/components/NavigationBar";
 import { format } from "date-fns";
-import { Calculator, Settings, ChefHat, History, Star, Clock, Calendar } from "lucide-react";
+import { Calculator, Settings, ChefHat, History, Star, Clock, Calendar, Utensils } from "lucide-react";
 import { SavedRecipes } from "@/components/profile/SavedRecipes";
+import { SavedMealPlans } from "@/components/profile/SavedMealPlans";
 
 export default function Profile() {
   const { user } = useAuth();
@@ -66,6 +67,11 @@ export default function Profile() {
                 <span className="hidden sm:inline">Saved Recipes</span>
                 <span className="sm:hidden">Recipes</span>
               </TabsTrigger>
+              <TabsTrigger value="meal-plans" className="flex items-center gap-2 px-6">
+                <Utensils className="w-4 h-4" />
+                <span className="hidden sm:inline">Meal Plans</span>
+                <span className="sm:hidden">Plans</span>
+              </TabsTrigger>
               <TabsTrigger value="overview" className="flex items-center gap-2 px-6">
                 <Settings className="w-4 h-4" />
                 <span className="hidden sm:inline">Settings</span>
@@ -81,6 +87,10 @@ export default function Profile() {
 
           <TabsContent value="recipes">
             <SavedRecipes />
+          </TabsContent>
+
+          <TabsContent value="meal-plans">
+            <SavedMealPlans />
           </TabsContent>
 
           <TabsContent value="overview" className="space-y-6">
