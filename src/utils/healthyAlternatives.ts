@@ -1,23 +1,19 @@
-import { HealthyAlternativeMetadata } from "@/types/features";
-
-interface GenerateSuggestionsParams {
-  mealName: string;
-  dietaryRestrictions?: string[];
-  healthGoals?: string[];
-  additionalInstructions?: string;
-}
-
 export function checkDietaryConflicts(restrictions: string[]): string | null {
-  const conflicts = [
-    { pair: ['vegan', 'pescatarian'], message: 'Vegan and pescatarian diets are mutually exclusive' },
-    { pair: ['keto', 'low-fat'], message: 'Keto diet requires high fat intake' },
-    { pair: ['vegan', 'keto'], message: 'Vegan keto is extremely restrictive and not recommended' },
-    { pair: ['low-carb', 'mediterranean'], message: 'Mediterranean diet includes healthy carbs' }
+  // Normalize restrictions to lowercase for comparison
+  const normalizedRestrictions = restrictions.map(r => r.toLowerCase());
+  
+  const conflictPairs = [
+    ['vegan', 'pescatarian'],
+    ['keto', 'low-fat'],
+    ['low-carb', 'mediterranean'],
+    ['vegan', 'keto'],
+    ['dairy-free', 'high-dairy'],
+    ['gluten-free', 'high-gluten']
   ];
 
-  for (const { pair, message } of conflicts) {
-    if (pair.every(diet => restrictions.includes(diet))) {
-      return message;
+  for (const [a, b] of conflictPairs) {
+    if (normalizedRestrictions.includes(a) && normalizedRestrictions.includes(b)) {
+      return `'${a}' and '${b}' dietary restrictions conflict with each other`;
     }
   }
 
@@ -25,114 +21,76 @@ export function checkDietaryConflicts(restrictions: string[]): string | null {
 }
 
 export function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  if (typeof error === 'string') return error;
-  return 'An unexpected error occurred. Please try again.';
+  if (error instanceof Error) return error.message
+  return String(error)
 }
 
 export function generateHealthySuggestions({
   mealName,
-  dietaryRestrictions = [],
-  healthGoals = [],
-  additionalInstructions = ""
-}: GenerateSuggestionsParams): string[] {
-  const suggestions: string[] = [];
+  dietaryRestrictions,
+  additionalInstructions
+}: {
+  mealName: string
+  dietaryRestrictions: string
+  additionalInstructions?: string
+}): string[] {
+  const suggestions = [
+    "Try adding more whole food ingredients",
+    "Consider plant-based alternatives",
+    "Look for lower-calorie substitutes",
+    "Experiment with different cooking methods"
+  ]
 
-  // General cooking method suggestions
-  suggestions.push(
-    `Try baking or grilling instead of frying for a healthier version of ${mealName}`,
-    `Consider using an air fryer to reduce oil usage while maintaining crispiness`
-  );
-
-  // Ingredient substitution suggestions
-  suggestions.push(
-    `Replace refined grains with whole grains (e.g., whole wheat flour, brown rice)`,
-    `Use natural sweeteners like honey or maple syrup instead of refined sugar`,
-    `Add more vegetables to increase nutritional value`
-  );
-
-  // Dietary restriction specific suggestions
-  if (dietaryRestrictions.includes('gluten-free')) {
-    suggestions.push(
-      `Use gluten-free alternatives like almond flour or chickpea flour`,
-      `Consider naturally gluten-free grains like quinoa or rice`
-    );
+  if (dietaryRestrictions.length > 0) {
+    suggestions.push(`Check for ${dietaryRestrictions[0]}-friendly versions`)
   }
 
-  if (dietaryRestrictions.includes('dairy-free')) {
-    suggestions.push(
-      `Try plant-based milk alternatives like almond, oat, or coconut milk`,
-      `Use nutritional yeast for a cheese-like flavor`
-    );
+  if (additionalInstructions) {
+    suggestions.push(`These are some additional instructions by the requestor: ${additionalInstructions}`)
   }
 
-  if (dietaryRestrictions.includes('vegan')) {
-    suggestions.push(
-      `Replace eggs with flax eggs or commercial egg replacers`,
-      `Use plant-based protein sources like tofu, tempeh, or legumes`
-    );
-  }
-
-  // Health goal specific suggestions
-  if (healthGoals.includes('weight-loss')) {
-    suggestions.push(
-      `Use portion control and measure ingredients`,
-      `Add more fiber-rich vegetables to increase satiety`,
-      `Consider using a food scale for precise portions`
-    );
-  }
-
-  if (healthGoals.includes('muscle-gain')) {
-    suggestions.push(
-      `Increase protein content with lean meats or plant-based proteins`,
-      `Add complex carbohydrates for sustained energy`,
-      `Consider protein-rich side dishes`
-    );
-  }
-
-  if (healthGoals.includes('heart-health')) {
-    suggestions.push(
-      `Reduce sodium and use herbs for flavoring`,
-      `Include heart-healthy fats like olive oil and avocados`,
-      `Add omega-3 rich ingredients like fatty fish or flaxseeds`
-    );
-  }
-
-  return suggestions;
+  return suggestions
 }
 
 export function generateAlternativePrompt({
   mealName,
-  dietaryRestrictions = [],
-  healthGoals = [],
-  additionalInstructions = ""
-}: GenerateSuggestionsParams): string {
-  const restrictionsText = dietaryRestrictions.length > 0 
-    ? `considering these dietary restrictions: ${dietaryRestrictions.join(', ')}`
-    : '';
+  dietaryRestrictions,
+  additionalInstructions
+}: {
+  mealName: string
+  dietaryRestrictions: string
+  additionalInstructions?: string
+}): string {
+  const prompt = `You are a nutritionist and healthy eating expert. I need healthy alternatives for "${mealName}".
   
-  const goalsText = healthGoals.length > 0
-    ? `optimized for these health goals: ${healthGoals.join(', ')}`
-    : '';
+  ${dietaryRestrictions ? `The alternatives must be compatible with these dietary restrictions: ${dietaryRestrictions}` : ''}
+  ${additionalInstructions ? `Additional requirements: ${additionalInstructions}` : ''}
   
-  const instructionsText = additionalInstructions 
-    ? `Additional requirements: ${additionalInstructions}`
-    : '';
+  Provide 2-3 healthy alternatives with their benefits and nutritional comparison.
+  
+  Format your response as JSON with this structure:
+  {
+    "alternatives": [{
+      "original": "${mealName}",
+      "substitute": "healthier version",
+      "benefits": [
+        "specific health benefit 1",
+        "specific health benefit 2",
+        "specific health benefit 3"
+      ],
+      "nutritionalComparison": {
+        "calories": "clear calorie comparison",
+        "protein": "protein content comparison",
+        "healthBenefits": [
+          "specific nutritional benefit 1",
+          "specific nutritional benefit 2"
+        ]
+      }
+    }]
+  }
+  
+  Make sure each alternative is significantly healthier while maintaining similar taste and satisfaction.
+  Include specific nutritional benefits and clear comparisons.`;
 
-  return `
-    Please suggest healthy alternatives for ${mealName}.
-    ${restrictionsText}
-    ${goalsText}
-    ${instructionsText}
-    
-    Please provide:
-    1. A healthier version of the original dish with specific ingredient substitutions
-    2. Alternative dishes with similar flavors but healthier ingredients
-    3. Cooking method modifications to make it healthier
-    4. Nutritional benefits of the suggested alternatives
-    5. Portion size recommendations
-    6. Tips for meal prep and storage
-    7. Potential ingredient variations based on seasonal availability
-    8. Suggestions for complementary side dishes
-  `.trim();
+  return prompt;
 } 

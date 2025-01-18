@@ -59,8 +59,7 @@ export default function Index() {
   const { user } = useUser();
   const [stats, setStats] = useState({
     savedPlansCount: 0,
-    creditsUsed: 0,
-    maxCredits: 10
+    totalFeatureUses: 0,
   });
   const [activities, setActivities] = useState([]);
 
@@ -76,14 +75,13 @@ export default function Index() {
     
     try {
       const { data: plans } = await supabase
-        .from('meal_plans')
+        .from('saved_meal_plans')
         .select('*')
         .eq('user_id', user.id);
 
       setStats({
         savedPlansCount: plans?.length || 0,
-        creditsUsed: 0,
-        maxCredits: 0
+        totalFeatureUses: 0
       });
     } catch (error) {
       console.error('Error fetching user stats:', error);
@@ -129,7 +127,7 @@ export default function Index() {
         {/* Stats Grid */}
         <DashboardStats
           savedPlansCount={stats.savedPlansCount}
-          totalFeatureUsage={stats.creditsUsed}
+          totalFeatureUses={stats.totalFeatureUses}
         />
 
         {/* Recent Activity */}

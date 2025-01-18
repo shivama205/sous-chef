@@ -17,6 +17,7 @@ export interface HealthyAlternativeMetadata {
   mealName: string;
   success: boolean;
   alternativesFound: number;
+  dietaryRestrictions?: string;
   alternatives?: Array<{
     original: string;
     substitute: string;

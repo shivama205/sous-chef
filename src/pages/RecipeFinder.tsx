@@ -220,7 +220,12 @@ export default function RecipeFinder() {
     setIsLoading(true);
 
     try {
-      await trackFeatureUsage("recipe_finder_used");
+      await trackFeatureUsage("recipe_finder", {
+        ingredients: ingredients.split(',').map(item => item.trim()),
+        mealType: undefined,
+        cuisineType: undefined,
+        dietaryRestrictions: undefined
+      });
       
       const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });

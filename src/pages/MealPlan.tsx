@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { LoginDialog } from "@/components/LoginDialog";
-import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { FeatureCard } from "@/components/ui/FeatureCard";
 import { Calculator, RefreshCw, Save, Sparkles } from "lucide-react";
@@ -14,6 +14,7 @@ import { MacroCalculator } from "@/components/MacroCalculator";
 import { PreferencesForm } from "@/components/PreferencesForm";
 import { generateMealPlan } from "@/utils/mealPlanGenerator";
 import { trackFeatureUsage } from "@/utils/analytics";
+import { mealPlanLoadingMessages } from "@/lib/loadingMessages";
 import type { Preferences } from "@/types/preferences";
 import type { UserMacros } from "@/types/macros";
 import type { User } from "@supabase/supabase-js";
@@ -146,7 +147,12 @@ export function MealPlan() {
     setIsGenerating(true);
 
     try {
-      await trackFeatureUsage("meal_plan_generated");
+      await trackFeatureUsage("meal_plan_generation", {
+        days: preferences.days,
+        dietaryRestrictions: preferences.dietaryRestrictions ? [preferences.dietaryRestrictions] : undefined,
+        cuisinePreferences: preferences.cuisinePreferences,
+        targetCalories: preferences.targetCalories
+      });
       const newMealPlan = await generateMealPlan(preferences);
       
       navigate("/meal-plan/new", { 
@@ -541,7 +547,7 @@ export function MealPlan() {
   return (
     <BaseLayout>
       <div className="relative">
-        <MealPlanLoadingOverlay isLoading={isGenerating} />
+        <LoadingOverlay isLoading={isGenerating} messages={mealPlanLoadingMessages} />
         {user ? <LoggedInView /> : <LoggedOutView />}
       </div>
 
