@@ -19,6 +19,7 @@ import { trackFeatureUsage } from "@/utils/analytics";
 import { Recipe } from "@/types/recipeFinder";
 import { findRecipes, saveRecipe, getUserRecipes } from "@/services/recipeFinder";
 import { getUserMacros } from "@/services/userMacros";
+import { useNavigate } from "react-router-dom";
 
 const suggestionList = [
   "Ensure ingredients are spelled correctly",
@@ -81,6 +82,7 @@ export default function RecipeFinder() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [savedRecipeIds, setSavedRecipeIds] = useState<Set<string>>(new Set());
   const [recentRecipes, setRecentRecipes] = useState<Recipe[]>([]);
+  const navigate = useNavigate();
   const onDrop = async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) {
       toast({
@@ -252,6 +254,12 @@ export default function RecipeFinder() {
         description: "Failed to save recipe. Please try again.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleRecipeClick = (recipe: Recipe) => {
+    if (recipe.id) {
+      navigate(`/recipe/${recipe.id}`);
     }
   };
 
@@ -456,7 +464,11 @@ export default function RecipeFinder() {
                 </div>
                 <div className="space-y-4">
                   {recentRecipes.map((recipe, index) => (
-                    <div key={index} className="flex items-start gap-3">
+                    <div 
+                      key={index} 
+                      className="flex items-start gap-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -mx-2 transition-colors"
+                      onClick={() => handleRecipeClick(recipe)}
+                    >
                       <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
                         <ChefHat className="w-4 h-4 text-gray-600" />
                       </div>
