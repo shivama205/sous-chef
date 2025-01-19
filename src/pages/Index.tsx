@@ -13,9 +13,10 @@ import {
   ChefHat, 
   ArrowRight, 
   Star,
+  Utensils,
   Apple,
-  Search,
-  Leaf,
+  Clock,
+  Leaf
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
@@ -28,21 +29,21 @@ const featureHighlights = [
     title: "AI Meal Planning",
     description: "Get personalized meal plans based on your preferences and dietary needs",
     path: "/meal-plan",
-    gradient: "from-secondary/20 to-secondary/5"
+    gradient: "from-primary/20 to-primary/5"
   },
   {
-    icon: Search,
+    icon: Utensils,
     title: "Recipe Finder",
     description: "Find recipes that match your ingredients and preferences",
     path: "/recipe-finder",
-    gradient: "from-secondary/20 to-secondary/5"
+    gradient: "from-primary/20 to-primary/5"
   },
   {
     icon: Leaf,
-    title: "Smart Alternatives",
-    description: "Discover healthier versions of your favorite dishes",
+    title: "Healthy Alternatives",
+    description: "Find healthy alternatives to your favorite recipes",
     path: "/healthy-alternative",
-    gradient: "from-secondary/20 to-secondary/5"
+    gradient: "from-primary/20 to-primary/5"
   }
 ];
 
@@ -241,6 +242,25 @@ export default function Index() {
             Create personalized meal plans, discover healthy alternatives, and achieve your nutritional goals with AI-powered assistance.
           </p>
         </motion.div>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Button 
+            size="lg" 
+            onClick={() => navigate('/meal-plan')}
+            className="w-full sm:w-auto"
+          >
+            <ChefHat className="w-5 h-5 mr-2" />
+            Create Your Meal Plan
+          </Button>
+          <Button 
+            variant="outline" 
+            size="lg" 
+            onClick={() => navigate('/recipe-finder')}
+            className="w-full sm:w-auto"
+          >
+            <Utensils className="w-5 h-5 mr-2" />
+            Find Healthy Recipes 
+          </Button>
+        </div>
       </section>
 
       {/* Features Section with gradient cards */}
