@@ -5,21 +5,20 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/providers/AuthProvider";
 import Index from "./pages/Index";
-import { MealPlan } from "./pages/MealPlan";
-import HealthyAlternative from "./pages/HealthyAlternative";
+import { MealPlan } from "./pages/MealPlanner/MealPlan";
+import HealthyAlternative from "./pages/HealthyAlternatives/HealthyAlternative";
 import Profile from "./pages/Profile";
 import { Pricing } from "./pages/Pricing";
 import Billing from "./pages/Billing";
-import FAQ from "./pages/FAQ";
-import MealPlanDetails from "./pages/MealPlanDetails";
-import SharedMealPlan from "./pages/SharedMealPlan";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
-import RecipeFinder from "./pages/RecipeFinder";
-import Privacy from "./pages/Privacy";
-import Terms from "./pages/Terms";
-import About from "./pages/About";
-import RecipeDetail from "@/pages/RecipeDetail";
+import MealPlanDetails from "./pages/MealPlanner/MealPlanDetails";
+import SharedMealPlan from "./pages/MealPlanner/SharedMealPlan";
+import Blog from "./pages/blogs/Blog";
+import BlogPost from "./pages/blogs/BlogPost";
+import RecipeFinder from "./pages/ReciperFinder/RecipeFinder";
+import Privacy from "./pages/compliance/Privacy";
+import Terms from "./pages/compliance/Terms";
+import About from "./pages/compliance/About";
+import RecipeDetail from "@/pages/ReciperFinder/RecipeDetail";
 
 const queryClient = new QueryClient();
 
@@ -40,7 +39,6 @@ const App = () => (
             <Route path="/profile" element={<Profile />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/billing" element={<Billing />} />
-            <Route path="/faq" element={<FAQ />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/privacy" element={<Privacy />} />

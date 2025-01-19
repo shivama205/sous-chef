@@ -17,9 +17,9 @@ import {
   Star,
   Utensils,
   Apple,
-  Clock
+  Clock,
+  Leaf
 } from "lucide-react";
-import { useUser } from "@/hooks/useUser";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
@@ -31,21 +31,21 @@ const featureHighlights = [
     title: "AI Meal Planning",
     description: "Get personalized meal plans based on your preferences and dietary needs",
     path: "/meal-plan",
-    gradient: "from-blue-500/20 to-blue-500/5"
-  },
-  {
-    icon: Brain,
-    title: "Smart Alternatives",
-    description: "Discover healthier versions of your favorite dishes",
-    path: "/healthy-alternative",
-    gradient: "from-green-500/20 to-green-500/5"
+    gradient: "from-primary/20 to-primary/5"
   },
   {
     icon: Utensils,
     title: "Recipe Finder",
     description: "Find recipes that match your ingredients and preferences",
     path: "/recipe-finder",
-    gradient: "from-purple-500/20 to-purple-500/5"
+    gradient: "from-primary/20 to-primary/5"
+  },
+  {
+    icon: Leaf,
+    title: "Healthy Alternatives",
+    description: "Find healthy alternatives to your favorite recipes",
+    path: "/healthy-alternative",
+    gradient: "from-primary/20 to-primary/5"
   }
 ];
 
@@ -257,11 +257,11 @@ export default function Index() {
           <Button 
             variant="outline" 
             size="lg" 
-            onClick={() => navigate('/healthy-alternative')}
+            onClick={() => navigate('/recipe-finder')}
             className="w-full sm:w-auto"
           >
-            <Apple className="w-5 h-5 mr-2" />
-            Try Healthy Alternatives
+            <Utensils className="w-5 h-5 mr-2" />
+            Find Healthy Recipes 
           </Button>
         </div>
       </section>
