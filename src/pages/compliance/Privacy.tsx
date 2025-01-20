@@ -142,11 +142,9 @@ export default function Privacy() {
               <ul className="list-disc pl-6 space-y-2">
                 <li>No refunds will be provided under any circumstances</li>
                 <li>All subscription charges are final and non-negotiable</li>
-                <li>Cancellation of a subscription will not result in a refund for the current billing period</li>
-                <li>Any disputes regarding payments must be raised within 48 hours of the transaction</li>
               </ul>
               <p className="mt-4">
-                This no-refund policy applies to all services, including but not limited to premium subscriptions, one-time purchases, and any other paid features offered through the Platform.
+                This no-refund policy applies to all services, including premium subscriptions, one-time purchases, and any other paid features offered through the Platform.
               </p>
             </div>
           </section>
@@ -159,6 +157,7 @@ export default function Privacy() {
               </p>
               <ul className="list-none space-y-2">
                 <li><strong>Email:</strong> support@souschef.in</li>
+                <li><strong>Name:</strong> Shivam Aggarwal</li>
                 <li><strong>Subject Line for Consent Withdrawal:</strong> "For Withdrawal of Consent"</li>
                 <li><strong>Response Time:</strong> We aim to respond to all privacy-related requests within 48 hours</li>
               </ul>
