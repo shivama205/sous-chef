@@ -98,24 +98,39 @@ export default function RecipeDetail() {
   }, [id, user, navigate, toast]);
 
   const handleShare = async () => {
-    if (!recipe) return;
+    if (!recipe || !user) return;
 
     try {
-      // Generate a unique share ID
-      const shareId = crypto.randomUUID();
-      
-      // Save the recipe reference to shared_recipes table
-      const { error } = await supabase
+      // check if share url already exists
+      const { data: existingShare, error: existingShareError } = await supabase
+        .from("shared_recipes")
+        .select("id")
+        .eq("recipe_id", recipe.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (existingShare) {
+        const shareUrl = `${window.location.origin}/shared/recipe/${existingShare.id}`;
+        await copyToClipboard(shareUrl);
+        return;
+      }
+
+      // Since share url doesn't exist, save the recipe reference to shared_recipes table
+      const { data: newShare, error } = await supabase
         .from("shared_recipes")
         .insert({
-          share_id: shareId,
           recipe_id: recipe.id,
-          created_at: new Date().toISOString(),
-        });
-
+          user_id: user.id,
+          is_public: true,
+          views: 0,
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days expiry
+        })
+        .select()
+        .single();
+  
       if (error) throw error;
 
-      const shareUrl = `${window.location.origin}/shared/recipe/${shareId}`;
+      const shareUrl = `${window.location.origin}/shared/recipe/${newShare.id}`;
       
       if (navigator.share) {
         try {

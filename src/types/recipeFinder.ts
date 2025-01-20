@@ -19,3 +19,14 @@ export interface Recipe {
   nutritional_value: NutritionalValue;
   created_at?: string; // Optional since it only exists after saving
 }
+
+export interface SharedRecipe {
+  id: string;
+  user_id: string;
+  recipe_id: string;
+  is_public: boolean;
+  expires_at?: string;
+  views: number;
+  created_at: string;
+  share_id: string;
+}

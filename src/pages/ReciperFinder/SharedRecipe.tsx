@@ -39,10 +39,10 @@ export default function SharedRecipe() {
 
       try {
         console.log("Fetching shared recipe with ID:", id);
-        // First get the recipe_id from shared_recipes
+        // First get the shared recipe data
         const { data: sharedData, error: sharedError } = await supabase
           .from("shared_recipes")
-          .select("recipe_id")
+          .select("*")
           .eq("share_id", id)
           .single();
 
@@ -60,6 +60,38 @@ export default function SharedRecipe() {
           });
           navigate("/recipe-finder");
           return;
+        }
+
+        // Check if the recipe has expired
+        if (sharedData.expires_at && new Date(sharedData.expires_at) < new Date()) {
+          toast({
+            title: "Link expired",
+            description: "This shared recipe link has expired.",
+            variant: "destructive",
+          });
+          navigate("/recipe-finder");
+          return;
+        }
+
+        // Check if the recipe is public
+        if (!sharedData.is_public) {
+          toast({
+            title: "Private recipe",
+            description: "This recipe is not publicly accessible.",
+            variant: "destructive",
+          });
+          navigate("/recipe-finder");
+          return;
+        }
+
+        // Increment the view count
+        const { error: updateError } = await supabase
+          .from("shared_recipes")
+          .update({ views: (sharedData.views || 0) + 1 })
+          .eq("id", sharedData.id);
+
+        if (updateError) {
+          console.error("Error updating view count:", updateError);
         }
 
         // Then fetch the actual recipe using recipe_id
