@@ -25,8 +25,8 @@ export interface SharedRecipe {
   user_id: string;
   recipe_id: string;
   is_public: boolean;
-  expires_at?: string;
+  expires_at: string;
   views: number;
   created_at: string;
-  share_id: string;
+  updated_at: string;
 }

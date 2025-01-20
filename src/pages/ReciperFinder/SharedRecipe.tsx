@@ -33,7 +33,7 @@ export default function SharedRecipe() {
           description: "Invalid recipe link.",
           variant: "destructive",
         });
-        navigate("/recipe-finder");
+        navigate("/");
         return;
       }
 
@@ -43,7 +43,7 @@ export default function SharedRecipe() {
         const { data: sharedData, error: sharedError } = await supabase
           .from("shared_recipes")
           .select("*")
-          .eq("share_id", id)
+          .eq("id", id)
           .single();
 
         if (sharedError) {
@@ -58,7 +58,7 @@ export default function SharedRecipe() {
             description: "This shared recipe link is invalid or has expired.",
             variant: "destructive",
           });
-          navigate("/recipe-finder");
+          navigate("/");
           return;
         }
 
@@ -69,7 +69,7 @@ export default function SharedRecipe() {
             description: "This shared recipe link has expired.",
             variant: "destructive",
           });
-          navigate("/recipe-finder");
+          navigate("/");
           return;
         }
 
@@ -80,7 +80,7 @@ export default function SharedRecipe() {
             description: "This recipe is not publicly accessible.",
             variant: "destructive",
           });
-          navigate("/recipe-finder");
+          navigate("/");
           return;
         }
 
@@ -98,7 +98,7 @@ export default function SharedRecipe() {
         const { data: recipeData, error: recipeError } = await supabase
           .from("saved_recipes")
           .select("*")
-          .eq("id", sharedData.recipe_id)
+          .eq("recipe_id", sharedData.recipe_id)
           .single();
 
         if (recipeError) {
@@ -113,7 +113,7 @@ export default function SharedRecipe() {
             description: "The shared recipe no longer exists.",
             variant: "destructive",
           });
-          navigate("/recipe-finder");
+          navigate("/");
           return;
         }
 
@@ -133,7 +133,7 @@ export default function SharedRecipe() {
           description: "Failed to load shared recipe.",
           variant: "destructive",
         });
-        navigate("/recipe-finder");
+        navigate("/");
       } finally {
         setIsLoading(false);
       }
