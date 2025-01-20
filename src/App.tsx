@@ -20,6 +20,7 @@ import Privacy from "./pages/compliance/Privacy";
 import Terms from "./pages/compliance/Terms";
 import About from "./pages/compliance/About";
 import RecipeDetail from "@/pages/ReciperFinder/RecipeDetail";
+import SharedRecipe from "./pages/ReciperFinder/SharedRecipe";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,8 @@ const App = () => (
             <Route path="/meal-plan/:id" element={<MealPlanDetails />} />
             <Route path="/shared/meal-plan/:id" element={<SharedMealPlan />} />
             <Route path="/recipe-finder" element={<RecipeFinder />} />
+            <Route path="/recipe/:id" element={<RecipeDetail />} />
+            <Route path="/shared/recipe/:id" element={<SharedRecipe />} />
             <Route path="/healthy-alternative" element={<HealthyAlternative />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/pricing" element={<Pricing />} />
@@ -46,7 +49,6 @@ const App = () => (
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/about" element={<About />} />
-            <Route path="/recipe/:id" element={<RecipeDetail />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
