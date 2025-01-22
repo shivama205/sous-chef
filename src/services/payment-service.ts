@@ -5,21 +5,12 @@ import {
   type PhonePeVerificationResponse 
 } from '@/types/payment'
 
-const PHONEPE_API_URL = import.meta.env.VITE_PHONEPE_API_URL || 'https://api.phonepe.com/apis/hermes'
-const MERCHANT_ID = import.meta.env.VITE_PHONEPE_MERCHANT_ID
-const SALT_KEY = import.meta.env.VITE_PHONEPE_SALT_KEY
-const SALT_INDEX = import.meta.env.VITE_PHONEPE_SALT_INDEX
+const API_BASE_URL = import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:8000'
+const API_KEY = import.meta.env.VITE_BACKEND_API_KEY
 
 const headers = {
   'Content-Type': 'application/json',
-  'X-VERIFY': '', // Will be set per request
-}
-
-function generateX_VERIFY(payload: string): string {
-  // PhonePe's checksum generation logic
-  // This should match their documentation for generating the X-VERIFY header
-  // Usually involves base64 encoding and SHA256 hashing with the salt key
-  return '' // Implement according to PhonePe docs
+  'x-api-key': API_KEY || '',
 }
 
 export const paymentService = {
@@ -36,28 +27,16 @@ export const paymentService = {
     redirectUrl: string
     mobileNumber?: string
   }): Promise<PhonePePaymentResponse> {
-    const merchantTransactionId = `TXN_${Date.now()}_${Math.random().toString(36).slice(2)}`
-    
-    const payload: PhonePePaymentRequest = {
-      merchantId: MERCHANT_ID,
-      merchantTransactionId,
-      merchantUserId: userId,
-      amount: amount * 100, // Convert to paise
-      redirectUrl,
-      redirectMode: 'POST',
-      callbackUrl,
-      paymentInstrument: {
-        type: 'PAY_PAGE'
-      },
-      mobileNumber
-    }
-
-    const xVerify = generateX_VERIFY(JSON.stringify(payload))
-    
-    const response = await fetch(`${PHONEPE_API_URL}/pg/v1/pay`, {
+    const response = await fetch(`${API_BASE_URL}/api/payments/initiate`, {
       method: 'POST',
-      headers: { ...headers, 'X-VERIFY': xVerify },
-      body: JSON.stringify(payload),
+      headers,
+      body: JSON.stringify({
+        amount,
+        user_id: userId,
+        callback_url: callbackUrl,
+        redirect_url: redirectUrl,
+        mobile_number: mobileNumber
+      }),
     })
 
     if (!response.ok) {
@@ -69,18 +48,9 @@ export const paymentService = {
   },
 
   async verifyPayment(merchantTransactionId: string): Promise<PhonePeVerificationResponse> {
-    const payload: PhonePeVerificationRequest = {
-      merchantId: MERCHANT_ID,
-      merchantTransactionId,
-      saltKey: SALT_KEY,
-      saltIndex: SALT_INDEX
-    }
-
-    const xVerify = generateX_VERIFY(JSON.stringify(payload))
-
-    const response = await fetch(`${PHONEPE_API_URL}/pg/v1/status/${merchantTransactionId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/payments/verify/${merchantTransactionId}`, {
       method: 'GET',
-      headers: { ...headers, 'X-VERIFY': xVerify },
+      headers,
     })
 
     if (!response.ok) {
