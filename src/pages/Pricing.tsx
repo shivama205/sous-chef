@@ -6,6 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Check } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
+import { usePayment } from "@/hooks/use-payment";
 
 interface PricingPlan {
   id: string;
@@ -87,6 +88,18 @@ export function Pricing() {
   const [isYearly, setIsYearly] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { initiatePayment, isLoading: isPaymentLoading } = usePayment({
+    onInitiateSuccess: (response) => {
+      console.log('Payment initiated:', response.data.merchantTransactionId);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to process payment. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
 
   const handleSubscribe = async (plan: PricingPlan) => {
     setIsLoading(true);
@@ -101,10 +114,12 @@ export function Pricing() {
         return;
       }
 
-      // Here you would typically redirect to a payment processor
-      toast({
-        title: "Coming Soon",
-        description: "Subscription functionality will be available soon!",
+      await initiatePayment({
+        amount: isYearly ? plan.price_yearly : plan.price_monthly,
+        userId: session.user.id,
+        callbackUrl: `${window.location.origin}/payment/callback?plan=${plan.slug}`,
+        redirectUrl: `${window.location.origin}/payment/success`,
+        mobileNumber: session.user.phone // Optional: Add if you have user's phone number
       });
     } catch (error) {
       console.error("Error:", error);
@@ -196,9 +211,9 @@ export function Pricing() {
                 onClick={() => handleSubscribe(plan)}
                 className="w-full"
                 variant={plan.is_popular ? "default" : "outline"}
-                disabled={isLoading}
+                disabled={isLoading || isPaymentLoading}
               >
-                Get Started
+                {isLoading || isPaymentLoading ? 'Processing...' : 'Get Started'}
               </Button>
             </Card>
           ))}
