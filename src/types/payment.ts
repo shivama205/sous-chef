@@ -110,10 +110,12 @@ export interface PaymentMethod {
 }
 
 export interface PaymentRequest {
-  amount: number // Amount in paise
-  user_id: string
-  callback_url: string
-  redirect_url: string
+  amount: number           // Amount in paise
+  user_id: string         // Unique user identifier
+  callback_url: string    // PhonePe callback URL
+  redirect_url: string    // User redirect URL
+  mobile_number?: string  // Optional: User's mobile number
+  email?: string         // Optional: User's email address
 }
 
 export interface PaymentRedirectInfo {
@@ -129,7 +131,10 @@ export interface PaymentResponse {
     merchantTransactionId: string
     instrumentResponse: {
       type: string
-      redirectInfo: PaymentRedirectInfo
+      redirectInfo: {
+        url: string
+        method: string
+      }
     }
   }
 }
@@ -141,6 +146,37 @@ export interface PaymentVerification {
 
 export interface VerificationResponse {
   is_valid: boolean
+}
+
+export interface PaymentStatusResponse {
+  success: boolean
+  code: string
+  data: {
+    merchantId: string
+    merchantTransactionId: string
+    transactionId: string
+    amount: number
+    state: PaymentStatus
+    responseCode: string
+  }
+}
+
+export interface RefundRequest {
+  transaction_id: string
+  refund_amount: number
+  refund_type: 'REGULAR' | 'INSTANT'
+}
+
+export interface RefundResponse {
+  success: boolean
+  code: string
+  data: {
+    merchantId: string
+    merchantTransactionId: string
+    merchantRefundId: string
+    amount: number
+    state: 'INITIATED' | 'COMPLETED' | 'FAILED'
+  }
 }
 
 export type PaymentStatus = 'INITIATED' | 'COMPLETED' | 'FAILED' | 'PENDING' 

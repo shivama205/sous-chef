@@ -87,6 +87,7 @@ const plans: PricingPlan[] = [
 export function Pricing() {
   const [isYearly, setIsYearly] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
   const { toast } = useToast();
   const { initiatePayment, isLoading: isPaymentLoading } = usePayment({
     onInitiateSuccess: (response) => {
@@ -114,12 +115,21 @@ export function Pricing() {
         return;
       }
 
+      if (!/^[6-9]\d{9}$/.test(phoneNumber)) {
+        toast({
+          title: "Invalid Mobile Number",
+          description: "Please provide a valid 10-digit Indian mobile number.",
+          variant: "destructive"
+        });
+        return;
+      }
+
       await initiatePayment({
         amount: isYearly ? plan.price_yearly : plan.price_monthly,
         userId: session.user.id,
         callbackUrl: `${window.location.origin}/payment/callback?plan=${plan.slug}`,
         redirectUrl: `${window.location.origin}/payment/success`,
-        mobileNumber: session.user.phone // Optional: Add if you have user's phone number
+        mobileNumber: phoneNumber
       });
     } catch (error) {
       console.error("Error:", error);
@@ -162,6 +172,21 @@ export function Pricing() {
               </span>
             </span>
           </div>
+        </div>
+
+        {/* Phone Number Input */}
+        <div className="max-w-md mx-auto">
+          <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+            Mobile Number
+          </label>
+          <input
+            type="text"
+            id="phone"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+            placeholder="Enter your 10-digit mobile number"
+          />
         </div>
 
         {/* Pricing Cards */}
