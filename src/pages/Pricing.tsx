@@ -6,7 +6,6 @@ import { Switch } from "@/components/ui/switch";
 import { Check } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
-import { usePayment } from "@/hooks/use-payment";
 
 interface PricingPlan {
   id: string;
@@ -87,20 +86,21 @@ const plans: PricingPlan[] = [
 export function Pricing() {
   const [isYearly, setIsYearly] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
   const { toast } = useToast();
-  const { initiatePayment, isLoading: isPaymentLoading } = usePayment({
-    onInitiateSuccess: (response) => {
-      console.log('Payment initiated:', response.data.merchantTransactionId);
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to process payment. Please try again.",
-        variant: "destructive"
-      });
-    }
-  });
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+  // const { initiatePayment, isLoading: isPaymentLoading } = usePayment({
+  //   onInitiateSuccess: (response) => {
+  //     console.log('Payment initiated:', response.data.merchantTransactionId);
+  //   },
+  //   onError: (error) => {
+  //     toast({
+  //       title: "Error",
+  //       description: error.message || "Failed to process payment. Please try again.",
+  //       variant: "destructive"
+  //     });
+  //   }
+  // });
 
   const handleSubscribe = async (plan: PricingPlan) => {
     setIsLoading(true);
@@ -115,7 +115,7 @@ export function Pricing() {
         return;
       }
 
-      if (!/^[6-9]\d{9}$/.test(phoneNumber)) {
+      if (!/^[6-9]\d{9}$/.test(mobileNumber)) {
         toast({
           title: "Invalid Mobile Number",
           description: "Please provide a valid 10-digit Indian mobile number.",
@@ -124,20 +124,36 @@ export function Pricing() {
         return;
       }
 
-      await initiatePayment({
-        amount: isYearly ? plan.price_yearly : plan.price_monthly,
-        userId: session.user.id,
-        callbackUrl: `${window.location.origin}/payment/callback?plan=${plan.slug}`,
-        redirectUrl: `${window.location.origin}/payment/success`,
-        mobileNumber: phoneNumber
+      // initiate payment
+      const initiate_payment_request = {
+        mobileNumber: mobileNumber,
+        amount: 1, // isYearly ? plan.price_yearly : plan.price_monthly,
+        user_id: session.user.id,
+      }
+
+      await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/order`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(initiate_payment_request),
+      }).then((response) => {
+        response.json().then((data) => {
+          console.log("data", data);
+          if (data.data && data.data.instrumentResponse && data.data.instrumentResponse.redirectInfo && data.data.instrumentResponse.redirectInfo.url) {
+            window.location.href = data.data.instrumentResponse.redirectInfo.url;
+          } else {
+            toast({
+              title: "Error",
+              description: data.message || "Failed to create order. Please try again.",
+              variant: "destructive"
+            });
+          }
+        });
+      }).catch((error) => {
+        console.log(error);
       });
-    } catch (error) {
-      console.error("Error:", error);
-      toast({
-        title: "Error",
-        description: "Failed to process subscription. Please try again.",
-        variant: "destructive"
-      });
+
     } finally {
       setIsLoading(false);
     }
@@ -182,8 +198,8 @@ export function Pricing() {
           <input
             type="text"
             id="phone"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
+            value={mobileNumber}
+            onChange={(e) => setMobileNumber(e.target.value)}
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
             placeholder="Enter your 10-digit mobile number"
           />
@@ -277,4 +293,8 @@ export function Pricing() {
       </div>
     </BaseLayout>
   );
+}
+
+function usePayment(arg0: { onInitiateSuccess: (response: any) => void; onError: (error: any) => void; }): { initiatePayment: any; isLoading: any; } {
+  throw new Error("Function not implemented.");
 }
