@@ -25,63 +25,82 @@ export function PaymentStatus() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [transactionDetails, setTransactionDetails] = useState<PhonePeCallback | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
-
-  // Function to handle form submission
-  const handleFormSubmission = (formData: URLSearchParams) => {
-    const paymentData = {
-      code: formData.get("code") || "",
-      merchantId: formData.get("merchantId") || "",
-      transactionId: formData.get("transactionId") || "",
-      amount: formData.get("amount") || "",
-      providerReferenceId: formData.get("providerReferenceId") || "",
-      merchantOrderId: formData.get("merchantOrderId") || "",
-      checksum: formData.get("checksum") || "",
-    };
-
-    setTransactionDetails(paymentData);
-    const isPaymentSuccess = paymentData.code === "PAYMENT_SUCCESS";
-    setIsSuccess(isPaymentSuccess);
-    
-    if (isPaymentSuccess) {
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 5000); // Stop confetti after 5 seconds
-    }
-
-    toast({
-      title: isPaymentSuccess ? "Payment Successful" : "Payment Failed",
-      description: isPaymentSuccess 
-        ? `Transaction ${paymentData.transactionId} completed successfully.`
-        : `Transaction ${paymentData.transactionId} failed. Please try again.`,
-      variant: isPaymentSuccess ? "default" : "destructive",
-    });
-
-    // Convert form data to URL parameters and update the URL
-    const searchParams = new URLSearchParams();
-    for (const [key, value] of Object.entries(paymentData)) {
-      searchParams.append(key, value);
-    }
-    navigate(`/payment/status?${searchParams.toString()}`, { replace: true });
-  };
+  const [isProcessing, setIsProcessing] = useState(true);
 
   useEffect(() => {
-    // Handle direct form POST submission
-    if (document.forms[0]) {
-      const form = document.forms[0];
-      const formData = new URLSearchParams(new FormData(form) as any);
-      handleFormSubmission(formData);
-      return;
-    }
+    // Function to process payment response
+    const processPaymentResponse = (data: PhonePeCallback) => {
+      setTransactionDetails(data);
+      const isPaymentSuccess = data.code === "PAYMENT_SUCCESS";
+      setIsSuccess(isPaymentSuccess);
+      
+      if (isPaymentSuccess) {
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 5000);
+      }
 
-    // Handle URL parameters (for GET requests or after POST->GET conversion)
-    if (location.search.includes("code=")) {
-      const searchParams = new URLSearchParams(location.search);
-      handleFormSubmission(searchParams);
-      return;
-    }
+      toast({
+        title: isPaymentSuccess ? "Payment Successful" : "Payment Failed",
+        description: isPaymentSuccess 
+          ? `Transaction ${data.transactionId} completed successfully.`
+          : `Transaction ${data.transactionId} failed. Please try again.`,
+        variant: isPaymentSuccess ? "default" : "destructive",
+      });
+    };
+
+    // Function to handle form data
+    const handleFormData = () => {
+      // Get all form inputs
+      const inputs = document.querySelectorAll('input[type="hidden"]');
+      if (inputs.length > 0) {
+        const data = {
+          code: '',
+          merchantId: '',
+          transactionId: '',
+          amount: '',
+          providerReferenceId: '',
+          merchantOrderId: '',
+          checksum: ''
+        } as PhonePeCallback;
+
+        inputs.forEach((input: HTMLInputElement) => {
+          if (input.name in data) {
+            (data as any)[input.name] = input.value;
+          }
+        });
+        
+        // Verify we have all required fields
+        if (data.code && data.merchantId && data.transactionId) {
+          processPaymentResponse(data);
+          return true;
+        }
+      }
+      return false;
+    };
+
+    // Function to handle URL parameters
+    const handleUrlParams = () => {
+      const params = new URLSearchParams(location.search);
+      if (params.has('code')) {
+        const data = {
+          code: params.get('code') || '',
+          merchantId: params.get('merchantId') || '',
+          transactionId: params.get('transactionId') || '',
+          amount: params.get('amount') || '',
+          providerReferenceId: params.get('providerReferenceId') || '',
+          merchantOrderId: params.get('merchantOrderId') || '',
+          checksum: params.get('checksum') || ''
+        };
+        processPaymentResponse(data);
+        return true;
+      }
+      return false;
+    };
 
     // Handle error from redirect
-    if (location.search.includes("error=")) {
-      const error = new URLSearchParams(location.search).get("error");
+    const handleError = () => {
+      const params = new URLSearchParams(location.search);
+      const error = params.get('error');
       if (error) {
         setIsSuccess(false);
         toast({
@@ -89,26 +108,62 @@ export function PaymentStatus() {
           description: decodeURIComponent(error),
           variant: "destructive",
         });
+        return true;
       }
-    }
-  }, [location, navigate, toast]);
-
-  // Handle form submission event
-  useEffect(() => {
-    const handleSubmit = (event: Event) => {
-      event.preventDefault();
-      const form = event.target as HTMLFormElement;
-      const formData = new URLSearchParams(new FormData(form) as any);
-      handleFormSubmission(formData);
+      return false;
     };
 
-    // Add form submit handler
-    const form = document.forms[0];
-    if (form) {
-      form.addEventListener('submit', handleSubmit);
-      return () => form.removeEventListener('submit', handleSubmit);
-    }
-  }, []);
+    // Process the payment response
+    const processResponse = async () => {
+      try {
+        // Try to handle form data first (POST response)
+        if (handleFormData()) {
+          return;
+        }
+
+        // Then try URL parameters (GET response)
+        if (handleUrlParams()) {
+          return;
+        }
+
+        // Finally check for error parameters
+        if (handleError()) {
+          return;
+        }
+
+        // If none of the above, show error
+        toast({
+          title: "Invalid Response",
+          description: "Could not process payment response",
+          variant: "destructive",
+        });
+      } finally {
+        setIsProcessing(false);
+      }
+    };
+
+    processResponse();
+  }, [location, toast]);
+
+  if (isProcessing) {
+    return (
+      <BaseLayout>
+        <div className="container mx-auto px-4 py-16">
+          <Card className="max-w-lg mx-auto p-8">
+            <div className="text-center">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              >
+                <div className="w-16 h-16 mx-auto border-4 border-primary border-t-transparent rounded-full" />
+              </motion.div>
+              <p className="mt-4 text-lg">Processing payment response...</p>
+            </div>
+          </Card>
+        </div>
+      </BaseLayout>
+    );
+  }
 
   return (
     <BaseLayout>
