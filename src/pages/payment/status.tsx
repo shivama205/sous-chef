@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,50 +14,34 @@ interface PhonePeCallback {
   transactionId: string;
   amount: string;
   providerReferenceId: string;
+  merchantOrderId: string;
   checksum: string;
 }
 
 export function PaymentStatus() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [isSuccess, setIsSuccess] = useState(false);
   const [transactionDetails, setTransactionDetails] = useState<PhonePeCallback | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
-    // Function to parse form data from POST request
-    const parseFormData = (formData: FormData): PhonePeCallback => {
-      return {
-        code: formData.get("code") as string,
-        merchantId: formData.get("merchantId") as string,
-        transactionId: formData.get("transactionId") as string,
-        amount: formData.get("amount") as string,
-        providerReferenceId: formData.get("providerReferenceId") as string,
-        checksum: formData.get("checksum") as string,
+    // Function to handle form submission
+    const handleFormSubmission = () => {
+      // Get form data from URL-encoded body
+      const formData = new URLSearchParams(location.state?.formData || location.search);
+      
+      const paymentData = {
+        code: formData.get("code") || "",
+        merchantId: formData.get("merchantId") || "",
+        transactionId: formData.get("transactionId") || "",
+        amount: formData.get("amount") || "",
+        providerReferenceId: formData.get("providerReferenceId") || "",
+        merchantOrderId: formData.get("merchantOrderId") || "",
+        checksum: formData.get("checksum") || "",
       };
-    };
 
-    // Check if we have form data in the state
-    const searchParams = new URLSearchParams(location.search);
-    let paymentData: PhonePeCallback | null = null;
-
-    // Handle both GET and POST scenarios
-    if (location.state?.formData) {
-      // Handle POST data from form submission
-      paymentData = parseFormData(location.state.formData);
-    } else if (searchParams.has("code")) {
-      // Handle GET parameters
-      paymentData = {
-        code: searchParams.get("code") || "",
-        merchantId: searchParams.get("merchantId") || "",
-        transactionId: searchParams.get("transactionId") || "",
-        amount: searchParams.get("amount") || "",
-        providerReferenceId: searchParams.get("providerReferenceId") || "",
-        checksum: searchParams.get("checksum") || "",
-      };
-    }
-
-    if (paymentData) {
       setTransactionDetails(paymentData);
       const isPaymentSuccess = paymentData.code === "PAYMENT_SUCCESS";
       setIsSuccess(isPaymentSuccess);
@@ -74,17 +58,37 @@ export function PaymentStatus() {
           : `Transaction ${paymentData.transactionId} failed. Please try again.`,
         variant: isPaymentSuccess ? "default" : "destructive",
       });
-    } else {
-      const error = searchParams.get("error");
+
+      // If this was a POST request, redirect to the same page with parameters in URL
+      if (location.state?.formData) {
+        const searchParams = new URLSearchParams();
+        for (const [key, value] of Object.entries(paymentData)) {
+          searchParams.append(key, value);
+        }
+        // Replace the current URL with a GET request containing the parameters
+        navigate(`/payment/status?${searchParams.toString()}`, { replace: true });
+      }
+    };
+
+    // Handle error from redirect
+    const handleError = () => {
+      const error = new URLSearchParams(location.search).get("error");
       if (error) {
+        setIsSuccess(false);
         toast({
           title: "Payment Failed",
           description: decodeURIComponent(error),
           variant: "destructive",
         });
       }
+    };
+
+    if (location.state?.formData || location.search.includes("code=")) {
+      handleFormSubmission();
+    } else if (location.search.includes("error=")) {
+      handleError();
     }
-  }, [location, toast]);
+  }, [location, navigate, toast]);
 
   return (
     <BaseLayout>
