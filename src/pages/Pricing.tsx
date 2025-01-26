@@ -127,36 +127,30 @@ export function Pricing() {
       // initiate payment
       const initiate_payment_request = {
         mobileNumber: mobileNumber,
-        amount: 1, // isYearly ? plan.price_yearly : plan.price_monthly,
-        user_id: session.user.id,
+        amount: isYearly ? plan.price_yearly : plan.price_monthly,
+        userId: session.user.id,
+        redirectUrl: `${import.meta.env.VITE_DOMAIN}/payment/status`,
+        callbackUrl: `${import.meta.env.VITE_BACKEND_API_URL}/api/payment/callback`
       }
 
-      await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/payment/initiate`, {
+      await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/api/payment/initiate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(initiate_payment_request),
       }).then((response) => {
-        response.json().then((res) => {
-          console.log("res", res);
-          console.log("res.data", res.data);
-          console.log("res.data.instrumentResponse", res.data.instrumentResponse);
-          console.log("res.data.instrumentResponse.redirectInfo", res.data.instrumentResponse.redirectInfo);
-          console.log("res.data.instrumentResponse.redirectInfo.url", res.data.instrumentResponse.redirectInfo.url);
-          if (res.data && res.data.instrumentResponse && res.data.instrumentResponse.redirectInfo && res.data.instrumentResponse.redirectInfo.url) {
-            console.log("redirecting to", res.data.instrumentResponse.redirectInfo.url);
-            window.location.href = res.data.instrumentResponse.redirectInfo.url;
+        response.json().then((data) => {
+          console.log("data", data);
+          if (data.success && data.data.instrumentResponse.redirectInfo.url) {
+            window.location.href = data.data.instrumentResponse.redirectInfo.url;
           } else {
-            toast({
-              title: "Error",
-              description: res.message || "Failed to initiate payment. Please try again.",
-              variant: "destructive"
-            });
+            window.location.href = `${import.meta.env.VITE_DOMAIN}/payment/status?error=${encodeURIComponent(data.message || "Failed to initiate payment")}`;
           }
         });
       }).catch((error) => {
-        console.log(error);
+        console.error("Payment initiation error:", error);
+        window.location.href = `${import.meta.env.VITE_DOMAIN}/payment/status?error=${encodeURIComponent(error.message || "Failed to initiate payment")}`;
       });
 
     } finally {

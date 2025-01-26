@@ -21,8 +21,7 @@ import Terms from "./pages/compliance/Terms";
 import About from "./pages/compliance/About";
 import RecipeDetail from "@/pages/ReciperFinder/RecipeDetail";
 import SharedRecipe from "./pages/ReciperFinder/SharedRecipe";
-import { PaymentSuccess } from "./pages/payment/success";
-import { PaymentFailure } from "./pages/payment/failure";
+import { PaymentStatus } from "./pages/payment/status";
 
 const queryClient = new QueryClient();
 
@@ -51,8 +50,7 @@ const App = () => (
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/about" element={<About />} />
-            <Route path="/payment/success" element={<PaymentSuccess />} />
-            <Route path="/payment/failure" element={<PaymentFailure />} />
+            <Route path="/payment/status" element={<PaymentStatus />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
