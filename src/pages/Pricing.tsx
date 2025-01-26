@@ -103,7 +103,7 @@ export function Pricing() {
 
       // initiate payment
       const initiate_payment_request = {
-        amount: isYearly ? plan.price_yearly : plan.price_monthly,
+        amount: 1, //isYearly ? plan.price_yearly : plan.price_monthly,
         userId: session.user.id,
       }
 
