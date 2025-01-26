@@ -26,52 +26,61 @@ export function PaymentStatus() {
   const [transactionDetails, setTransactionDetails] = useState<PhonePeCallback | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
 
-  useEffect(() => {
-    // Function to handle form submission
-    const handleFormSubmission = () => {
-      // Get form data from URL-encoded body
-      const formData = new URLSearchParams(location.state?.formData || location.search);
-      
-      const paymentData = {
-        code: formData.get("code") || "",
-        merchantId: formData.get("merchantId") || "",
-        transactionId: formData.get("transactionId") || "",
-        amount: formData.get("amount") || "",
-        providerReferenceId: formData.get("providerReferenceId") || "",
-        merchantOrderId: formData.get("merchantOrderId") || "",
-        checksum: formData.get("checksum") || "",
-      };
-
-      setTransactionDetails(paymentData);
-      const isPaymentSuccess = paymentData.code === "PAYMENT_SUCCESS";
-      setIsSuccess(isPaymentSuccess);
-      
-      if (isPaymentSuccess) {
-        setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 5000); // Stop confetti after 5 seconds
-      }
-
-      toast({
-        title: isPaymentSuccess ? "Payment Successful" : "Payment Failed",
-        description: isPaymentSuccess 
-          ? `Transaction ${paymentData.transactionId} completed successfully.`
-          : `Transaction ${paymentData.transactionId} failed. Please try again.`,
-        variant: isPaymentSuccess ? "default" : "destructive",
-      });
-
-      // If this was a POST request, redirect to the same page with parameters in URL
-      if (location.state?.formData) {
-        const searchParams = new URLSearchParams();
-        for (const [key, value] of Object.entries(paymentData)) {
-          searchParams.append(key, value);
-        }
-        // Replace the current URL with a GET request containing the parameters
-        navigate(`/payment/status?${searchParams.toString()}`, { replace: true });
-      }
+  // Function to handle form submission
+  const handleFormSubmission = (formData: URLSearchParams) => {
+    const paymentData = {
+      code: formData.get("code") || "",
+      merchantId: formData.get("merchantId") || "",
+      transactionId: formData.get("transactionId") || "",
+      amount: formData.get("amount") || "",
+      providerReferenceId: formData.get("providerReferenceId") || "",
+      merchantOrderId: formData.get("merchantOrderId") || "",
+      checksum: formData.get("checksum") || "",
     };
 
+    setTransactionDetails(paymentData);
+    const isPaymentSuccess = paymentData.code === "PAYMENT_SUCCESS";
+    setIsSuccess(isPaymentSuccess);
+    
+    if (isPaymentSuccess) {
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 5000); // Stop confetti after 5 seconds
+    }
+
+    toast({
+      title: isPaymentSuccess ? "Payment Successful" : "Payment Failed",
+      description: isPaymentSuccess 
+        ? `Transaction ${paymentData.transactionId} completed successfully.`
+        : `Transaction ${paymentData.transactionId} failed. Please try again.`,
+      variant: isPaymentSuccess ? "default" : "destructive",
+    });
+
+    // Convert form data to URL parameters and update the URL
+    const searchParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(paymentData)) {
+      searchParams.append(key, value);
+    }
+    navigate(`/payment/status?${searchParams.toString()}`, { replace: true });
+  };
+
+  useEffect(() => {
+    // Handle direct form POST submission
+    if (document.forms[0]) {
+      const form = document.forms[0];
+      const formData = new URLSearchParams(new FormData(form) as any);
+      handleFormSubmission(formData);
+      return;
+    }
+
+    // Handle URL parameters (for GET requests or after POST->GET conversion)
+    if (location.search.includes("code=")) {
+      const searchParams = new URLSearchParams(location.search);
+      handleFormSubmission(searchParams);
+      return;
+    }
+
     // Handle error from redirect
-    const handleError = () => {
+    if (location.search.includes("error=")) {
       const error = new URLSearchParams(location.search).get("error");
       if (error) {
         setIsSuccess(false);
@@ -81,14 +90,25 @@ export function PaymentStatus() {
           variant: "destructive",
         });
       }
-    };
-
-    if (location.state?.formData || location.search.includes("code=")) {
-      handleFormSubmission();
-    } else if (location.search.includes("error=")) {
-      handleError();
     }
   }, [location, navigate, toast]);
+
+  // Handle form submission event
+  useEffect(() => {
+    const handleSubmit = (event: Event) => {
+      event.preventDefault();
+      const form = event.target as HTMLFormElement;
+      const formData = new URLSearchParams(new FormData(form) as any);
+      handleFormSubmission(formData);
+    };
+
+    // Add form submit handler
+    const form = document.forms[0];
+    if (form) {
+      form.addEventListener('submit', handleSubmit);
+      return () => form.removeEventListener('submit', handleSubmit);
+    }
+  }, []);
 
   return (
     <BaseLayout>
