@@ -1,5 +1,13 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { 
+      "source": "/payment/status",
+      "destination": "/index.html",
+      "methods": ["POST", "GET"]
+    },
+    { 
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 } 
