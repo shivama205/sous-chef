@@ -105,11 +105,9 @@ export function Pricing() {
       const initiate_payment_request = {
         amount: isYearly ? plan.price_yearly : plan.price_monthly,
         userId: session.user.id,
-        redirectUrl: `${import.meta.env.VITE_DOMAIN}/payment/status`,
-        callbackUrl: `${import.meta.env.VITE_BACKEND_API_URL}/api/payment/callback`
       }
 
-      await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/api/payment/initiate`, {
+      await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/payment/initiate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
