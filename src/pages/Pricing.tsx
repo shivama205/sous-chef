@@ -131,21 +131,26 @@ export function Pricing() {
         user_id: session.user.id,
       }
 
-      await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/order`, {
+      await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/payment/initiate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(initiate_payment_request),
       }).then((response) => {
-        response.json().then((data) => {
-          console.log("data", data);
-          if (data.data && data.data.instrumentResponse && data.data.instrumentResponse.redirectInfo && data.data.instrumentResponse.redirectInfo.url) {
-            window.location.href = data.data.instrumentResponse.redirectInfo.url;
+        response.json().then((res) => {
+          console.log("res", res);
+          console.log("res.data", res.data);
+          console.log("res.data.instrumentResponse", res.data.instrumentResponse);
+          console.log("res.data.instrumentResponse.redirectInfo", res.data.instrumentResponse.redirectInfo);
+          console.log("res.data.instrumentResponse.redirectInfo.url", res.data.instrumentResponse.redirectInfo.url);
+          if (res.data && res.data.instrumentResponse && res.data.instrumentResponse.redirectInfo && res.data.instrumentResponse.redirectInfo.url) {
+            console.log("redirecting to", res.data.instrumentResponse.redirectInfo.url);
+            window.location.href = res.data.instrumentResponse.redirectInfo.url;
           } else {
             toast({
               title: "Error",
-              description: data.message || "Failed to create order. Please try again.",
+              description: res.message || "Failed to initiate payment. Please try again.",
               variant: "destructive"
             });
           }
