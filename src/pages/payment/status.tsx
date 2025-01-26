@@ -120,7 +120,7 @@ export function PaymentStatus() {
                   transition={{ delay: 0.3 }}
                   className="text-gray-600"
                 >
-                  Thank you for your payment. Your transaction was successful.
+                  Thank you for your payment. Your subscription has been activated.
                 </motion.p>
                 {transactionDetails && (
                   <motion.div
@@ -152,7 +152,6 @@ export function PaymentStatus() {
                   We couldn't process your payment. This could be due to:
                 </p>
                 <ul className="text-left text-gray-600 list-disc list-inside space-y-2">
-                  <li>Insufficient funds in your account</li>
                   <li>Payment was declined by your bank</li>
                   <li>Network connectivity issues</li>
                   <li>Transaction timeout</li>

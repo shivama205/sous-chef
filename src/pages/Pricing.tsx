@@ -86,21 +86,7 @@ const plans: PricingPlan[] = [
 export function Pricing() {
   const [isYearly, setIsYearly] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [mobileNumber, setMobileNumber] = useState("");
   const { toast } = useToast();
-  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
-  // const { initiatePayment, isLoading: isPaymentLoading } = usePayment({
-  //   onInitiateSuccess: (response) => {
-  //     console.log('Payment initiated:', response.data.merchantTransactionId);
-  //   },
-  //   onError: (error) => {
-  //     toast({
-  //       title: "Error",
-  //       description: error.message || "Failed to process payment. Please try again.",
-  //       variant: "destructive"
-  //     });
-  //   }
-  // });
 
   const handleSubscribe = async (plan: PricingPlan) => {
     setIsLoading(true);
@@ -115,18 +101,8 @@ export function Pricing() {
         return;
       }
 
-      if (!/^[6-9]\d{9}$/.test(mobileNumber)) {
-        toast({
-          title: "Invalid Mobile Number",
-          description: "Please provide a valid 10-digit Indian mobile number.",
-          variant: "destructive"
-        });
-        return;
-      }
-
       // initiate payment
       const initiate_payment_request = {
-        mobileNumber: mobileNumber,
         amount: isYearly ? plan.price_yearly : plan.price_monthly,
         userId: session.user.id,
         redirectUrl: `${import.meta.env.VITE_DOMAIN}/payment/status`,
@@ -189,21 +165,6 @@ export function Pricing() {
           </div>
         </div>
 
-        {/* Phone Number Input */}
-        <div className="max-w-md mx-auto">
-          <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-            Mobile Number
-          </label>
-          <input
-            type="text"
-            id="phone"
-            value={mobileNumber}
-            onChange={(e) => setMobileNumber(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-            placeholder="Enter your 10-digit mobile number"
-          />
-        </div>
-
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {plans.map((plan) => (
@@ -251,9 +212,9 @@ export function Pricing() {
                 onClick={() => handleSubscribe(plan)}
                 className="w-full"
                 variant={plan.is_popular ? "default" : "outline"}
-                disabled={isLoading || isPaymentLoading}
+                disabled={isLoading}
               >
-                {isLoading || isPaymentLoading ? 'Processing...' : 'Get Started'}
+                {isLoading ? 'Processing...' : 'Get Started'}
               </Button>
             </Card>
           ))}
@@ -292,8 +253,4 @@ export function Pricing() {
       </div>
     </BaseLayout>
   );
-}
-
-function usePayment(arg0: { onInitiateSuccess: (response: any) => void; onError: (error: any) => void; }): { initiatePayment: any; isLoading: any; } {
-  throw new Error("Function not implemented.");
 }
