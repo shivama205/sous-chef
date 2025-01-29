@@ -9,10 +9,10 @@ export type ActivityType =
   | "grocery_list_saved";
 
 export interface Activity<T extends FeatureName = FeatureName> {
-  id: number;
+  id: string;
   user_id: string;
-  activity_type: ActivityType;
-  feature_name: T;
-  metadata: FeatureMetadata[T];
+  activity_type: string;
+  description: string;
   created_at: string;
+  metadata?: Record<string, any>;
 }

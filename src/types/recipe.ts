@@ -17,6 +17,8 @@ export interface Recipe {
   is_public: boolean;
   created_at?: string;
   updated_at?: string;
+  likes?: number;
+  image_url?: string;
   user?: {
     id: string;
     email: string;

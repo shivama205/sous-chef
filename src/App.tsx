@@ -1,14 +1,19 @@
-import { Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from '@/components/ui/toaster';
+import { AuthProvider } from '@/providers/AuthProvider';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { BaseLayout } from '@/components/layouts/BaseLayout';
+import { DashboardView } from '@/components/dashboard/DashboardView';
+import { RecipeCreator } from '@/pages/recipes/RecipeCreator';
+import { RecipeDetails } from '@/pages/recipes/RecipeDetails';
+import { Login } from '@/pages/auth/Login';
+import { Register } from '@/pages/auth/Register';
+import { AchievementsPage } from '@/pages/achievements/AchievementsPage';
+import { CollectionsPage } from '@/pages/collections/CollectionsPage';
+import { CollectionDetails } from '@/pages/collections/CollectionDetails';
+import { CollectionCreator } from '@/pages/collections/CollectionCreator';
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SEO } from "@/components/SEO";
-import { BaseLayout } from "@/components/layouts/BaseLayout";
-
-// Pages
-import Index from "@/pages/Index";
-import Profile from "@/pages/Profile";
-import CommunityPage from "@/pages/community/CommunityPage";
-import RecipeCreator from "@/pages/recipes/RecipeCreator";
-import RecipeDetails from "@/pages/recipes/RecipeDetails";
 import { AIRecipeAssistant } from "@/components/AIRecipeAssistant";
 import Blog from "@/pages/blogs/Blogs";
 import BlogPost from "@/pages/blogs/BlogDetails";
@@ -19,28 +24,32 @@ import About from "@/pages/compliance/About";
 import { PaymentStatus } from "@/pages/payment/status";
 
 const App = () => (
-  <TooltipProvider>
-    <SEO />
-    <BaseLayout>
-      <main>
+  <Router>
+    <AuthProvider>
+      <TooltipProvider>
+        <SEO />
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/community" element={<CommunityPage />} />
-          <Route path="/create-recipe" element={<RecipeCreator />} />
-          <Route path="/recipe/:id" element={<RecipeDetails />} />
-          <Route path="/ai-recipe-assistant" element={<AIRecipeAssistant />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:slug" element={<BlogPost />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/payment/status" element={<PaymentStatus />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          
+          <Route element={<ProtectedRoute><BaseLayout /></ProtectedRoute>}>
+            <Route path="/" element={<DashboardView />} />
+            <Route path="/create-recipe" element={<RecipeCreator />} />
+            <Route path="/recipe/:id" element={<RecipeDetails />} />
+            
+            {/* Achievement Routes */}
+            <Route path="/achievements" element={<AchievementsPage />} />
+            
+            {/* Collection Routes */}
+            <Route path="/collections" element={<CollectionsPage />} />
+            <Route path="/collections/new" element={<CollectionCreator />} />
+            <Route path="/collections/:id" element={<CollectionDetails />} />
+          </Route>
         </Routes>
-      </main>
-    </BaseLayout>
-  </TooltipProvider>
+        <Toaster />
+      </TooltipProvider>
+    </AuthProvider>
+  </Router>
 );
 
 export default App;
