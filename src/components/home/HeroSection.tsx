@@ -1,10 +1,20 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ChefHat, ArrowRight, Share2, Heart, Users, Trophy } from "lucide-react";
+import { ChefHat, Share2, Heart, Users, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export const HeroSection = () => {
   const navigate = useNavigate();
+
+  const handleStartSharing = () => {
+    console.log("Navigating to profile page");
+    navigate('/create-recipe');
+  };
+
+  const handleExploreCommunity = () => {
+    console.log("Navigating to community page");
+    navigate('/community');
+  };
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-background to-background/5 py-20 sm:py-32">
@@ -57,11 +67,20 @@ export const HeroSection = () => {
             transition={{ delay: 0.5 }}
             className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <Button size="lg" className="w-full sm:w-auto group" onClick={() => navigate('/profile')}>
+            <Button 
+              size="lg" 
+              className="w-full sm:w-auto group" 
+              onClick={handleStartSharing}
+            >
               Start Sharing 
               <Share2 className="ml-2 w-4 h-4 group-hover:animate-bounce" />
             </Button>
-            <Button size="lg" variant="outline" className="w-full sm:w-auto" onClick={() => navigate('/community')}>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="w-full sm:w-auto" 
+              onClick={handleExploreCommunity}
+            >
               Explore Community 
               <Users className="ml-2 w-4 h-4" />
             </Button>
@@ -94,4 +113,4 @@ export const HeroSection = () => {
       </motion.div>
     </section>
   );
-}; 
+};

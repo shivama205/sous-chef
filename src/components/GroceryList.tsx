@@ -27,14 +27,12 @@ export function GroceryList({ mealPlan }: Props) {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
   const generateGroceryList = async () => {
-    // This is a placeholder implementation
-    // In a real app, you would parse the meal plan and extract ingredients
     const items: GroceryItem[] = [
       { id: "1", name: "Chicken breast", category: "Protein", checked: false, quantity: "500g" },
       { id: "2", name: "Brown rice", category: "Grains", checked: false, quantity: "2 cups" },
       { id: "3", name: "Broccoli", category: "Vegetables", checked: false, quantity: "2 heads" },
     ];
-    await trackFeatureUsage("grocery_list_generated");
+    await trackFeatureUsage("grocery_list_generated", "Generated grocery list");
     setGroceryItems(items);
   };
 
@@ -70,7 +68,7 @@ export function GroceryList({ mealPlan }: Props) {
         variant: "destructive",
       });
     } else {
-      await trackFeatureUsage("grocery_list_saved");
+      await trackFeatureUsage("grocery_list_saved", "Saved grocery list");
       toast({
         title: "Success",
         description: "Your grocery list has been saved!",

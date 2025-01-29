@@ -15,13 +15,15 @@ export function BaseLayout({
 }: BaseLayoutProps) {
   return (
     <div className={cn(
-      "min-h-screen",
+      "min-h-screen flex flex-col",
       withGradient && "bg-gradient-to-b from-accent/30 to-accent/10",
       className
     )}>
       <NavigationBar />
-      {children}
+      <main className="flex-grow">
+        {children}
+      </main>
       <Footer />
     </div>
   )
-} 
+}
