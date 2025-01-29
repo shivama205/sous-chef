@@ -1,26 +1,25 @@
+export type CuisineType = 
+  | 'italian' | 'chinese' | 'japanese' | 'indian' | 'mexican' | 'thai' 
+  | 'french' | 'mediterranean' | 'american' | 'korean' | 'vietnamese' 
+  | 'spanish' | 'greek' | 'middle_eastern' | 'caribbean' | 'brazilian' | 'fusion';
+
 export interface Recipe {
-  id: string;
+  id?: string;
+  user_id?: string;
   meal_name: string;
-  cooking_time: number;
+  description: string;
   ingredients: string[];
   instructions: string[];
-  description?: string;
-  nutritional_value?: {
-    calories?: number;
-    protein?: number;
-    carbs?: number;
-    fat?: number;
-  };
+  cooking_time: number;
+  servings: number;
+  difficulty: 'easy' | 'medium' | 'hard';
+  cuisine_type: CuisineType[];
+  is_public: boolean;
   created_at?: string;
-  user_id?: string;
-  likes?: number;
-  views?: number;
-  is_public?: boolean;
-  images?: string[];
-  difficulty?: 'easy' | 'medium' | 'hard';
-  cuisine?: string;
-  servings?: number;
-  profiles?: {
+  updated_at?: string;
+  user?: {
+    id: string;
+    email: string;
     full_name: string;
     avatar_url: string;
   };

@@ -4,6 +4,7 @@ import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "./ui/use-toast";
 import { useState } from "react";
+import axios from "axios";
 
 interface GoogleSignInButtonProps {
   onLoginSuccess?: () => void;
@@ -18,14 +19,14 @@ const GoogleSignInButton = ({ onLoginSuccess, redirectPath }: GoogleSignInButton
   const handleSignIn = async () => {
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}${redirectPath || ''}`
         }
       });
 
-      if (error) throw error;
+      if (authError) throw authError;
 
       // If we have a success callback, call it
       if (onLoginSuccess) {
@@ -38,7 +39,7 @@ const GoogleSignInButton = ({ onLoginSuccess, redirectPath }: GoogleSignInButton
         description: "Successfully signed in with Google.",
       });
 
-      // If we have a redirect path, navigate to it
+      // Navigate to the redirect path if provided
       if (redirectPath) {
         navigate(redirectPath);
       }
