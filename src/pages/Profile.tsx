@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/providers/AuthProvider";
+import { format } from "date-fns";
+import { Calendar, Star, Clock } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
+import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import NavigationBar from "@/components/NavigationBar";
-import { format } from "date-fns";
-import { Calculator, Settings, ChefHat, History, Star, Clock, Calendar, Utensils, ShoppingCart, Leaf } from "lucide-react";
+import { Calculator, Settings, ChefHat, History, Utensils, ShoppingCart, Leaf } from "lucide-react";
 import { SavedRecipes } from "@/components/profile/SavedRecipes";
 import { SavedMealPlans } from "@/components/profile/SavedMealPlans";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/supabase";
 import { Activity } from "@/types/activity";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 
@@ -83,9 +85,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <NavigationBar />
-      
+    <BaseLayout>
       {/* Hero Section */}
       <div className="bg-gradient-to-b from-primary/10 to-background border-b">
         <div className="container mx-auto px-4 py-6 sm:py-12">
@@ -268,6 +268,6 @@ export default function Profile() {
           </div>
         </Tabs>
       </main>
-    </div>
+    </BaseLayout>
   );
 }

@@ -1,0 +1,3 @@
+import { useAuth } from "@/hooks/useAuth";
+
+// ... rest of the file content ... 

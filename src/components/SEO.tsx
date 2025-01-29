@@ -10,9 +10,9 @@ interface SEOProps {
 }
 
 export function SEO({
-  title = 'SousChef - AI-Powered Meal Planning Made Easy',
-  description = 'Create personalized meal plans, find recipes, and get healthy alternatives with SousChef\'s AI-powered platform. Your personal AI chef for healthy eating.',
-  keywords = ['meal planning', 'healthy recipes', 'AI chef', 'nutrition', 'meal prep', 'diet planning'],
+  title = 'SousChef - Share & Discover Recipes with a Global Community',
+  description = 'Join a vibrant community of home chefs. Share your recipes, get inspired by others, and enhance your cooking with AI-powered features.',
+  keywords = ['recipe sharing', 'food community', 'home chefs', 'cooking platform', 'social recipes', 'AI cooking assistant'],
   image = '/og-image.jpg',
   url = 'https://sous-chef.in',
   type = 'website'
@@ -24,7 +24,9 @@ export function SEO({
       {/* Basic Meta Tags */}
       <title>{siteTitle}</title>
       <meta name="description" content={description} />
-      <meta name="keywords" content={keywords.join(', ')} />
+      {keywords.length > 0 && (
+        <meta name="keywords" content={keywords.join(', ')} />
+      )}
       
       {/* Open Graph Meta Tags */}
       <meta property="og:title" content={siteTitle} />

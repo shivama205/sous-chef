@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Recipe } from "@/types/recipeFinder";
 import { getUserRecipes } from "@/services/recipeFinder";
-import { useAuth } from "@/providers/AuthProvider";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { ChefHat, Timer, Search } from "lucide-react";
