@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
-import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { SEO } from "@/components/SEO";
 import { HeroSection } from "@/components/home/HeroSection";
 import { Features } from "@/components/home/Features";
@@ -11,7 +9,6 @@ import { CTASection } from "@/components/home/CTASection";
 import { DashboardView } from "@/components/dashboard/DashboardView";
 
 export default function Index() {
-  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -34,7 +31,7 @@ export default function Index() {
   }, []);
 
   if (isLoading) {
-    return null; // Or a loading spinner
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
   return (
@@ -52,18 +49,16 @@ export default function Index() {
         ]}
       />
       
-      <div className="min-h-screen">
-        {user ? (
-          <DashboardView user={user} />
-        ) : (
-          <>
-            <HeroSection />
-            <Features />
-            <Testimonials />
-            <CTASection />
-          </>
-        )}
-      </div>
+      {user ? (
+        <DashboardView user={user} />
+      ) : (
+        <main className="flex flex-col min-h-screen">
+          <HeroSection />
+          <Features />
+          <Testimonials />
+          <CTASection />
+        </main>
+      )}
     </>
   );
 }
