@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ChefHat, Search, Leaf } from "lucide-react";
+import { ChefHat, Calendar, Search, Users } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function QuickActions() {
@@ -8,30 +8,37 @@ export function QuickActions() {
 
   const actions = [
     {
-      title: "Create Meal Plan",
-      description: "Generate personalized meal plans with AI",
+      title: "Create Recipe",
+      description: "Share your culinary creations",
       icon: ChefHat,
-      path: "/meal-plan",
+      path: "/create-recipe",
       color: "bg-primary/10"
     },
     {
-      title: "Recipe Finder",
-      description: "Discover recipes based on ingredients",
-      icon: Search,
-      path: "/recipe-finder",
+      title: "Meal Planning",
+      description: "Plan your weekly meals",
+      icon: Calendar,
+      path: "/meal-plan",
       color: "bg-secondary/10"
     },
     {
-      title: "Healthy Alternatives",
-      description: "Find healthier versions of your meals",
-      icon: Leaf,
-      path: "/healthy-alternative",
+      title: "Recipe Finder",
+      description: "Discover new recipes",
+      icon: Search,
+      path: "/recipe-finder",
       color: "bg-accent/10"
+    },
+    {
+      title: "Community",
+      description: "Connect with other chefs",
+      icon: Users,
+      path: "/community",
+      color: "bg-primary/10"
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {actions.map((action, index) => (
         <motion.div
           key={action.title}
@@ -41,7 +48,7 @@ export function QuickActions() {
         >
           <Button
             variant="outline"
-            className="w-full h-auto p-6 flex flex-col items-center gap-4 bg-white/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-all"
+            className="w-full h-auto p-6 flex flex-col items-center gap-4 bg-white/80 backdrop-blur-sm hover:bg-accent/5 transition-all"
             onClick={() => navigate(action.path)}
           >
             <div className={`w-12 h-12 rounded-lg ${action.color} flex items-center justify-center`}>

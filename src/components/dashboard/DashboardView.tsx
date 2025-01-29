@@ -9,9 +9,7 @@ import { Button } from "@/components/ui/button";
 import { QuickActions } from "./QuickActions";
 import { DashboardStats } from "./DashboardStats";
 import { RecentActivity } from "./RecentActivity";
-import { HealthTip } from "./HealthTip";
-import { ComingSoon } from "./ComingSoon";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { ChefHat, Sparkles, Plus, Users } from "lucide-react";
 
 interface DashboardViewProps {
   user: User;
@@ -83,7 +81,6 @@ export const DashboardView = ({ user }: DashboardViewProps) => {
         setActivities(recentActivities || []);
       } catch (error) {
         console.error('Error fetching user data:', error);
-        // Reset stats and activities on error
         setStats({
           savedPlansCount: 0,
           savedRecipesCount: 0,
@@ -99,12 +96,13 @@ export const DashboardView = ({ user }: DashboardViewProps) => {
   }, [user]);
 
   if (isLoading) {
-    return null; // Or a loading spinner
+    return null;
   }
 
   return (
-    <div className="container mx-auto py-4 sm:py-8">
-      <div className="space-y-4 sm:space-y-6 px-2 sm:px-6">
+    <div className="container mx-auto py-6 sm:py-8 px-4 sm:px-6">
+      <div className="space-y-6 sm:space-y-8">
+        {/* Welcome Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -112,28 +110,82 @@ export const DashboardView = ({ user }: DashboardViewProps) => {
         >
           <PageHeader
             icon={Sparkles}
-            title={`Welcome back, ${user?.user_metadata?.full_name?.split(' ')[0] || 'User'}!`}
-            description="Your personal AI-powered meal planning assistant"
+            title={`Welcome back, ${user?.user_metadata?.full_name?.split(' ')[0] || 'Chef'}!`}
+            description="Create, share, and discover amazing recipes with our community"
             className="text-left"
           />
         </motion.div>
 
-        {/* Health Tip of the Day */}
-        <HealthTip />
+        {/* Main Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+        >
+          <Button
+            size="lg"
+            className="h-32 relative overflow-hidden group"
+            onClick={() => navigate('/create-recipe')}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary/5 group-hover:scale-105 transition-transform duration-300" />
+            <div className="relative flex flex-col items-center gap-2">
+              <ChefHat className="w-8 h-8" />
+              <div className="text-center">
+                <h3 className="font-semibold text-lg">Create Recipe</h3>
+                <p className="text-sm text-muted-foreground">Share your culinary creations</p>
+              </div>
+            </div>
+          </Button>
 
-        {/* Quick Actions */}
-        <section className="space-y-2 sm:space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg sm:text-xl font-semibold">Quick Actions</h2>
+          <Button
+            size="lg"
+            className="h-32 relative overflow-hidden group"
+            onClick={() => navigate('/meal-plan')}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-secondary/10 to-secondary/5 group-hover:scale-105 transition-transform duration-300" />
+            <div className="relative flex flex-col items-center gap-2">
+              <Plus className="w-8 h-8" />
+              <div className="text-center">
+                <h3 className="font-semibold text-lg">Create Meal Plan</h3>
+                <p className="text-sm text-muted-foreground">Plan your weekly meals</p>
+              </div>
+            </div>
+          </Button>
+        </motion.div>
+
+        {/* Community Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-card rounded-lg p-6 border shadow-sm"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-primary" />
+              <h2 className="text-lg font-semibold">Community Highlights</h2>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/community')}>
+              View All
+            </Button>
           </div>
-          <QuickActions />
-        </section>
+          <p className="text-muted-foreground text-sm mb-4">
+            Connect with other chefs and discover new recipes from our growing community.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Placeholder for community content */}
+            <div className="h-32 rounded-lg bg-accent/5 border flex items-center justify-center">
+              <p className="text-sm text-muted-foreground">Coming Soon</p>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Stats Grid */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.3 }}
         >
           <DashboardStats
             savedPlansCount={stats.savedPlansCount}
@@ -143,25 +195,14 @@ export const DashboardView = ({ user }: DashboardViewProps) => {
         </motion.div>
 
         {/* Recent Activity */}
-        <section className="space-y-2 sm:space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg sm:text-xl font-semibold">Recent Activity</h2>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
-              View All <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-          <RecentActivity activities={activities} />
-        </section>
-
-        {/* Coming Soon Features */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <ComingSoon />
+          <RecentActivity activities={activities} />
         </motion.div>
       </div>
     </div>
   );
-}; 
+};
