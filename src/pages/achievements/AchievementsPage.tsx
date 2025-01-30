@@ -1,148 +1,124 @@
-import { useState, useEffect } from 'react';
-import { PageHeader } from '@/components/ui/PageHeader';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { Trophy, Star, Medal, Award, Crown } from 'lucide-react';
-import { Achievement } from '@/types/gamification';
-import { AchievementCard } from '@/components/achievements/AchievementCard';
-import { supabase } from '@/lib/supabase';
+import React from 'react';
+import { useStore } from '../../store';
+import { LoadingSpinner } from '../../components/ui/loading-spinner';
 
-export const AchievementsPage = () => {
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchAchievements = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        const { data, error } = await supabase
-          .from('user_achievements')
-          .select(`
-            *,
-            template:achievement_templates(*)
-          `)
-          .eq('user_id', user.id);
-
-        if (error) throw error;
-
-        setAchievements(data || []);
-      } catch (error) {
-        console.error('Error fetching achievements:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchAchievements();
-  }, []);
-
-  const getAchievementsByCategory = (category: string) => {
-    return achievements.filter(a => a.template.category === category);
-  };
-
-  const calculateProgress = (category: string) => {
-    const categoryAchievements = getAchievementsByCategory(category);
-    if (categoryAchievements.length === 0) return 0;
-
-    const completed = categoryAchievements.filter(a => a.completed).length;
-    return (completed / categoryAchievements.length) * 100;
-  };
+export default function AchievementsPage() {
+  const { user, userStats, isLoading } = useStore(state => ({
+    user: state.user,
+    userStats: state.userStats,
+    isLoading: state.isLoading
+  }));
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Please log in to view your achievements</p>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
-      <PageHeader
-        icon={Trophy}
-        title="Achievements"
-        description="Track your culinary accomplishments and earn rewards"
-      />
-
-      {/* Achievement Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <Trophy className="w-8 h-8 mx-auto text-primary mb-2" />
-              <h3 className="font-semibold">Total Achievements</h3>
-              <p className="text-2xl font-bold">{achievements.filter(a => a.completed).length}/{achievements.length}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <Star className="w-8 h-8 mx-auto text-primary mb-2" />
-              <h3 className="font-semibold">Recipe Achievements</h3>
-              <Progress value={calculateProgress('recipes')} className="mt-2" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <Medal className="w-8 h-8 mx-auto text-primary mb-2" />
-              <h3 className="font-semibold">Social Achievements</h3>
-              <Progress value={calculateProgress('social')} className="mt-2" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <Crown className="w-8 h-8 mx-auto text-primary mb-2" />
-              <h3 className="font-semibold">Challenge Achievements</h3>
-              <Progress value={calculateProgress('challenges')} className="mt-2" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Achievement Categories */}
-      <Tabs defaultValue="all" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="recipes">Recipes</TabsTrigger>
-          <TabsTrigger value="social">Social</TabsTrigger>
-          <TabsTrigger value="streaks">Streaks</TabsTrigger>
-          <TabsTrigger value="collections">Collections</TabsTrigger>
-          <TabsTrigger value="challenges">Challenges</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="all">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {achievements.map((achievement) => (
-              <AchievementCard
-                key={achievement.id}
-                achievement={achievement}
-                isNew={new Date(achievement.completed_at || '').getTime() > Date.now() - 24 * 60 * 60 * 1000}
-              />
-            ))}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="bg-white shadow rounded-lg p-6">
+        <h1 className="text-2xl font-bold mb-6">Achievements</h1>
+        
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold">Total Recipes</h3>
+            <p className="text-2xl font-bold text-primary">{userStats?.total_recipes || 0}</p>
           </div>
-        </TabsContent>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold">Total Likes</h3>
+            <p className="text-2xl font-bold text-primary">{userStats?.total_likes_received || 0}</p>
+          </div>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold">Average Rating</h3>
+            <p className="text-2xl font-bold text-primary">{userStats?.average_rating.toFixed(1) || '0.0'}</p>
+          </div>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold">Total Views</h3>
+            <p className="text-2xl font-bold text-primary">{userStats?.total_views || 0}</p>
+          </div>
+        </div>
 
-        {['recipes', 'social', 'streaks', 'collections', 'challenges'].map((category) => (
-          <TabsContent key={category} value={category}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {getAchievementsByCategory(category).map((achievement) => (
-                <AchievementCard
-                  key={achievement.id}
-                  achievement={achievement}
-                  isNew={new Date(achievement.completed_at || '').getTime() > Date.now() - 24 * 60 * 60 * 1000}
-                />
-              ))}
+        {/* Achievements List */}
+        <div className="space-y-6">
+          <h2 className="text-xl font-semibold">Your Badges</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Recipe Creator Badge */}
+            <div className={`p-4 rounded-lg ${userStats?.total_recipes >= 1 ? 'bg-primary/10' : 'bg-gray-100'}`}>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">
+                  📝
+                </div>
+                <div>
+                  <h3 className="font-semibold">Recipe Creator</h3>
+                  <p className="text-sm text-gray-600">Create your first recipe</p>
+                  <div className="mt-2">
+                    <div className="h-2 bg-gray-200 rounded-full">
+                      <div
+                        className="h-2 bg-primary rounded-full"
+                        style={{ width: `${Math.min((userStats?.total_recipes || 0) * 100 / 1, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </TabsContent>
-        ))}
-      </Tabs>
+
+            {/* Popular Chef Badge */}
+            <div className={`p-4 rounded-lg ${userStats?.total_likes_received >= 10 ? 'bg-primary/10' : 'bg-gray-100'}`}>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">
+                  👨‍🍳
+                </div>
+                <div>
+                  <h3 className="font-semibold">Popular Chef</h3>
+                  <p className="text-sm text-gray-600">Get 10 likes on your recipes</p>
+                  <div className="mt-2">
+                    <div className="h-2 bg-gray-200 rounded-full">
+                      <div
+                        className="h-2 bg-primary rounded-full"
+                        style={{ width: `${Math.min((userStats?.total_likes_received || 0) * 100 / 10, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Top Rated Badge */}
+            <div className={`p-4 rounded-lg ${userStats?.average_rating >= 4.5 ? 'bg-primary/10' : 'bg-gray-100'}`}>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">
+                  ⭐
+                </div>
+                <div>
+                  <h3 className="font-semibold">Top Rated</h3>
+                  <p className="text-sm text-gray-600">Maintain a 4.5+ rating</p>
+                  <div className="mt-2">
+                    <div className="h-2 bg-gray-200 rounded-full">
+                      <div
+                        className="h-2 bg-primary rounded-full"
+                        style={{ width: `${Math.min((userStats?.average_rating || 0) * 100 / 5, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
-}; 
+} 

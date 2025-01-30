@@ -83,7 +83,7 @@ const plans: PricingPlan[] = [
   }
 ];
 
-export function Pricing() {
+export default function Pricing() {
   const [isYearly, setIsYearly] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();

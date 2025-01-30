@@ -18,7 +18,7 @@ interface PhonePeCallback {
   checksum: string;
 }
 
-export function PaymentStatus() {
+export default function PaymentStatus() {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();

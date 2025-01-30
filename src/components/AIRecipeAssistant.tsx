@@ -12,7 +12,7 @@ import { BaseLayout } from "./layouts/BaseLayout";
 import { PageHeader } from "./ui/PageHeader";
 import { Recipe } from "@/types/recipe";
 
-export const AIRecipeAssistant = () => {
+export default function AIRecipeAssistant() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -244,4 +244,4 @@ export const AIRecipeAssistant = () => {
       </div>
     </BaseLayout>
   );
-}; 
+} 
