@@ -1,6 +1,7 @@
 import axios, { InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 
-// API Response type
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -20,13 +21,12 @@ export class ApiClient {
 
   private constructor() {
     this.api = axios.create({
-      baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+      baseURL: API_BASE_URL,
       headers: {
         'Content-Type': 'application/json'
       }
     });
 
-    // Add request interceptor for auth token
     this.api.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
         const token = localStorage.getItem('authToken');
@@ -35,17 +35,13 @@ export class ApiClient {
         }
         return config;
       },
-      (error) => {
-        return Promise.reject(error);
-      }
+      (error) => Promise.reject(error)
     );
 
-    // Add response interceptor for error handling
     this.api.interceptors.response.use(
       (response) => response,
       async (error) => {
         if (error.response?.status === 401) {
-          // Handle unauthorized access
           localStorage.removeItem('authToken');
           window.location.href = '/login';
         }
@@ -61,7 +57,6 @@ export class ApiClient {
     return ApiClient.instance;
   }
 
-  // Generic request methods
   public async get<T>(url: string, params?: any): Promise<T> {
     const response = await this.api.get<ApiResponse<T>>(url, { params });
     return this.handleResponse(response);
@@ -90,5 +85,4 @@ export class ApiClient {
   }
 }
 
-// Create and export a singleton instance
-export const apiClient = ApiClient.getInstance(); 
+export const apiClient = ApiClient.getInstance();
