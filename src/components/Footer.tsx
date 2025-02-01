@@ -20,7 +20,7 @@ const Footer = () => {
           <Link to="/about" className="text-sm text-gray-600 hover:text-primary">About Us</Link>
           <Link to="/privacy" className="text-sm text-gray-600 hover:text-primary">Privacy Policy</Link>
           <Link to="/terms" className="text-sm text-gray-600 hover:text-primary">Terms of Service</Link>
-          <span className="text-sm text-gray-400">© 2024 SousChef. All rights reserved.</span>
+          <span className="text-sm text-gray-400">© 2025 SousChef. All rights reserved.</span>
         </div>
       </div>
     </footer>

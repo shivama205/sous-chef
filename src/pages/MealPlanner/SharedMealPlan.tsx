@@ -11,6 +11,7 @@ import { MealPlan } from "@/types/mealPlan";
 import html2canvas from 'html2canvas';
 import MealPlanDownloadView from "@/components/MealPlanDownloadView";
 import { motion } from "framer-motion";
+import { SEO } from "@/components/SEO";
 
 export function SharedMealPlan() {
   const { id } = useParams();
@@ -90,6 +91,11 @@ export function SharedMealPlan() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
+        <SEO 
+          title="Loading Meal Plan - SousChef"
+          description="Loading your personalized meal plan..."
+          type="website"
+        />
         <NavigationBar />
         <main className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center">
@@ -103,6 +109,11 @@ export function SharedMealPlan() {
   if (!mealPlan) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
+        <SEO 
+          title="Meal Plan Not Found - SousChef"
+          description="The requested meal plan could not be found or may have been deleted."
+          type="website"
+        />
         <NavigationBar />
         <main className="container mx-auto px-4 py-8">
           <Card className="p-6 text-center">
@@ -142,6 +153,13 @@ export function SharedMealPlan() {
 
   return (
     <>
+      <SEO 
+        title={seoData.title}
+        description={seoData.description}
+        image={previewImageUrl || "https://sous-chef.in/og-image.jpg"}
+        type="article"
+        keywords={["meal plan", "healthy eating", "nutrition plan", "personalized diet", "AI meal planning"]}
+      />
       <Helmet>
         <title>{seoData.title}</title>
         <meta name="description" content={seoData.description} />

@@ -23,6 +23,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 import { Activity } from "@/types/activity";
+import { SEO } from "@/components/SEO";
 
 const featureHighlights = [
   {
@@ -405,6 +406,12 @@ export default function Index() {
 
   return (
     <BaseLayout>
+      <SEO 
+        title="SousChef - AI-Powered Meal Planning Made Easy"
+        description="Transform your eating habits with personalized AI-generated meal plans. Get healthy food alternatives, track nutrition, and achieve your health goals with SousChef."
+        keywords={["meal planning", "healthy eating", "AI meal planner", "nutrition tracking", "healthy recipes", "diet planning"]}
+        type="website"
+      />
       {user ? <LoggedInView /> : <LoggedOutView />}
     </BaseLayout>
   );

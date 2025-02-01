@@ -1,10 +1,17 @@
 import { Shield } from 'lucide-react'
 import { BaseLayout } from '@/components/layouts/BaseLayout'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { SEO } from '@/components/SEO'
 
 export default function Privacy() {
   return (
     <BaseLayout>
+      <SEO 
+        title="Privacy Policy - SousChef"
+        description="Read about SousChef's privacy policy, data collection practices, and how we protect your personal information while using our AI-powered meal planning platform."
+        keywords={["privacy policy", "data protection", "user privacy", "data security", "personal information"]}
+        type="website"
+      />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <PageHeader
           icon={Shield}
