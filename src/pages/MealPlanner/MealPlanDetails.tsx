@@ -13,6 +13,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogPortal,
+  DialogOverlay,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -458,7 +460,11 @@ export const MealPlanDetails = () => {
                     {isRegenerating ? "Regenerating..." : "Regenerate"}
                   </Button>
                   <Button
-                    onClick={() => setOpen(true)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setOpen(true);
+                    }}
                     disabled={isRegenerating}
                     className="flex-1 sm:flex-none flex items-center justify-center gap-2"
                   >
@@ -590,7 +596,11 @@ export const MealPlanDetails = () => {
                 <p className="text-muted-foreground mb-4">
                   Save your meal plan to generate a comprehensive grocery list with all the ingredients you'll need.
                 </p>
-                <Button onClick={() => setOpen(true)} variant="secondary" className="flex items-center gap-2">
+                <Button onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setOpen(true);
+                }} variant="secondary" className="flex items-center gap-2">
                   <Save className="w-4 h-4" />
                   Save Meal Plan
                 </Button>
@@ -600,51 +610,54 @@ export const MealPlanDetails = () => {
         </motion.div>
 
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Save Meal Plan
-              </DialogTitle>
-              <DialogDescription className="text-base text-muted-foreground">
-                Give your meal plan a memorable name to find it easily later.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label 
-                  htmlFor="meal-plan-name" 
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Meal Plan Name
-                </Label>
-                <Input
-                  id="meal-plan-name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g., Weekly Healthy Plan"
-                  className="h-11"
-                />
+          <DialogPortal>
+            <DialogOverlay className="bg-black/80" />
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  Save Meal Plan
+                </DialogTitle>
+                <DialogDescription className="text-base text-muted-foreground">
+                  Give your meal plan a memorable name to find it easily later.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label 
+                    htmlFor="meal-plan-name" 
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Meal Plan Name
+                  </Label>
+                  <Input
+                    id="meal-plan-name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g., Weekly Healthy Plan"
+                    className="h-11"
+                  />
+                </div>
               </div>
-            </div>
-            <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpen(false)}
-                className="mt-2 sm:mt-0"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                onClick={handleSaveMealPlan}
-                disabled={!name.trim()}
-                className="bg-gradient-to-r from-primary to-primary/80"
-              >
-                Save Plan
-              </Button>
-            </DialogFooter>
-          </DialogContent>
+              <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setOpen(false)}
+                  className="mt-2 sm:mt-0"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  onClick={handleSaveMealPlan}
+                  disabled={!name.trim()}
+                  className="bg-gradient-to-r from-primary to-primary/80"
+                >
+                  Save Plan
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </DialogPortal>
         </Dialog>
 
         <LoginDialog 
