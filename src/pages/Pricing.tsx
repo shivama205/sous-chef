@@ -115,7 +115,6 @@ export function Pricing() {
         body: JSON.stringify(initiate_payment_request),
       }).then((response) => {
         response.json().then((data) => {
-          console.log("data", data);
           if (data.success && data.data.instrumentResponse.redirectInfo.url) {
             window.location.href = data.data.instrumentResponse.redirectInfo.url;
           } else {

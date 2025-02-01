@@ -22,7 +22,6 @@ export function SharedMealPlan() {
 
   useEffect(() => {
     const fetchMealPlan = async () => {
-      console.log("Fetching shared meal plan with ID:", id);
       try {
         // First try to get the shared meal plan record
         const { data: sharedPlan, error: sharedError } = await supabase
@@ -82,10 +81,8 @@ export function SharedMealPlan() {
     };
 
     if (id) {
-      console.log("Fetching shared meal plan with ID:", id);
       fetchMealPlan();
     } else {
-      console.log("No ID provided");
       setIsLoading(false);
     }
   }, [id]);

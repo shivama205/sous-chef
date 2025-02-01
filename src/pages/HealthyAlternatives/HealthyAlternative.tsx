@@ -138,8 +138,6 @@ export default function HealthyAlternative() {
         additionalInstructions
       });
 
-      console.log('alternatives', alternatives);
-
       setAlternatives(alternatives);
       setSuggestions([]);
 

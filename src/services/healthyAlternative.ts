@@ -15,8 +15,6 @@ export async function generateHealthyAlternative(request: HealthyAlternativeRequ
     const response = await result.response;
     const text = response.text();
     
-    console.log("Generated healthy alternative response:", text);
-    
     const jsonMatch = text.match(/```json([\s\S]*?)```/) || [null, text];
     const jsonString = jsonMatch[1]?.trim() || text.trim();
     const alternatives = JSON.parse(jsonString);

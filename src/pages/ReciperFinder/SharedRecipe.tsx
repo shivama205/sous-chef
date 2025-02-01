@@ -38,7 +38,6 @@ export default function SharedRecipe() {
       }
 
       try {
-        console.log("Fetching shared recipe with ID:", id);
         // First get the shared recipe data
         const { data: sharedData, error: sharedError } = await supabase
           .from("shared_recipes")

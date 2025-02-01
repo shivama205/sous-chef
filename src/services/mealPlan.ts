@@ -34,8 +34,6 @@ export async function getUserMealPlans(userId: string) {
 
 
 export async function generateMealPlan(request: MealPlanGenerationRequest): Promise<MealPlan> {
-  console.log("Generating meal plan with request:", request);
-  
   try {
     const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -44,8 +42,6 @@ export async function generateMealPlan(request: MealPlanGenerationRequest): Prom
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
-    
-    console.log("Generated meal plan response:", text);
     
     const jsonMatch = text.match(/```json([\s\S]*?)```/) || [null, text];
     const jsonString = jsonMatch[1]?.trim() || text.trim();

@@ -14,8 +14,6 @@ export async function findRecipes(request: RecipeFinderRequest): Promise<Recipe[
     const response = await result.response;
     const text = response.text();
     
-    console.log("Generated recipe response:", text);
-    
     const jsonMatch = text.match(/```json([\s\S]*?)```/) || [null, text];
     const jsonString = jsonMatch[1]?.trim() || text.trim();
     const recipes = JSON.parse(jsonString);
