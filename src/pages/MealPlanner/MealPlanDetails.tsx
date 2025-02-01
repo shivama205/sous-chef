@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { MealPlan } from "@/types/mealPlan";
 import NavigationBar from "@/components/NavigationBar";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Save, Trash2, Share2, Download, ShoppingCart } from "lucide-react";
+import { RefreshCw, Save, Trash2, Share2, Download, ShoppingCart, Loader2, ChevronLeft, CalendarDays, Utensils } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import {
   Dialog,
@@ -26,6 +26,8 @@ import MealPlanDownloadView from "@/components/MealPlanDownloadView";
 import { GroceryList } from "@/components/GroceryList";
 import html2canvas from "html2canvas";
 import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
+import { BaseLayout } from "@/components/layouts/BaseLayout";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 export const MealPlanDetails = () => {
   const { id } = useParams();
@@ -192,27 +194,45 @@ export const MealPlanDetails = () => {
       return;
     }
 
-    const { data, error } = await supabase
-      .from("saved_meal_plans")
-      .insert([{ user_id: session.user.id, name: name, plan: mealPlan }])
-      .select()
-      .single();
+    try {
+      // Save the meal plan first
+      const { data: savedPlan, error } = await supabase
+        .from("saved_meal_plans")
+        .insert([{ user_id: session.user.id, name: name, plan: mealPlan }])
+        .select('id, name')
+        .single();
 
-    if (error) {
-      toast({
-        title: "Error saving meal plan",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
+      if (error) {
+        toast({
+          title: "Error saving meal plan",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!savedPlan?.id) {
+        throw new Error('Failed to save meal plan - no ID returned');
+      }
+
       toast({
         title: "Meal plan saved!",
         description: "Your meal plan has been saved successfully.",
       });
+
       setOpen(false);
       setName("");
+      
       // Navigate to the saved meal plan's page
-      navigate(`/meal-plan/${data.id}`, { replace: true });
+      navigate(`/meal-plan/${savedPlan.id}`, { replace: true });
+      
+    } catch (error) {
+      console.error('Error in save process:', error);
+      toast({
+        title: "Error saving meal plan",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -220,24 +240,50 @@ export const MealPlanDetails = () => {
     if (!id) return;
     setIsDeleting(true);
     
-    const { error } = await supabase
-      .from("saved_meal_plans")
-      .delete()
-      .eq('id', id);
+    try {
+      // First, delete associated grocery lists
+      const { error: groceryListError } = await supabase
+        .from("grocery_lists")
+        .delete()
+        .eq('meal_plan_id', id);
 
-    if (error) {
-      toast({
-        title: "Error deleting meal plan",
-        description: error.message,
-        variant: "destructive",
-      });
-      setIsDeleting(false);
-    } else {
+      if (groceryListError) {
+        console.error('Error deleting grocery lists:', groceryListError);
+        // Continue with meal plan deletion even if grocery list deletion fails
+      }
+
+      // Then delete the meal plan
+      const { error } = await supabase
+        .from("saved_meal_plans")
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        toast({
+          title: "Error deleting meal plan",
+          description: error.message,
+          variant: "destructive",
+        });
+        setIsDeleting(false);
+        return;
+      }
+
       toast({
         title: "Meal plan deleted",
         description: "Your meal plan has been deleted successfully.",
       });
-      navigate('/profile');
+      
+      // Navigate to meal planner page with replace to prevent back navigation
+      navigate('/meal-plan', { replace: true });
+      
+    } catch (error) {
+      console.error('Error deleting meal plan:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete meal plan. Please try again.",
+        variant: "destructive",
+      });
+      setIsDeleting(false);
     }
   };
 
@@ -411,331 +457,329 @@ export const MealPlanDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
-        <NavigationBar />
+      <BaseLayout>
         <main className="container mx-auto px-4 py-8">
           <MealPlanLoadingOverlay isLoading={true} />
         </main>
-      </div>
+      </BaseLayout>
     );
   }
 
   if (!mealPlan) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
-        <NavigationBar />
+      <BaseLayout>
         <main className="container mx-auto px-4 py-8">
           <div>Meal plan not found</div>
         </main>
-      </div>
+      </BaseLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
-      <NavigationBar />
-      <main className="container mx-auto px-4 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="space-y-6"
-        >
+    <BaseLayout>
+      <div className="flex flex-col min-h-screen">
+        <main className="container mx-auto px-4 py-8 flex-1">
           <MealPlanLoadingOverlay isLoading={isRegenerating} />
 
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <h2 className="text-2xl font-bold text-primary">
-              {isSaved ? name || "Your Meal Plan" : "Your Generated Meal Plan"}
-            </h2>
-            <div className="flex flex-wrap gap-2 sm:gap-4 w-full sm:w-auto">
-              {!isSaved ? (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                {isSaved ? name || "Your Meal Plan" : "Your Generated Meal Plan"}
+              </h2>
+              <div className="flex flex-wrap gap-2 sm:gap-4 w-full sm:w-auto">
+                {!isSaved ? (
+                  <>
+                    <Button
+                      onClick={handleRegenerateMealPlan}
+                      variant="outline"
+                      disabled={isRegenerating}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 text-primary border-primary/20 hover:border-primary/30"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${isRegenerating ? 'animate-spin' : ''}`} />
+                      {isRegenerating ? "Regenerating..." : "Regenerate"}
+                    </Button>
+                    <Button
+                      onClick={() => setOpen(true)}
+                      disabled={isRegenerating}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground"
+                    >
+                      <Save className="w-4 h-4" />
+                      Save
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 text-primary border-primary/20 hover:border-primary/30"
+                      onClick={handleDownloadClick}
+                    >
+                      <Download className="w-4 h-4" />
+                      Download
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 text-primary border-primary/20 hover:border-primary/30"
+                      onClick={handleShare}
+                    >
+                      <Share2 className="w-4 h-4" />
+                      Share
+                    </Button>
+                    <Button
+                      onClick={() => setDeleteDialogOpen(true)}
+                      variant="ghost"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 hover:bg-destructive/5 text-muted-foreground hover:text-destructive/70"
+                      disabled={isDeleting}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      {isDeleting ? "Deleting..." : "Delete"}
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <motion.div
+              ref={mealPlanRef}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              {/* Meal Plan Days Section */}
+              <div className="space-y-6">
+                <div className="overflow-x-auto pb-4">
+                  <div className="flex gap-4 min-w-max">
+                    {mealPlan.days.map((day, index) => (
+                      <div 
+                        key={index} 
+                        className="bg-white rounded-lg shadow-sm w-[300px]"
+                      >
+                        <div className="bg-gradient-to-r from-primary to-primary/80 py-3 px-4">
+                          <h3 className="text-white font-semibold">{day.day}</h3>
+                        </div>
+                        <div className="divide-y divide-gray-100">
+                          {day.meals.map((meal, mealIndex) => (
+                            <div key={mealIndex} className="p-4 space-y-3">
+                              <div>
+                                <div className="text-gray-500 text-sm">{meal.time}</div>
+                                <div className="font-medium">{meal.name}</div>
+                              </div>
+                              <div className="grid grid-cols-4 gap-2">
+                                <div className="bg-white p-2 rounded shadow-sm">
+                                  <div className="text-gray-500 text-xs">Protein</div>
+                                  <div className="font-medium text-gray-900">
+                                    {meal.nutritionalValue.protein}g
+                                  </div>
+                                </div>
+                                <div className="bg-white p-2 rounded shadow-sm">
+                                  <div className="text-gray-500 text-xs">Fat</div>
+                                  <div className="font-medium text-gray-900">
+                                    {meal.nutritionalValue.fat}g
+                                  </div>
+                                </div>
+                                <div className="bg-white p-2 rounded shadow-sm">
+                                  <div className="text-gray-500 text-xs">Carbs</div>
+                                  <div className="font-medium text-gray-900">
+                                    {meal.nutritionalValue.carbs}g
+                                  </div>
+                                </div>
+                                <div className="bg-white p-2 rounded shadow-sm">
+                                  <div className="text-gray-500 text-xs">Cal</div>
+                                  <div className="font-medium text-gray-900">
+                                    {meal.nutritionalValue.calories}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Grocery List Section */}
+              <div className="mt-8">
+                {isSaved ? (
+                  <GroceryList mealPlan={mealPlan} />
+                ) : (
+                  <Card className="w-full backdrop-blur-sm bg-white/80 border-0 shadow-xl rounded-2xl p-6">
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                      className="text-center space-y-4"
+                    >
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                        <ShoppingCart className="w-6 h-6 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-primary mb-1">Save to View Grocery List</h3>
+                        <p className="text-muted-foreground">
+                          Save your meal plan to generate a comprehensive grocery list with all the ingredients you'll need.
+                        </p>
+                      </div>
+                      <Button 
+                        onClick={() => setOpen(true)}
+                        className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 flex items-center gap-2"
+                      >
+                        <Save className="w-4 h-4" />
+                        Save Meal Plan
+                      </Button>
+                    </motion.div>
+                  </Card>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        </main>
+      </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogPortal>
+          <DialogOverlay className="bg-black/80" />
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                Save Meal Plan
+              </DialogTitle>
+              <DialogDescription className="text-base text-muted-foreground">
+                Give your meal plan a memorable name to find it easily later.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label 
+                  htmlFor="meal-plan-name" 
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Meal Plan Name
+                </Label>
+                <Input
+                  id="meal-plan-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g., Weekly Healthy Plan"
+                  className="h-11"
+                />
+              </div>
+            </div>
+            <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+                className="mt-2 sm:mt-0"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                onClick={handleSaveMealPlan}
+                disabled={!name}
+                className="bg-gradient-to-r from-primary to-primary/80"
+              >
+                Save Plan
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </DialogPortal>
+      </Dialog>
+
+      <LoginDialog 
+        open={loginDialogOpen} 
+        onOpenChange={setLoginDialogOpen} 
+      />
+
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Delete Meal Plan
+            </DialogTitle>
+            <DialogDescription className="text-base text-muted-foreground">
+              Are you sure you want to delete this meal plan? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              className="mt-2 sm:mt-0"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteMealPlan}
+              disabled={isDeleting}
+              variant="destructive"
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {isDeleting ? (
                 <>
-                  <Button
-                    onClick={handleRegenerateMealPlan}
-                    variant="outline"
-                    disabled={isRegenerating}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2"
-                  >
-                    <RefreshCw className={`w-4 h-4 ${isRegenerating ? 'animate-spin' : ''}`} />
-                    {isRegenerating ? "Regenerating..." : "Regenerate"}
-                  </Button>
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      setOpen(true);
-                    }}
-                    disabled={isRegenerating}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2"
-                  >
-                    <Save className="w-4 h-4" />
-                    Save
-                  </Button>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
                 </>
               ) : (
                 <>
-                  <Button
-                    variant="outline"
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 text-primary border-primary/20 hover:border-primary/30"
-                    onClick={handleDownloadClick}
-                  >
-                    <Download className="w-4 h-4" />
-                    Download
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 text-primary border-primary/20 hover:border-primary/30"
-                    onClick={handleShare}
-                  >
-                    <Share2 className="w-4 h-4" />
-                    Share
-                  </Button>
-                  <Button
-                    onClick={() => setDeleteDialogOpen(true)}
-                    variant="ghost"
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 hover:bg-destructive/5 text-muted-foreground hover:text-destructive/70"
-                    disabled={isDeleting}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    {isDeleting ? "Deleting..." : "Delete"}
-                  </Button>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Plan
                 </>
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <OutOfCreditDialog 
+        open={showCreditDialog} 
+        onOpenChange={setShowCreditDialog} 
+      />
+
+      <div className="absolute opacity-0 pointer-events-none">
+        <MealPlanDownloadView
+          ref={downloadRef}
+          mealPlan={mealPlan}
+          planName={name || "Your Meal Plan"}
+        />
+      </div>
+
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-[95vw] w-full lg:max-w-[900px] p-2 sm:p-6 bg-gradient-to-br from-primary/[0.02] to-transparent overflow-y-auto max-h-[95vh]">
+          <DialogHeader className="space-y-2">
+            <DialogTitle className="text-lg sm:text-xl font-bold text-primary">Preview Download</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Review how your meal plan will look when downloaded
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="my-2 sm:my-4 overflow-x-auto">
+            <div ref={previewRef} className="min-w-[320px] w-full">
+              <MealPlanDownloadView mealPlan={mealPlan} planName={name || "Your Meal Plan"} />
             </div>
           </div>
 
-          <motion.div
-            ref={mealPlanRef}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="relative"
-          >
-            {/* Horizontal Scrollable Cards */}
-            <div className="overflow-x-auto pb-4">
-              <div className="flex gap-4 min-w-max">
-                {mealPlan.days.map((day, dayIndex) => (
-                  <div 
-                    key={dayIndex} 
-                    className="bg-white rounded-lg shadow-sm w-[300px]"
-                  >
-                    <div className="bg-gradient-to-r from-primary to-primary/80 py-3 px-4">
-                      <h3 className="text-white font-semibold">{day.day}</h3>
-                    </div>
-                    <div className="divide-y divide-gray-100">
-                      {day.meals.map((meal, mealIndex) => (
-                        <div key={mealIndex} className="p-4 space-y-3">
-                          <div className="space-y-1">
-                            <div className="text-sm text-gray-500">{meal.time}</div>
-                            <div className="font-medium text-gray-900">{meal.name}</div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div className="bg-primary/5 p-2 rounded">
-                              <div className="text-gray-500 text-xs">Protein</div>
-                              <div className="font-medium text-gray-900">{meal.nutritionalValue.protein}g</div>
-                            </div>
-                            <div className="bg-primary/5 p-2 rounded">
-                              <div className="text-gray-500 text-xs">Fat</div>
-                              <div className="font-medium text-gray-900">{meal.nutritionalValue.fat}g</div>
-                            </div>
-                            <div className="bg-primary/5 p-2 rounded">
-                              <div className="text-gray-500 text-xs">Carbs</div>
-                              <div className="font-medium text-gray-900">{meal.nutritionalValue.carbs}g</div>
-                            </div>
-                            <div className="bg-primary/5 p-2 rounded">
-                              <div className="text-gray-500 text-xs">Calories</div>
-                              <div className="font-medium text-gray-900">{meal.nutritionalValue.calories}</div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="bg-gray-50 p-4">
-                      <div className="text-sm font-medium text-gray-900 mb-2">Daily Total</div>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div className="bg-white p-2 rounded shadow-sm">
-                          <div className="text-gray-500 text-xs">Protein</div>
-                          <div className="font-medium text-gray-900">
-                            {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.protein, 0)}g
-                          </div>
-                        </div>
-                        <div className="bg-white p-2 rounded shadow-sm">
-                          <div className="text-gray-500 text-xs">Fat</div>
-                          <div className="font-medium text-gray-900">
-                            {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.fat, 0)}g
-                          </div>
-                        </div>
-                        <div className="bg-white p-2 rounded shadow-sm">
-                          <div className="text-gray-500 text-xs">Carbs</div>
-                          <div className="font-medium text-gray-900">
-                            {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.carbs, 0)}g
-                          </div>
-                        </div>
-                        <div className="bg-white p-2 rounded shadow-sm">
-                          <div className="text-gray-500 text-xs">Calories</div>
-                          <div className="font-medium text-gray-900">
-                            {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.calories, 0)}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Grocery List Section */}
-            {isSaved ? (
-              <GroceryList mealPlan={mealPlan} />
-            ) : (
-              <div className="mt-8 p-6 bg-secondary/5 rounded-lg border border-secondary/10">
-                <div className="flex items-center gap-3 mb-4">
-                  <ShoppingCart className="w-5 h-5 text-secondary" />
-                  <h3 className="text-lg font-semibold text-secondary">Save to View Grocery List</h3>
-                </div>
-                <p className="text-muted-foreground mb-4">
-                  Save your meal plan to generate a comprehensive grocery list with all the ingredients you'll need.
-                </p>
-                <Button onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setOpen(true);
-                }} variant="secondary" className="flex items-center gap-2">
-                  <Save className="w-4 h-4" />
-                  Save Meal Plan
-                </Button>
-              </div>
-            )}
-          </motion.div>
-        </motion.div>
-
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogPortal>
-            <DialogOverlay className="bg-black/80" />
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                  Save Meal Plan
-                </DialogTitle>
-                <DialogDescription className="text-base text-muted-foreground">
-                  Give your meal plan a memorable name to find it easily later.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label 
-                    htmlFor="meal-plan-name" 
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Meal Plan Name
-                  </Label>
-                  <Input
-                    id="meal-plan-name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g., Weekly Healthy Plan"
-                    className="h-11"
-                  />
-                </div>
-              </div>
-              <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setOpen(false)}
-                  className="mt-2 sm:mt-0"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  onClick={handleSaveMealPlan}
-                  disabled={!name.trim()}
-                  className="bg-gradient-to-r from-primary to-primary/80"
-                >
-                  Save Plan
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </DialogPortal>
-        </Dialog>
-
-        <LoginDialog 
-          open={loginDialogOpen} 
-          onOpenChange={setLoginDialogOpen} 
-        />
-
-        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Delete Meal Plan</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete this meal plan? This action cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button variant="secondary" onClick={() => setDeleteDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button 
-                variant="destructive" 
-                onClick={handleDeleteMealPlan}
-                disabled={isDeleting}
-              >
-                {isDeleting ? "Deleting..." : "Delete"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        <OutOfCreditDialog 
-          open={showCreditDialog} 
-          onOpenChange={setShowCreditDialog} 
-        />
-
-        <div className="absolute opacity-0 pointer-events-none">
-          <MealPlanDownloadView
-            ref={downloadRef}
-            mealPlan={mealPlan}
-            planName={name || "Your Meal Plan"}
-          />
-        </div>
-
-        <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-          <DialogContent className="max-w-[95vw] w-full lg:max-w-[900px] p-2 sm:p-6 bg-gradient-to-br from-primary/[0.02] to-transparent overflow-y-auto max-h-[95vh]">
-            <DialogHeader className="space-y-2">
-              <DialogTitle className="text-lg sm:text-xl font-bold text-primary">Preview Download</DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground">
-                Review how your meal plan will look when downloaded
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="my-2 sm:my-4 overflow-x-auto">
-              <div ref={previewRef} className="min-w-[320px] w-full">
-                <MealPlanDownloadView mealPlan={mealPlan} planName={name || "Your Meal Plan"} />
-              </div>
-            </div>
-
-            <DialogFooter className="flex-col sm:flex-row gap-2 mt-2 sm:mt-4">
-              <Button
-                variant="outline"
-                onClick={() => setPreviewOpen(false)}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 border-primary/20 hover:border-primary/30 text-primary"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleDownload}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70"
-              >
-                <Download className="w-4 h-4" />
-                Download Image
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </main>
-    </div>
+          <DialogFooter className="flex-col sm:flex-row gap-2 mt-2 sm:mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setPreviewOpen(false)}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 border-primary/20 hover:border-primary/30 text-primary"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDownload}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70"
+            >
+              <Download className="w-4 h-4" />
+              Download Image
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </BaseLayout>
   );
 };
 

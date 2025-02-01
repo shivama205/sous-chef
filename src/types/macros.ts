@@ -33,7 +33,6 @@ export interface UserMacros {
 }
 
 export interface GroceryItem {
-  id: string;
   grocery_list_id: string;
   name: string;
   category: string;
@@ -47,7 +46,6 @@ export interface GroceryItem {
 }
 
 export interface GroceryList {
-  id: string;
   user_id: string;
   meal_plan_id: string;
   name: string;

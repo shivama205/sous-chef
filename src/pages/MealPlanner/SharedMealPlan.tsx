@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/lib/supabase";
-import NavigationBar from "@/components/NavigationBar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader2, ChefHat } from "lucide-react";
@@ -12,6 +11,7 @@ import html2canvas from 'html2canvas';
 import MealPlanDownloadView from "@/components/MealPlanDownloadView";
 import { motion } from "framer-motion";
 import { SEO } from "@/components/SEO";
+import { BaseLayout } from "@/components/layouts/BaseLayout";
 
 export function SharedMealPlan() {
   const { id } = useParams();
@@ -90,41 +90,27 @@ export function SharedMealPlan() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
-        <SEO 
-          title="Loading Meal Plan - SousChef"
-          description="Loading your personalized meal plan..."
-          type="website"
-        />
-        <NavigationBar />
+      <BaseLayout>
         <main className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center">
-            <Loader2 className="w-8 h-8 animate-spin" />
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         </main>
-      </div>
+      </BaseLayout>
     );
   }
 
   if (!mealPlan) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
-        <SEO 
-          title="Meal Plan Not Found - SousChef"
-          description="The requested meal plan could not be found or may have been deleted."
-          type="website"
-        />
-        <NavigationBar />
+      <BaseLayout>
         <main className="container mx-auto px-4 py-8">
-          <Card className="p-6 text-center">
-            <h1 className="text-2xl font-bold mb-4">Meal Plan Not Found</h1>
-            <p className="text-gray-600 mb-6">This meal plan may have been deleted or is not publicly accessible.</p>
-            <Button onClick={() => window.location.href = "/"}>
-              Go to Homepage
-            </Button>
-          </Card>
+          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+            <ChefHat className="w-12 h-12 text-muted-foreground mb-4" />
+            <h1 className="text-2xl font-bold text-primary mb-2">Meal Plan Not Found</h1>
+            <p className="text-muted-foreground">This meal plan may have expired or been deleted.</p>
+          </div>
         </main>
-      </div>
+      </BaseLayout>
     );
   }
 
@@ -152,7 +138,7 @@ export function SharedMealPlan() {
   };
 
   return (
-    <>
+    <BaseLayout>
       <SEO 
         title={seoData.title}
         description={seoData.description}
@@ -178,121 +164,117 @@ export function SharedMealPlan() {
           {JSON.stringify(seoData.structuredData)}
         </script>
       </Helmet>
-
-      <div className="min-h-screen bg-gradient-to-b from-accent/30 to-accent/10">
-        <NavigationBar />
-        <main className="container mx-auto px-4 py-8">
-          <Card className="p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <ChefHat className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold">{planName}</h1>
-                <p className="text-gray-600">A personalized meal plan created with SousChef AI</p>
-              </div>
+      <main className="container mx-auto px-4 py-8">
+        <Card className="p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <ChefHat className="w-6 h-6 text-primary" />
             </div>
+            <div>
+              <h1 className="text-3xl font-bold">{planName}</h1>
+              <p className="text-gray-600">A personalized meal plan created with SousChef AI</p>
+            </div>
+          </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="relative"
-            >
-              <div className="overflow-x-auto pb-4">
-                <div className="flex gap-4 min-w-max">
-                  {mealPlan.days.map((day, dayIndex) => (
-                    <div 
-                      key={dayIndex} 
-                      className="bg-white rounded-lg shadow-sm w-[300px]"
-                    >
-                      <div className="bg-gradient-to-r from-primary to-primary/80 py-3 px-4">
-                        <h3 className="text-white font-semibold">{day.day}</h3>
-                      </div>
-                      <div className="divide-y divide-gray-100">
-                        {day.meals.map((meal, mealIndex) => (
-                          <div key={mealIndex} className="p-4 space-y-3">
-                            <div className="space-y-1">
-                              <div className="text-sm text-gray-500">{meal.time}</div>
-                              <div className="font-medium text-gray-900">{meal.name}</div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="relative"
+          >
+            <div className="overflow-x-auto pb-4">
+              <div className="flex gap-4 min-w-max">
+                {mealPlan.days.map((day, dayIndex) => (
+                  <div 
+                    key={dayIndex} 
+                    className="bg-white rounded-lg shadow-sm w-[300px]"
+                  >
+                    <div className="bg-gradient-to-r from-primary to-primary/80 py-3 px-4">
+                      <h3 className="text-white font-semibold">{day.day}</h3>
+                    </div>
+                    <div className="divide-y divide-gray-100">
+                      {day.meals.map((meal, mealIndex) => (
+                        <div key={mealIndex} className="p-4 space-y-3">
+                          <div className="space-y-1">
+                            <div className="text-sm text-gray-500">{meal.time}</div>
+                            <div className="font-medium text-gray-900">{meal.name}</div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div className="bg-primary/5 p-2 rounded">
+                              <div className="text-gray-500 text-xs">Protein</div>
+                              <div className="font-medium text-gray-900">{meal.nutritionalValue.protein}g</div>
                             </div>
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div className="bg-primary/5 p-2 rounded">
-                                <div className="text-gray-500 text-xs">Protein</div>
-                                <div className="font-medium text-gray-900">{meal.nutritionalValue.protein}g</div>
-                              </div>
-                              <div className="bg-primary/5 p-2 rounded">
-                                <div className="text-gray-500 text-xs">Fat</div>
-                                <div className="font-medium text-gray-900">{meal.nutritionalValue.fat}g</div>
-                              </div>
-                              <div className="bg-primary/5 p-2 rounded">
-                                <div className="text-gray-500 text-xs">Carbs</div>
-                                <div className="font-medium text-gray-900">{meal.nutritionalValue.carbs}g</div>
-                              </div>
-                              <div className="bg-primary/5 p-2 rounded">
-                                <div className="text-gray-500 text-xs">Calories</div>
-                                <div className="font-medium text-gray-900">{meal.nutritionalValue.calories}</div>
-                              </div>
+                            <div className="bg-primary/5 p-2 rounded">
+                              <div className="text-gray-500 text-xs">Fat</div>
+                              <div className="font-medium text-gray-900">{meal.nutritionalValue.fat}g</div>
+                            </div>
+                            <div className="bg-primary/5 p-2 rounded">
+                              <div className="text-gray-500 text-xs">Carbs</div>
+                              <div className="font-medium text-gray-900">{meal.nutritionalValue.carbs}g</div>
+                            </div>
+                            <div className="bg-primary/5 p-2 rounded">
+                              <div className="text-gray-500 text-xs">Calories</div>
+                              <div className="font-medium text-gray-900">{meal.nutritionalValue.calories}</div>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                      <div className="bg-gray-50 p-4">
-                        <div className="text-sm font-medium text-gray-900 mb-2">Daily Total</div>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="bg-white p-2 rounded shadow-sm">
-                            <div className="text-gray-500 text-xs">Protein</div>
-                            <div className="font-medium text-gray-900">
-                              {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.protein, 0)}g
-                            </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="bg-gray-50 p-4">
+                      <div className="text-sm font-medium text-gray-900 mb-2">Daily Total</div>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div className="bg-white p-2 rounded shadow-sm">
+                          <div className="text-gray-500 text-xs">Protein</div>
+                          <div className="font-medium text-gray-900">
+                            {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.protein, 0)}g
                           </div>
-                          <div className="bg-white p-2 rounded shadow-sm">
-                            <div className="text-gray-500 text-xs">Fat</div>
-                            <div className="font-medium text-gray-900">
-                              {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.fat, 0)}g
-                            </div>
+                        </div>
+                        <div className="bg-white p-2 rounded shadow-sm">
+                          <div className="text-gray-500 text-xs">Fat</div>
+                          <div className="font-medium text-gray-900">
+                            {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.fat, 0)}g
                           </div>
-                          <div className="bg-white p-2 rounded shadow-sm">
-                            <div className="text-gray-500 text-xs">Carbs</div>
-                            <div className="font-medium text-gray-900">
-                              {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.carbs, 0)}g
-                            </div>
+                        </div>
+                        <div className="bg-white p-2 rounded shadow-sm">
+                          <div className="text-gray-500 text-xs">Carbs</div>
+                          <div className="font-medium text-gray-900">
+                            {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.carbs, 0)}g
                           </div>
-                          <div className="bg-white p-2 rounded shadow-sm">
-                            <div className="text-gray-500 text-xs">Calories</div>
-                            <div className="font-medium text-gray-900">
-                              {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.calories, 0)}
-                            </div>
+                        </div>
+                        <div className="bg-white p-2 rounded shadow-sm">
+                          <div className="text-gray-500 text-xs">Calories</div>
+                          <div className="font-medium text-gray-900">
+                            {day.meals.reduce((sum, meal) => sum + meal.nutritionalValue.calories, 0)}
                           </div>
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
-            </motion.div>
-
-            {/* CTA */}
-            <div className="mt-8 text-center">
-              <p className="text-gray-600 mb-4">Create your own personalized meal plan with SousChef</p>
-              <Button onClick={() => window.location.href = "/meal-plan"} className="w-full max-w-md">
-                Create Your Own Meal Plan
-              </Button>
             </div>
-          </Card>
+          </motion.div>
 
-          {/* Hidden preview element for generating share image */}
-          <div className="hidden">
-            <div ref={previewRef}>
-              <MealPlanDownloadView
-                mealPlan={mealPlan}
-                planName={planName}
-              />
-            </div>
+          {/* CTA */}
+          <div className="mt-8 text-center">
+            <p className="text-gray-600 mb-4">Create your own personalized meal plan with SousChef</p>
+            <Button onClick={() => window.location.href = "/meal-plan"} className="w-full max-w-md">
+              Create Your Own Meal Plan
+            </Button>
           </div>
-        </main>
-      </div>
-    </>
+        </Card>
+
+        {/* Hidden preview element for generating share image */}
+        <div className="hidden">
+          <div ref={previewRef}>
+            <MealPlanDownloadView
+              mealPlan={mealPlan}
+              planName={planName}
+            />
+          </div>
+        </div>
+      </main>
+    </BaseLayout>
   );
 }
 
