@@ -19,8 +19,8 @@ interface Props {
   mealPlan: MealPlan;
 }
 
-interface GroceryItemDisplay extends Omit<GroceryItem, 'id' | 'grocery_list_id' | 'created_at' | 'updated_at'> {
-  id: string;
+interface GroceryItemDisplay extends Omit<GroceryItem, 'grocery_list_id' | 'created_at' | 'updated_at'> {
+  id?: string;
 }
 
 export function GroceryList({ mealPlan }: Props) {
@@ -35,7 +35,7 @@ export function GroceryList({ mealPlan }: Props) {
     const fetchExistingList = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user) return;
+        if (!session?.user || !mealPlan.id) return;
 
         const { data: existingList } = await supabase
           .from('grocery_lists')
@@ -69,7 +69,7 @@ export function GroceryList({ mealPlan }: Props) {
       const items = await generateGroceryList(mealPlan);
       setGroceryItems(items.map(item => ({
         ...item,
-        id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+        id: undefined
       })));
       await trackFeatureUsage(FeatureName.GROCERY_LIST_GENERATION, {
         mealPlanId: mealPlan.id
@@ -104,8 +104,8 @@ export function GroceryList({ mealPlan }: Props) {
 
     if (!mealPlan?.id) {
       toast({
-        title: "Error",
-        description: "Invalid meal plan - please try again.",
+        title: "Save meal plan first",
+        description: "Please save your meal plan before saving the grocery list.",
         variant: "destructive",
       });
       return;
@@ -152,7 +152,7 @@ export function GroceryList({ mealPlan }: Props) {
     if (!newItemName.trim()) return;
 
     const newItem: GroceryItemDisplay = {
-      id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: undefined,
       name: newItemName.trim(),
       category: newItemCategory,
       quantity: newItemQuantity || undefined,
@@ -168,7 +168,8 @@ export function GroceryList({ mealPlan }: Props) {
     setShowAddForm(false);
   };
 
-  const toggleItemCheck = async (itemId: string) => {
+  const toggleItemCheck = async (itemId?: string) => {
+    if (!itemId) return;
     setGroceryItems(prev =>
       prev.map(item =>
         item.id === itemId ? { ...item, checked: !item.checked } : item
@@ -176,7 +177,8 @@ export function GroceryList({ mealPlan }: Props) {
     );
   };
 
-  const deleteItem = (itemId: string) => {
+  const deleteItem = (itemId?: string) => {
+    if (!itemId) return;
     setGroceryItems(prev => prev.filter(item => item.id !== itemId));
   };
 
