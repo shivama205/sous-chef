@@ -2,8 +2,7 @@
   "rewrites": [
     { 
       "source": "/payment/status",
-      "destination": "/index.html",
-      "methods": ["POST", "GET"]
+      "destination": "/index.html"
     },
     { 
       "source": "/(.*)",
