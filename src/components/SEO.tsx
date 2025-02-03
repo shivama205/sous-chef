@@ -22,7 +22,7 @@ interface SEOProps {
 const BASE_URL = 'https://sous-chef.in';
 
 const DEFAULT_TITLE = 'SousChef - Your AI Kitchen Assistant';
-const DEFAULT_DESCRIPTION = 'Your AI-powered kitchen companion. Get personalized meal suggestions, discover recipes, find healthy alternatives, and make cooking smarter and more enjoyable.';
+const DEFAULT_DESCRIPTION = 'Get personalized meal suggestions and discover recipes with AI';
 const DEFAULT_KEYWORDS = [
   'AI cooking assistant',
   'meal suggestions',
@@ -83,20 +83,18 @@ export function SEO({
   url = BASE_URL
 }: SEOProps) {
   const imageUrl = `${BASE_URL}${image}`;
-  const canonicalUrl = url || BASE_URL;
+  const canonicalUrl = url;
 
   return (
     <Helmet>
       <title>{title}</title>
-      <meta name="description" content={description} />
-      
-      {/* Essential Open Graph Tags for WhatsApp */}
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={imageUrl} />
       <meta property="og:url" content={canonicalUrl} />
       <meta property="og:type" content="website" />
       
+      <meta name="description" content={description} />
       <link rel="canonical" href={canonicalUrl} />
     </Helmet>
   );
