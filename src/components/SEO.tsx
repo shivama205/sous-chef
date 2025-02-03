@@ -12,6 +12,7 @@ interface SEOProps {
   image?: string;
   squareImage?: string;
   url?: string;
+  baseUrl?: string;
   type?: string;
   structuredData?: Record<string, any>;
   noindex?: boolean;
@@ -31,6 +32,7 @@ const ORGANIZATION_DATA = {
     "width": 512,
     "height": 512
   },
+  "description": "Your AI cooking companion for personalized meal ideas, recipe discovery, and healthier eating habits.",
   "sameAs": [
     "https://twitter.com/souschef",
     "https://facebook.com/souschef",
@@ -43,8 +45,8 @@ const WEBSITE_DATA = {
   "@type": "WebSite",
   "@id": "https://sous-chef.in/#website",
   "url": "https://sous-chef.in",
-  "name": "SousChef - AI-Powered Meal Planning Made Easy",
-  "description": "Create personalized meal plans, find recipes, and get healthy alternatives with SousChef's AI-powered platform. Your personal AI chef for healthy eating.",
+  "name": "SousChef - Your AI Cooking Companion",
+  "description": "Get instant meal ideas based on your mood, discover recipes, find healthy alternatives, and plan your meals with AI assistance. Your personal sous chef for smarter, healthier cooking.",
   "publisher": {
     "@id": "https://sous-chef.in/#organization"
   },
@@ -87,12 +89,26 @@ const generateWebPage = (props: SEOProps) => ({
 });
 
 export function SEO({
-  title = 'SousChef - AI-Powered Meal Planning Made Easy',
-  description = 'Create personalized meal plans, find recipes, and get healthy alternatives with SousChef\'s AI-powered platform. Your personal AI chef for healthy eating.',
-  keywords = ['meal planning', 'healthy recipes', 'AI chef', 'nutrition', 'meal prep', 'diet planning', 'recipe finder', 'healthy alternatives', 'cooking assistant'],
+  title = 'SousChef - Your AI Cooking Companion',
+  description = 'Get instant meal ideas based on your mood, discover recipes, find healthy alternatives, and plan your meals with AI assistance. Your personal sous chef for smarter, healthier cooking.',
+  keywords = [
+    'AI cooking assistant',
+    'meal suggestions',
+    'recipe finder',
+    'healthy alternatives',
+    'meal planning',
+    'cooking ideas',
+    'personalized recipes',
+    'mood-based meals',
+    'smart kitchen assistant',
+    'healthy cooking',
+    'dietary recommendations',
+    'nutrition assistant'
+  ],
   image = '/og-image.png',
   squareImage = '/og-image-square.png',
-  url = 'https://sous-chef.in',
+  url = '/',
+  baseUrl = 'https://sous-chef.in',
   type = 'website',
   structuredData,
   noindex = false,
@@ -100,16 +116,76 @@ export function SEO({
   breadcrumbs = []
 }: SEOProps) {
   const siteTitle = title.includes('SousChef') ? title : `${title} | SousChef`;
-  const absoluteImageUrl = image.startsWith('http') ? image : `https://sous-chef.in${image}`;
-  const absoluteSquareImageUrl = squareImage.startsWith('http') ? squareImage : `https://sous-chef.in${squareImage}`;
-  const canonicalUrl = url.startsWith('http') ? url : `https://sous-chef.in${url}`;
   
-  // Prepare JSON-LD structured data
+  // More consistent URL handling
+  const getAbsoluteUrl = (path: string) => {
+    if (path.startsWith('http')) return path;
+    return `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`;
+  };
+
+  const absoluteImageUrl = getAbsoluteUrl(image);
+  const absoluteSquareImageUrl = getAbsoluteUrl(squareImage);
+  const canonicalUrl = getAbsoluteUrl(url);
+
+  // Update organization data to use baseUrl
+  const organizationData = {
+    ...ORGANIZATION_DATA,
+    "@id": `${baseUrl}/#organization`,
+    "url": baseUrl,
+    "logo": {
+      ...ORGANIZATION_DATA.logo,
+      "url": getAbsoluteUrl(ORGANIZATION_DATA.logo.url)
+    }
+  };
+
+  // Update website data to use baseUrl
+  const websiteData = {
+    ...WEBSITE_DATA,
+    "@id": `${baseUrl}/#website`,
+    "url": baseUrl,
+    "potentialAction": {
+      ...WEBSITE_DATA.potentialAction,
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": `${baseUrl}/recipe-finder?q={search_term_string}`
+      }
+    }
+  };
+
+  // Update breadcrumb generation to use baseUrl
+  const generateBreadcrumbListWithBase = (items: BreadcrumbItem[]) => ({
+    "@type": "BreadcrumbList",
+    "@id": `${baseUrl}/#breadcrumb`,
+    "itemListElement": items.map((item, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "name": item.name,
+      "item": getAbsoluteUrl(item.item)
+    }))
+  });
+
+  // Update webpage generation to use baseUrl
+  const generateWebPageWithBase = (props: SEOProps) => ({
+    "@type": "WebPage",
+    "@id": `${getAbsoluteUrl(props.url || '')}#webpage`,
+    "url": getAbsoluteUrl(props.url || ''),
+    "name": props.title,
+    "description": props.description,
+    "isPartOf": {
+      "@id": `${baseUrl}/#website`
+    },
+    "breadcrumb": {
+      "@id": `${baseUrl}/#breadcrumb`
+    },
+    "inLanguage": "en-US"
+  });
+
+  // Prepare JSON-LD structured data with updated functions
   const jsonLd = [
-    ORGANIZATION_DATA,
-    WEBSITE_DATA,
-    generateWebPage({ title: siteTitle, description, url: canonicalUrl }),
-    ...(breadcrumbs.length > 0 ? [generateBreadcrumbList(breadcrumbs)] : []),
+    organizationData,
+    websiteData,
+    generateWebPageWithBase({ title: siteTitle, description, url: canonicalUrl }),
+    ...(breadcrumbs.length > 0 ? [generateBreadcrumbListWithBase(breadcrumbs)] : []),
     ...(structuredData ? [structuredData] : [])
   ];
 
@@ -152,7 +228,7 @@ export function SEO({
       <meta name="twitter:image" content={absoluteImageUrl} />
       <meta name="twitter:image:src" content={absoluteImageUrl} />
       <meta name="twitter:image:alt" content={`${siteTitle} - Preview Image`} />
-      <meta name="twitter:domain" content="sous-chef.in" />
+      <meta name="twitter:domain" content={baseUrl.replace('https://', '')} />
       
       {/* Additional SEO Meta Tags */}
       <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
@@ -160,12 +236,12 @@ export function SEO({
       <link rel="canonical" href={canonicalUrl} />
 
       {/* Alternate Language URLs */}
-      {alternateUrls.map(({ lang, url }) => (
+      {alternateUrls.map(({ lang, url: altUrl }) => (
         <link 
           key={lang}
           rel="alternate" 
           hrefLang={lang} 
-          href={url.startsWith('http') ? url : `https://sous-chef.in${url}`}
+          href={getAbsoluteUrl(altUrl)}
         />
       ))}
 
