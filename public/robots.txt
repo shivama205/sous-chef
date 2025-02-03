@@ -1,14 +1,50 @@
+# SousChef robots.txt
+
+# Allow all bots to access these paths
 User-agent: *
 Allow: /
 Allow: /meal-suggestions
 Allow: /recipe-finder
 Allow: /healthy-alternative
 Allow: /meal-plan
+Allow: /blog
+Allow: /about
+Allow: /privacy
+Allow: /terms
+Allow: /*.js
+Allow: /*.css
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.gif
+Allow: /*.svg
+Allow: /*.ico
 
-# Disallow private routes
+# Block access to private routes
 Disallow: /dashboard
 Disallow: /settings
 Disallow: /profile
+Disallow: /api/
+Disallow: /auth/
+Disallow: /admin/
+Disallow: /*?*
+Disallow: /*?
+
+# Block access to development/test routes
+Disallow: /dev/
+Disallow: /test/
+Disallow: /staging/
+
+# Block specific file types
+Disallow: /*.json$
+Disallow: /*.xml$
+Disallow: /*.txt$
+
+# Allow Sitemap
+Allow: /sitemap.xml
 
 # Sitemap location
-Sitemap: https://souschef.in/sitemap.xml 
+Sitemap: https://sous-chef.in/sitemap.xml
+
+# Crawl-delay for heavy crawlers
+Crawl-delay: 10 

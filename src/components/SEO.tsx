@@ -115,28 +115,33 @@ export function SEO({
       <meta name="keywords" content={keywords.join(', ')} />
       <link rel="canonical" href={absoluteUrl} />
       
-      {/* Open Graph Meta Tags */}
+      {/* Open Graph Meta Tags - Square Image First for WhatsApp */}
       <meta property="og:site_name" content="SousChef" />
       <meta property="og:title" content={siteTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:type" content={type} />
       <meta property="og:url" content={absoluteUrl} />
-      
-      {/* Primary Image (16:9) */}
-      <meta property="og:image" content={absoluteImageUrl} />
-      <meta property="og:image:secure_url" content={absoluteImageUrl} />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="630" />
-      <meta property="og:image:type" content="image/png" />
-      <meta property="og:image:alt" content={`${siteTitle} - Preview Image`} />
 
-      {/* Square Image (1:1) for WhatsApp */}
+      {/* Square Image (1:1) for WhatsApp - Placed First */}
       <meta property="og:image" content={absoluteSquareImageUrl} />
       <meta property="og:image:secure_url" content={absoluteSquareImageUrl} />
+      <meta property="og:image:type" content="image/png" />
       <meta property="og:image:width" content="400" />
       <meta property="og:image:height" content="400" />
+      <meta property="og:image:alt" content={siteTitle} />
+
+      {/* Primary Image (16:9) for other platforms */}
+      <meta property="og:image:url" content={absoluteImageUrl} />
+      <meta property="og:image:secure_url" content={absoluteImageUrl} />
       <meta property="og:image:type" content="image/png" />
-      <meta property="og:image:alt" content={`${siteTitle} - Preview Image (Square)`} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:image:alt" content={siteTitle} />
+
+      {/* WhatsApp Specific Meta Tags */}
+      <meta property="og:image:alt" content={siteTitle} />
+      <meta property="og:title" content={siteTitle} />
+      <meta property="og:description" content={description} />
 
       {/* Twitter Card Meta Tags */}
       <meta name="twitter:card" content="summary_large_image" />
@@ -145,7 +150,7 @@ export function SEO({
       <meta name="twitter:title" content={siteTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={absoluteImageUrl} />
-      <meta name="twitter:image:alt" content={`${siteTitle} - Preview Image`} />
+      <meta name="twitter:image:alt" content={siteTitle} />
       <meta name="twitter:domain" content={BASE_URL.replace('https://', '')} />
 
       {/* Robots Meta Tags */}
