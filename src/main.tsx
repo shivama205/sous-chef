@@ -7,9 +7,5 @@ const rootElement = document.getElementById("root")!;
 if (rootElement.hasChildNodes()) {
   hydrateRoot(rootElement, <App />);
 } else {
-  const root = createRoot(rootElement);
-  root.render(<App />);
-  
-  // Emit render event for prerenderer
-  document.dispatchEvent(new Event('render-event'));
+  createRoot(rootElement).render(<App />);
 }

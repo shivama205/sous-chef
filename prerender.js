@@ -1,5 +1,5 @@
-import { Prerenderer } from '@prerenderer/prerenderer';
-import { PuppeteerRenderer } from '@prerenderer/renderer-puppeteer';
+import Prerenderer from '@prerenderer/prerenderer';
+import PuppeteerRenderer from '@prerenderer/renderer-puppeteer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -22,8 +22,8 @@ const routes = [
 const prerenderer = new Prerenderer({
   staticDir: path.join(__dirname, 'dist'),
   renderer: new PuppeteerRenderer({
-    renderAfterDocumentEvent: 'render-event',
-    headless: 'new',
+    renderAfterTime: 5000,
+    headless: true,
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',

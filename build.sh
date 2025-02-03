@@ -24,5 +24,5 @@ apt-get update && apt-get install -y \
     libu2f-udev \
     libvulkan1
 
-# Run the build
-npm run build 
+# Run TypeScript compilation and build
+npm run tsc && vite build 
