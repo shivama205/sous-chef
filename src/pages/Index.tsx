@@ -24,6 +24,7 @@ import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 import { Activity } from "@/types/activity";
 import { SEO } from "@/components/SEO";
+import { MealSuggester } from "@/components/home/MealSuggester";
 
 const featureHighlights = [
   {
@@ -181,6 +182,15 @@ export default function Index() {
             description="Your personal AI-powered meal planning assistant"
             className="text-left"
           />
+        </motion.div>
+
+        {/* Meal Suggester */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <MealSuggester />
         </motion.div>
 
         {/* Health Tip of the Day */}
