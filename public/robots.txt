@@ -1,7 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /billing
-Disallow: /profile
-Disallow: /shared/meal-plan/*
 
-Sitemap: https://sous-chef.in/sitemap.xml 
+Sitemap: https://sous-chef.in/sitemap.xml
