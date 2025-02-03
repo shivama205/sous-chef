@@ -26,9 +26,9 @@ const ORGANIZATION_DATA = {
   "url": "https://sous-chef.in",
   "logo": {
     "@type": "ImageObject",
-    "url": "https://sous-chef.in/logo.png",
-    "width": 112,
-    "height": 112
+    "url": "https://sous-chef.in/logo-1.jpeg",
+    "width": 512,
+    "height": 512
   },
   "sameAs": [
     "https://twitter.com/souschef",
@@ -89,7 +89,7 @@ export function SEO({
   title = 'SousChef - AI-Powered Meal Planning Made Easy',
   description = 'Create personalized meal plans, find recipes, and get healthy alternatives with SousChef\'s AI-powered platform. Your personal AI chef for healthy eating.',
   keywords = ['meal planning', 'healthy recipes', 'AI chef', 'nutrition', 'meal prep', 'diet planning', 'recipe finder', 'healthy alternatives', 'cooking assistant'],
-  image = '/og-image.jpg',
+  image = '/og-image.png',
   url = 'https://sous-chef.in',
   type = 'website',
   structuredData,
@@ -117,19 +117,25 @@ export function SEO({
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords.join(', ')} />
       
-      {/* Open Graph Meta Tags */}
+      {/* Enhanced Open Graph Meta Tags */}
       <meta property="og:title" content={siteTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={absoluteImageUrl} />
+      <meta property="og:image:secure_url" content={absoluteImageUrl} />
+      <meta property="og:image:type" content="image/png" />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:image:alt" content={`${siteTitle} - Preview Image`} />
       <meta property="og:url" content={canonicalUrl} />
       <meta property="og:type" content={type} />
       <meta property="og:site_name" content="SousChef" />
       
-      {/* Twitter Card Meta Tags */}
+      {/* Enhanced Twitter Card Meta Tags */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={siteTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={absoluteImageUrl} />
+      <meta name="twitter:image:alt" content={`${siteTitle} - Preview Image`} />
       
       {/* Additional SEO Meta Tags */}
       <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
