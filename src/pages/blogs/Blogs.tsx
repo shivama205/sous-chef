@@ -3,7 +3,6 @@ import { Card } from "@/components/ui/card";
 import { ArrowRight, Clock, User, Tag, Image as ImageIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { BlogPostMetadata } from "@/types/blog";
-import { SEO } from "@/components/SEO";
 
 // Placeholder image for blogs without an image
 const PLACEHOLDER_IMAGE = "/blog-placeholder.png";
@@ -171,13 +170,6 @@ function BlogCard({ post, featured = false }: { post: BlogPostMetadata; featured
 export function Blog() {
   return (
     <BaseLayout>
-      <SEO 
-        title="Nutrition & Meal Planning Blog"
-        description="Discover expert tips, guides, and insights about nutrition, meal planning, and healthy living. Read our latest articles on cooking, diet, and wellness."
-        keywords="nutrition blog, meal planning, healthy recipes, cooking tips, diet advice, wellness guides"
-        type="website"
-      />
-      
       <div className="container mx-auto px-4 py-8 space-y-12">
         {/* Hero Section */}
         <section className="text-center space-y-4">
