@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -16,7 +16,8 @@ import {
   Share2,
   Download,
   Trash2,
-  X
+  X,
+  Save
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/providers/AuthProvider";
@@ -31,15 +32,19 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { LoginDialog } from "@/components/LoginDialog";
+import { saveRecipe } from "@/services/recipeFinder";
+import type { SuggestedMeal } from "@/services/mealSuggestions";
 
 export default function RecipeDetail() {
   const { id } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [suggestedMeal, setSuggestedMeal] = useState<SuggestedMeal | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -48,57 +53,165 @@ export default function RecipeDetail() {
   const [previewImage, setPreviewImage] = useState<string>("");
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
 
-  useEffect(() => {
-    const fetchRecipe = async () => {
-      if (!id || !user) {
+  // Check if it's a new recipe based on URL or state
+  const isNewRecipe = id === 'new' || Boolean(location.state?.meal);
+
+  const loadRecipe = async () => {
+    // For new recipes
+    if (isNewRecipe) {
+      // Handle new recipe from state
+      const stateMeal = location.state?.meal;
+      if (stateMeal) {
+        setSuggestedMeal(stateMeal);
+        setIsLoading(false);
+        return;
+      }
+
+      // Try to get recipe from sessionStorage
+      const storedRecipe = sessionStorage.getItem('pendingRecipe');
+      if (storedRecipe) {
+        setSuggestedMeal(JSON.parse(storedRecipe));
+        sessionStorage.removeItem('pendingRecipe');
+        setIsLoading(false);
+        return;
+      }
+
+      // No recipe data found, redirect to meal suggestions
+      toast({
+        title: "No recipe found",
+        description: "Please select a recipe from meal suggestions.",
+        variant: "destructive",
+      });
+      navigate("/meal-suggestions");
+      return;
+    }
+
+    // Handle existing recipe
+    if (!id) {
+      navigate("/recipe-finder");
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("saved_recipes")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {  // Row level security violation
+          setLoginDialogOpen(true);
+          return;
+        }
+        throw error;
+      }
+
+      if (!data) {
+        toast({
+          title: "Recipe not found",
+          description: "The recipe you're looking for doesn't exist.",
+          variant: "destructive",
+        });
         navigate("/recipe-finder");
         return;
       }
 
-      try {
-        const { data, error } = await supabase
-          .from("saved_recipes")
-          .select("*")
-          .eq("id", id)
-          .single();
+      setRecipe({
+        id: data.id,
+        meal_name: data.meal_name,
+        cooking_time: data.cooking_time,
+        ingredients: data.ingredients,
+        instructions: data.instructions,
+        nutritional_value: data.nutritional_value,
+        created_at: data.created_at,
+      });
+    } catch (error) {
+      console.error("Error fetching recipe:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load recipe details.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-        if (error) throw error;
-        if (!data) {
-          toast({
-            title: "Recipe not found",
-            description: "The recipe you're looking for doesn't exist.",
-            variant: "destructive",
-          });
-          navigate("/recipe-finder");
-          return;
-        }
+  useEffect(() => {
+    loadRecipe();
+  }, [id, user, location.state]);
 
-        setRecipe({
-          id: data.id,
-          meal_name: data.meal_name,
-          cooking_time: data.cooking_time,
-          ingredients: data.ingredients,
-          instructions: data.instructions,
-          nutritional_value: data.nutritional_value,
-          created_at: data.created_at,
-        });
-      } catch (error) {
-        console.error("Error fetching recipe:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load recipe details.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const handleLoginDialogChange = (open: boolean) => {
+    setLoginDialogOpen(open);
+  };
 
-    fetchRecipe();
-  }, [id, user, navigate, toast]);
+  const handleSave = async () => {
+    if (!user) {
+      setLoginDialogOpen(true);
+      return;
+    }
+
+    if (!suggestedMeal) {
+      toast({
+        title: "Error",
+        description: "No recipe data found to save.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      const savedRecipe = await saveRecipe(user.id, {
+        meal_name: suggestedMeal.name,
+        cooking_time: suggestedMeal.cookingTime,
+        ingredients: suggestedMeal.ingredients,
+        instructions: suggestedMeal.instructions,
+        nutritional_value: suggestedMeal.nutritionalValue
+      });
+      
+      toast({
+        title: "Recipe saved!",
+        description: "Recipe has been added to your collection.",
+      });
+
+      // Navigate to the saved recipe
+      navigate(`/recipe/${savedRecipe.id}`, { replace: true });
+    } catch (error) {
+      console.error("Error saving recipe:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save recipe. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleBack = () => {
+    if (!isNewRecipe) {
+      navigate('/');
+    } else {
+      navigate('/recipe-finder');
+    }
+  };
 
   const handleShare = async () => {
-    if (!recipe || !user) return;
+    if (!user) {
+      setLoginDialogOpen(true);
+      return;
+    }
+
+    if (!recipe?.id) {
+      toast({
+        title: "Error",
+        description: "Cannot share an unsaved recipe. Please save the recipe first.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       // check if share url already exists
@@ -108,6 +221,8 @@ export default function RecipeDetail() {
         .eq("recipe_id", recipe.id)
         .eq("user_id", user.id)
         .maybeSingle();
+
+      if (existingShareError) throw existingShareError;
 
       if (existingShare) {
         const shareUrl = `${window.location.origin}/shared/recipe/${existingShare.id}`;
@@ -131,22 +246,7 @@ export default function RecipeDetail() {
       if (error) throw error;
 
       const shareUrl = `${window.location.origin}/shared/recipe/${newShare.id}`;
-      
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: recipe.meal_name,
-            text: "Check out this delicious recipe I found on SousChef!",
-            url: shareUrl,
-          });
-        } catch (error) {
-          // Fallback to copying to clipboard
-          await copyToClipboard(shareUrl);
-        }
-      } else {
-        // Fallback for browsers that don't support Web Share API
-        await copyToClipboard(shareUrl);
-      }
+      await copyToClipboard(shareUrl);
     } catch (error) {
       console.error('Error sharing recipe:', error);
       toast({
@@ -200,15 +300,8 @@ export default function RecipeDetail() {
 
   const handleDownload = async () => {
     if (window.innerWidth >= 768) { // Non-mobile view
-      if (!previewImage) {
-        await generatePreview();
-      } else {
-        const link = document.createElement('a');
-        link.href = previewImage;
-        link.download = `${recipe?.meal_name || 'recipe'}.png`;
-        link.click();
-        setShowPreview(false);
-      }
+      // Always generate new preview when clicking download
+      await generatePreview();
     } else { // Mobile view - direct download
       if (!downloadRef.current) return;
       try {
@@ -233,9 +326,21 @@ export default function RecipeDetail() {
   };
 
   const handleDelete = async () => {
-    if (!id) return;
+    if (!user) {
+      setLoginDialogOpen(true);
+      return;
+    }
+
+    if (isNewRecipe || !id) {
+      toast({
+        title: "Error",
+        description: "Cannot delete an unsaved recipe.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsDeleting(true);
-    
     try {
       const { error } = await supabase
         .from("saved_recipes")
@@ -266,80 +371,105 @@ export default function RecipeDetail() {
     return <MealPlanLoadingOverlay isLoading={true} />;
   }
 
-  if (!recipe) {
+  if (!recipe && !suggestedMeal) {
     return null;
   }
+
+  const recipeData = isNewRecipe ? suggestedMeal : recipe;
+  if (!recipeData) return null;
 
   return (
     <BaseLayout>
       <div className="container max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Header Section */}
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleBack}
+            className="gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Button>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2"
-              onClick={handleShare}
-            >
-              <Share2 className="w-4 h-4" />
-              Share
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2"
-              onClick={handleDownload}
-            >
-              <Download className="w-4 h-4" />
-              Download
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2 text-red-600 hover:text-red-600"
-              onClick={() => setDeleteDialogOpen(true)}
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete
-            </Button>
+            {isNewRecipe ? (
+              <Button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="gap-2"
+              >
+                <Save className="w-4 h-4" />
+                {isSaving ? "Saving..." : "Save Recipe"}
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleShare}
+                  className="gap-2"
+                >
+                  <Share2 className="w-4 h-4" />
+                  Share
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownload}
+                  className="gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Download
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setDeleteDialogOpen(true)}
+                  className="gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
         {/* Recipe Content */}
         <div ref={downloadRef} className="space-y-6 bg-white p-6 rounded-lg">
           {/* Recipe Header */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <ChefHat className="w-8 h-8 text-primary" />
-              <h1 className="text-2xl font-bold">{recipe.meal_name}</h1>
+          <Card className="p-6 bg-gradient-to-r from-primary to-primary/80 text-white">
+            <div className="space-y-4">
+              <h1 className="text-3xl font-bold">
+                {isNewRecipe ? suggestedMeal?.name : recipe?.meal_name}
+              </h1>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Timer className="w-4 h-4" />
+                  <span>
+                    {isNewRecipe ? suggestedMeal?.cookingTime : recipe?.cooking_time} mins
+                  </span>
+                </div>
+                {!isNewRecipe && recipe?.created_at && (
+                  <div className="text-sm text-white/80">
+                    Saved on {new Date(recipe.created_at).toLocaleDateString()}
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Timer className="w-4 h-4" />
-              <span>Cooking Time: {recipe.cooking_time} minutes</span>
-            </div>
-            {recipe.created_at && (
-              <p className="text-sm text-muted-foreground">
-                Saved on {new Date(recipe.created_at).toLocaleString('en-US', {
-                  weekday: 'long',
-                  year: 'numeric', 
-                  month: 'short',
-                  day: 'numeric'
-                })}
-              </p>
-            )}
-          </div>
+          </Card>
 
           {/* Recipe Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Ingredients Card */}
-            <Card className="p-4 sm:p-6">
+            <Card className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <UtensilsCrossed className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold">Ingredients</h2>
               </div>
               <ul className="space-y-2">
-                {recipe.ingredients.map((ingredient, i) => (
+                {(isNewRecipe ? suggestedMeal?.ingredients : recipe?.ingredients)?.map((ingredient, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary/60 flex-shrink-0 mt-2" />
                     <span className="text-gray-600">{ingredient}</span>
@@ -349,13 +479,13 @@ export default function RecipeDetail() {
             </Card>
 
             {/* Instructions Card */}
-            <Card className="p-4 sm:p-6">
+            <Card className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <ListChecks className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold">Instructions</h2>
               </div>
               <ol className="space-y-4">
-                {recipe.instructions.map((instruction, i) => (
+                {(isNewRecipe ? suggestedMeal?.instructions : recipe?.instructions)?.map((instruction, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <span className="font-medium text-primary/60 flex-shrink-0">
                       {i + 1}.
@@ -367,74 +497,40 @@ export default function RecipeDetail() {
             </Card>
           </div>
 
-          {/* Nutritional Info Card */}
-          <Card className="p-4 sm:p-6">
+          {/* Nutritional Info */}
+          <Card className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <Dumbbell className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold">Nutritional Value</h2>
+              <h2 className="text-lg font-semibold">Nutritional Information</h2>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="bg-primary/5 rounded-lg p-3">
-                <p className="text-sm text-gray-600">Calories</p>
-                <p className="text-lg font-semibold text-primary">
-                  {recipe.nutritional_value.calories}
-                </p>
+            <div className="grid grid-cols-4 gap-4">
+              <div className="text-center p-4 bg-primary/5 rounded-lg">
+                <div className="text-sm font-medium text-primary">Calories</div>
+                <div className="text-2xl font-bold">
+                  {isNewRecipe ? suggestedMeal?.nutritionalValue.calories : recipe?.nutritional_value.calories}
+                </div>
               </div>
-              <div className="bg-primary/5 rounded-lg p-3">
-                <p className="text-sm text-gray-600">Protein</p>
-                <p className="text-lg font-semibold text-primary">
-                  {recipe.nutritional_value.protein}g
-                </p>
+              <div className="text-center p-4 bg-primary/5 rounded-lg">
+                <div className="text-sm font-medium text-primary">Protein</div>
+                <div className="text-2xl font-bold">
+                  {isNewRecipe ? suggestedMeal?.nutritionalValue.protein : recipe?.nutritional_value.protein}g
+                </div>
               </div>
-              <div className="bg-primary/5 rounded-lg p-3">
-                <p className="text-sm text-gray-600">Carbs</p>
-                <p className="text-lg font-semibold text-primary">
-                  {recipe.nutritional_value.carbs}g
-                </p>
+              <div className="text-center p-4 bg-primary/5 rounded-lg">
+                <div className="text-sm font-medium text-primary">Carbs</div>
+                <div className="text-2xl font-bold">
+                  {isNewRecipe ? suggestedMeal?.nutritionalValue.carbs : recipe?.nutritional_value.carbs}g
+                </div>
               </div>
-              <div className="bg-primary/5 rounded-lg p-3">
-                <p className="text-sm text-gray-600">Fat</p>
-                <p className="text-lg font-semibold text-primary">
-                  {recipe.nutritional_value.fat}g
-                </p>
+              <div className="text-center p-4 bg-primary/5 rounded-lg">
+                <div className="text-sm font-medium text-primary">Fat</div>
+                <div className="text-2xl font-bold">
+                  {isNewRecipe ? suggestedMeal?.nutritionalValue.fat : recipe?.nutritional_value.fat}g
+                </div>
               </div>
             </div>
           </Card>
         </div>
-
-        {/* Preview Dialog */}
-        <Dialog open={showPreview} onOpenChange={setShowPreview}>
-          <DialogContent className="max-w-3xl">
-            <DialogHeader>
-              <DialogTitle>Download Preview</DialogTitle>
-              <DialogDescription>
-                Preview your recipe before downloading
-              </DialogDescription>
-            </DialogHeader>
-            <div className="relative">
-              {previewImage && (
-                <img 
-                  src={previewImage} 
-                  alt="Recipe preview" 
-                  className="w-full h-auto rounded-lg"
-                />
-              )}
-            </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setShowPreview(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleDownload}
-              >
-                Download
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
         {/* Delete Confirmation Dialog */}
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -464,10 +560,54 @@ export default function RecipeDetail() {
           </DialogContent>
         </Dialog>
 
+        {/* Preview Dialog */}
+        <Dialog open={showPreview} onOpenChange={setShowPreview}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Recipe Preview</DialogTitle>
+            </DialogHeader>
+            {previewImage && (
+              <div className="space-y-4">
+                <img
+                  src={previewImage}
+                  alt="Recipe preview"
+                  className="w-full rounded-lg"
+                />
+                <div className="flex justify-end gap-2 sticky bottom-0 bg-white p-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowPreview(false);
+                      setPreviewImage(""); // Clear the preview image
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      const link = document.createElement('a');
+                      link.href = previewImage;
+                      link.download = `${recipe?.meal_name || 'recipe'}.png`;
+                      link.click();
+                      setShowPreview(false);
+                      setPreviewImage(""); // Clear the preview image
+                    }}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* Login Dialog */}
         <LoginDialog
           open={loginDialogOpen}
-          onOpenChange={setLoginDialogOpen}
+          onOpenChange={handleLoginDialogChange}
+          redirectPath={location.pathname}
+          state={location.state}
         />
       </div>
     </BaseLayout>

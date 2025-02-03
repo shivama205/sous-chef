@@ -22,6 +22,8 @@ import About from "./pages/compliance/About";
 import RecipeDetail from "@/pages/ReciperFinder/RecipeDetail";
 import SharedRecipe from "./pages/ReciperFinder/SharedRecipe";
 import { PaymentStatus } from "./pages/payment/status";
+import { MealSuggestions } from "@/pages/MealSuggestions";
+import AuthCallback from "./pages/auth/callback";
 
 const queryClient = new QueryClient();
 
@@ -38,7 +40,9 @@ const App = () => (
             <Route path="/meal-plan" element={<MealPlan />} />
             <Route path="/meal-plan/:id" element={<MealPlanDetails />} />
             <Route path="/shared/meal-plan/:id" element={<SharedMealPlan />} />
+            <Route path="/meal-suggestions" element={<MealSuggestions />} />
             <Route path="/recipe-finder" element={<RecipeFinder />} />
+            <Route path="/recipe/new" element={<RecipeDetail />} />
             <Route path="/recipe/:id" element={<RecipeDetail />} />
             <Route path="/shared/recipe/:id" element={<SharedRecipe />} />
             <Route path="/healthy-alternative" element={<HealthyAlternative />} />
@@ -51,6 +55,7 @@ const App = () => (
             <Route path="/terms" element={<Terms />} />
             <Route path="/about" element={<About />} />
             <Route path="/payment/status" element={<PaymentStatus />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

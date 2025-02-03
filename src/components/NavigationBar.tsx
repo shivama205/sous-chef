@@ -10,10 +10,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
-import { Leaf, ChefHat, Apple, Sparkles, Menu, X, Utensils } from "lucide-react";
+import { Leaf, ChefHat, Apple, Sparkles, Menu, X, Utensils, Brain, Coffee, User as UserIcon, CreditCard, LogOut } from "lucide-react";
 import GoogleSignInButton from "./GoogleSignInButton";
 
 const NavigationBar = () => {
@@ -41,13 +45,18 @@ const NavigationBar = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const menuItems = [
-    { path: "/meal-plan", label: "Create Plan", icon: <ChefHat className="w-4 h-4" /> },
-    { path: "/recipe-finder", label: "Recipe Finder", icon: <Utensils className="w-4 h-4" /> },
-    { path: "/healthy-alternative", label: "Healthy Alternative", icon: <Apple className="w-4 h-4" /> },
-    { path: "/blog", label: "Blog", icon: <Leaf className="w-4 h-4" /> },
-    { path: "/pricing", label: "Pricing", icon: <Sparkles className="w-4 h-4" /> },
-  ];
+  const menuItems = {
+    features: [
+      { path: "/meal-plan", label: "Meal Plan", icon: <ChefHat className="w-4 h-4" />, description: "Plan your meals for the week" },
+      { path: "/meal-suggestions", label: "Quick Meal Ideas", icon: <Brain className="w-4 h-4" />, description: "Instant meal suggestions when you're stuck" },
+      { path: "/recipe-finder", label: "Find Recipes", icon: <Utensils className="w-4 h-4" />, description: "Search our recipe collection" },
+      { path: "/healthy-alternative", label: "Healthy Swaps", icon: <Apple className="w-4 h-4" />, description: "Find healthier alternatives" },
+    ],
+    more: [
+      { path: "/blog", label: "Blog", icon: <Leaf className="w-4 h-4" /> },
+      { path: "/pricing", label: "Pricing", icon: <Sparkles className="w-4 h-4" /> },
+    ]
+  };
 
   return (
     <nav className="sticky top-0 bg-white/80 backdrop-blur-sm border-b border-gray-200/50 z-50">
@@ -60,27 +69,62 @@ const NavigationBar = () => {
             </span>
           </Link>
           
-          <div className="hidden md:flex items-center space-x-6">
-            {menuItems.map((item) => (
-              <Link
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center space-x-2">
+            {/* Features Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="flex items-center gap-2 group hover:bg-primary/5"
+                >
+                  <ChefHat className="w-4 h-4 group-hover:text-primary transition-colors" />
+                  <span className="group-hover:text-primary transition-colors">Features</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-[400px] p-4">
+                <div className="grid grid-cols-2 gap-4">
+                  {menuItems.features.map((item) => (
+                    <Link 
+                      key={item.path}
+                      to={item.path}
+                      className={`
+                        flex flex-col gap-2 p-3 rounded-lg transition-all duration-200
+                        ${isActive(item.path) ? "bg-primary/5" : "hover:bg-primary/5"}
+                      `}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-md bg-primary/10">
+                          {item.icon}
+                        </div>
+                        <span className="font-medium">{item.label}</span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">{item.description}</span>
+                    </Link>
+                  ))}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {menuItems.more.map((item) => (
+              <Button
                 key={item.path}
-                to={item.path}
-                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-gray-50 ${
-                  isActive(item.path) 
-                    ? "text-primary bg-primary/5" 
-                    : "text-gray-600"
-                }`}
+                variant="ghost"
+                asChild
+                className={`group hover:bg-primary/5 ${isActive(item.path) ? "bg-primary/5" : ""}`}
               >
-                {item.icon}
-                {item.label}
-              </Link>
+                <Link to={item.path} className="flex items-center gap-2">
+                  <span className="group-hover:text-primary transition-colors">{item.icon}</span>
+                  <span className="group-hover:text-primary transition-colors">{item.label}</span>
+                </Link>
+              </Button>
             ))}
             
             <div className="pl-2">
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full ring-2 ring-primary/10 hover:ring-primary/20">
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name} />
                         <AvatarFallback>{user.user_metadata.full_name?.charAt(0)}</AvatarFallback>
@@ -88,24 +132,41 @@ const NavigationBar = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
+                    <div className="flex items-center gap-2 p-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name} />
+                        <AvatarFallback>{user.user_metadata.full_name?.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
                         <p className="text-sm font-medium leading-none">{user.user_metadata.full_name}</p>
-                        <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                        <p className="text-xs text-muted-foreground">{user.email}</p>
                       </div>
-                    </DropdownMenuLabel>
+                    </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link to="/profile" className="w-full cursor-pointer">Profile</Link>
+                      <Link to="/profile" className="flex items-center gap-2 w-full cursor-pointer">
+                        <div className="p-1 rounded bg-primary/10">
+                          <UserIcon className="w-4 h-4" />
+                        </div>
+                        Profile
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/billing" className="w-full cursor-pointer">Billing</Link>
+                      <Link to="/billing" className="flex items-center gap-2 w-full cursor-pointer">
+                        <div className="p-1 rounded bg-primary/10">
+                          <CreditCard className="w-4 h-4" />
+                        </div>
+                        Billing
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
                       onClick={handleLogout}
                       className="text-red-600 focus:text-red-600 cursor-pointer"
                     >
+                      <div className="p-1 rounded bg-red-100">
+                        <LogOut className="w-4 h-4" />
+                      </div>
                       Log out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -118,10 +179,11 @@ const NavigationBar = () => {
             </div>
           </div>
 
+          {/* Mobile Menu Button */}
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="lg:hidden hover:bg-primary/5"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
@@ -132,72 +194,58 @@ const NavigationBar = () => {
           </Button>
         </div>
 
+        {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="md:hidden py-4 space-y-2"
+            className="lg:hidden py-4 space-y-4 max-h-[calc(100vh-4rem)] overflow-y-auto"
           >
-            {menuItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center gap-3 px-2 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                  isActive(item.path) 
-                    ? "text-primary bg-primary/5" 
-                    : "text-gray-600 hover:bg-gray-50"
-                }`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {item.icon}
-                {item.label}
-              </Link>
-            ))}
-            {user ? (
-              <div className="pt-4 mt-4 border-t border-gray-100">
-                <div className="flex items-center space-x-3 px-2 mb-4">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name} />
-                    <AvatarFallback>{user.user_metadata.full_name?.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col">
-                    <p className="text-sm font-medium">{user.user_metadata.full_name}</p>
-                    <p className="text-xs text-muted-foreground">{user.email}</p>
+            <div className="space-y-2">
+              <div className="px-2 py-1 text-sm font-semibold text-muted-foreground">Features</div>
+              {menuItems.features.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`flex flex-col gap-2 px-3 py-3 rounded-lg transition-all duration-200 ${
+                    isActive(item.path) 
+                      ? "bg-primary/5" 
+                      : "hover:bg-primary/5"
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-md bg-primary/10">
+                      {item.icon}
+                    </div>
+                    <span className="font-medium">{item.label}</span>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Link
-                    to="/profile"
-                    className="flex items-center gap-3 px-2 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-50"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Profile
-                  </Link>
-                  <Link
-                    to="/billing"
-                    className="flex items-center gap-3 px-2 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-50"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Billing
-                  </Link>
-                  <Button 
-                    onClick={() => {
-                      handleLogout();
-                      setIsMobileMenuOpen(false);
-                    }} 
-                    variant="ghost" 
-                    className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50 px-2"
-                  >
-                    Log out
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="pt-4 mt-4 border-t border-gray-100 px-2">
-                <GoogleSignInButton />
-              </div>
-            )}
+                  <span className="text-sm text-muted-foreground">{item.description}</span>
+                </Link>
+              ))}
+            </div>
+
+            <div className="space-y-2">
+              <div className="px-2 py-1 text-sm font-semibold text-muted-foreground">More</div>
+              {menuItems.more.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+                    isActive(item.path) 
+                      ? "bg-primary/5" 
+                      : "hover:bg-primary/5"
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <div className="p-2 rounded-md bg-primary/10">
+                    {item.icon}
+                  </div>
+                  <span>{item.label}</span>
+                </Link>
+              ))}
+            </div>
           </motion.div>
         )}
       </div>

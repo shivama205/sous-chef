@@ -4,16 +4,29 @@ import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "./ui/use-toast";
 
-const GoogleSignInButton = () => {
+interface GoogleSignInButtonProps {
+  redirectPath?: string;
+  state?: any;
+}
+
+const GoogleSignInButton = ({ redirectPath, state }: GoogleSignInButtonProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleSignIn = async () => {
     try {
+      // Store redirect info in sessionStorage
+      if (redirectPath) {
+        sessionStorage.setItem('redirectPath', redirectPath);
+      }
+      if (state) {
+        sessionStorage.setItem('redirectState', JSON.stringify(state));
+      }
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin
+          redirectTo: `${window.location.origin}/auth/callback`,
         }
       });
 

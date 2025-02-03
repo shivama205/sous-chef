@@ -26,6 +26,7 @@ export default function SharedRecipe() {
 
   useEffect(() => {
     const fetchSharedRecipe = async () => {
+      console.log("Fetching shared recipe with ID:", id);
       if (!id) {
         console.error("No share ID provided");
         toast({
@@ -43,7 +44,9 @@ export default function SharedRecipe() {
           .from("shared_recipes")
           .select("*")
           .eq("id", id)
-          .single();
+          .maybeSingle();
+
+        console.log("Shared data:", sharedData);
 
         if (sharedError) {
           console.error("Supabase error:", sharedError);
@@ -83,22 +86,12 @@ export default function SharedRecipe() {
           return;
         }
 
-        // Increment the view count
-        const { error: updateError } = await supabase
-          .from("shared_recipes")
-          .update({ views: (sharedData.views || 0) + 1 })
-          .eq("id", sharedData.id);
-
-        if (updateError) {
-          console.error("Error updating view count:", updateError);
-        }
-
         // Then fetch the actual recipe using recipe_id
         const { data: recipeData, error: recipeError } = await supabase
           .from("saved_recipes")
           .select("*")
-          .eq("recipe_id", sharedData.recipe_id)
-          .single();
+          .eq("id", sharedData.recipe_id)
+          .maybeSingle();
 
         if (recipeError) {
           console.error("Error fetching recipe:", recipeError);
@@ -125,6 +118,17 @@ export default function SharedRecipe() {
           nutritional_value: recipeData.nutritional_value,
           created_at: recipeData.created_at,
         });
+
+        // Increment the view count in the background
+        // Don't wait for it or handle errors since it's not critical
+        supabase
+          .from("shared_recipes")
+          .update({ views: (sharedData.views || 0) + 1 })
+          .eq("id", sharedData.id)
+          .then(() => {
+            console.log("View count updated");
+          })
+
       } catch (error) {
         console.error("Error fetching shared recipe:", error);
         toast({

@@ -11,9 +11,11 @@ import GoogleSignInButton from "./GoogleSignInButton";
 interface LoginDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  redirectPath?: string;
+  state?: any;
 }
 
-export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
+export const LoginDialog = ({ open, onOpenChange, redirectPath, state }: LoginDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] gap-6">
@@ -26,7 +28,10 @@ export const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4">
-          <GoogleSignInButton />
+          <GoogleSignInButton 
+            redirectPath={redirectPath}
+            state={state}
+          />
           <Button 
             variant="outline" 
             onClick={() => onOpenChange(false)}
