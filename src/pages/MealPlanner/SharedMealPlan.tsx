@@ -145,25 +145,9 @@ export function SharedMealPlan() {
         image={previewImageUrl || "https://sous-chef.in/og-image.jpg"}
         type="article"
         keywords={["meal plan", "healthy eating", "nutrition plan", "personalized diet", "AI meal planning"]}
+        url={`https://sous-chef.in/shared/meal-plan/${id}`}
+        structuredData={seoData.structuredData}
       />
-      <Helmet>
-        <title>{seoData.title}</title>
-        <meta name="description" content={seoData.description} />
-        <meta property="og:title" content={seoData.title} />
-        <meta property="og:description" content={seoData.description} />
-        <meta property="og:type" content="article" />
-        <meta property="og:url" content={`https://sous-chef.in/shared/meal-plan/${id}`} />
-        <meta property="og:image" content={previewImageUrl || "https://sous-chef.in/og-image.jpg"} />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={seoData.title} />
-        <meta name="twitter:description" content={seoData.description} />
-        <meta name="twitter:image" content={previewImageUrl || "https://sous-chef.in/og-image.jpg"} />
-        <script type="application/ld+json">
-          {JSON.stringify(seoData.structuredData)}
-        </script>
-      </Helmet>
       <main className="container mx-auto px-4 py-8">
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-6">
