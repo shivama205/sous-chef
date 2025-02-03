@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/providers/AuthProvider";
+import { SEO } from "@/components/SEO";
 import Index from "./pages/Index";
 import { MealPlan } from "./pages/MealPlanner/MealPlan";
 import HealthyAlternative from "./pages/HealthyAlternatives/HealthyAlternative";
@@ -30,6 +31,12 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
+        <SEO 
+          title="AI-Powered Kitchen Assistant"
+          description="SousChef is your personal AI kitchen assistant. Get personalized meal plans, find recipes, discover healthy alternatives, and make cooking easier with AI-powered suggestions."
+          keywords="meal planning, recipe finder, healthy cooking, AI kitchen assistant, meal suggestions, cooking tips"
+          type="website"
+        />
         <Toaster />
         <Sonner />
         <BrowserRouter>
