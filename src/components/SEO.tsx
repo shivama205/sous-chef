@@ -21,21 +21,21 @@ interface SEOProps {
 
 const BASE_URL = 'https://sous-chef.in';
 
-const DEFAULT_TITLE = 'SousChef - Your AI Cooking Companion';
-const DEFAULT_DESCRIPTION = 'Get instant meal ideas based on your mood, discover recipes, find healthy alternatives, and plan your meals with AI assistance.';
+const DEFAULT_TITLE = 'SousChef - Your AI Kitchen Assistant';
+const DEFAULT_DESCRIPTION = 'Your AI-powered kitchen companion. Get personalized meal suggestions, discover recipes, find healthy alternatives, and make cooking smarter and more enjoyable.';
 const DEFAULT_KEYWORDS = [
   'AI cooking assistant',
   'meal suggestions',
   'recipe finder',
   'healthy alternatives',
-  'meal planning',
-  'cooking ideas',
+  'smart cooking',
   'personalized recipes',
-  'mood-based meals',
-  'smart kitchen assistant',
-  'healthy cooking',
-  'dietary recommendations',
-  'nutrition assistant'
+  'kitchen AI',
+  'cooking ideas',
+  'recipe discovery',
+  'cooking companion',
+  'AI kitchen assistant',
+  'cooking recommendations'
 ];
 
 // Organization data for JSON-LD
@@ -51,7 +51,7 @@ const ORGANIZATION_DATA = {
     "width": 512,
     "height": 512
   },
-  "description": "Your AI cooking companion for personalized meal ideas, recipe discovery, and healthier eating habits.",
+  "description": "Your AI-powered kitchen companion for smarter, more enjoyable cooking.",
   "sameAs": [
     "https://twitter.com/souschef",
     "https://facebook.com/souschef",
@@ -77,19 +77,73 @@ const generateWebPage = (props: SEOProps & { absoluteUrl: string }) => ({
 });
 
 export function SEO({
-  title = 'SousChef - Your AI Cooking Companion',
-  description = 'Get instant meal ideas based on your mood and energy level',
-  image = '/og-image.png'
+  title = DEFAULT_TITLE,
+  description = DEFAULT_DESCRIPTION,
+  keywords = DEFAULT_KEYWORDS,
+  image = '/og-image.png',
+  url = BASE_URL,
+  type = 'website'
 }: SEOProps) {
-  const imageUrl = `https://sous-chef.in${image}`;
+  const imageUrl = `${BASE_URL}${image}`;
+  const canonicalUrl = url || BASE_URL;
 
   return (
     <Helmet>
       <title>{title}</title>
+      <meta name="description" content={description} />
+      <meta name="keywords" content={keywords.join(', ')} />
+      <meta name="author" content="SousChef" />
+      
+      {/* Open Graph / Facebook */}
+      <meta property="og:type" content={type} />
+      <meta property="og:url" content={canonicalUrl} />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={imageUrl} />
-      <meta property="og:type" content="website" />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:site_name" content="SousChef" />
+      <meta property="og:locale" content="en_US" />
+      
+      {/* Facebook Specific */}
+      <meta property="fb:app_id" content="your-fb-app-id" />
+      
+      {/* Twitter Card */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:site" content="@souschef" />
+      <meta name="twitter:creator" content="@souschef" />
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={imageUrl} />
+      <meta name="twitter:image:alt" content={`${title} Interface`} />
+      <meta name="twitter:domain" content="sous-chef.in" />
+
+      {/* LinkedIn */}
+      <meta property="linkedin:card" content="summary_large_image" />
+      <meta property="linkedin:title" content={title} />
+      <meta property="linkedin:description" content={description} />
+      <meta property="linkedin:image" content={imageUrl} />
+      
+      {/* Pinterest */}
+      <meta name="pinterest-rich-pin" content="true" />
+      <meta name="pinterest:description" content={description} />
+      <meta name="pinterest:image" content={imageUrl} />
+      <meta name="pinterest:domain_verify" content="your-pinterest-verify-code" />
+      
+      {/* WhatsApp */}
+      <meta property="og:image:secure_url" content={imageUrl} />
+      <meta property="og:video:type" content="text/html" />
+      
+      {/* Structured Data */}
+      <script type="application/ld+json">
+        {JSON.stringify(ORGANIZATION_DATA)}
+      </script>
+      <script type="application/ld+json">
+        {JSON.stringify(generateWebPage({ title, description, absoluteUrl: canonicalUrl }))}
+      </script>
+
+      {/* Canonical */}
+      <link rel="canonical" href={canonicalUrl} />
     </Helmet>
   );
 }
