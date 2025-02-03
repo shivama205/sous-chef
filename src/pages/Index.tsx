@@ -219,92 +219,95 @@ const LoggedOutView = () => {
               className="relative"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-3xl blur-3xl" />
-              <div className="relative bg-white/50 backdrop-blur-sm border border-primary/10 rounded-3xl p-6">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-                    <Brain className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Instant Meal Ideas</h3>
-                    <p className="text-sm text-muted-foreground">Based on your mood and energy</p>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  {/* Cook at Home Section */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-sm font-medium text-primary">Recommended: Cook at Home</span>
-                      <div className="h-px flex-1 bg-primary/10" />
+              <Link to="/meal-suggestions" className="block">
+                <div className="relative bg-white/50 backdrop-blur-sm border border-primary/10 rounded-3xl p-6 group hover:shadow-lg hover:border-primary/30 transition-all duration-300">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Brain className="w-6 h-6 text-primary" />
                     </div>
-                    <div className="space-y-3">
-                      <div className="bg-gradient-to-r from-primary/5 to-green-500/5 rounded-xl p-3 border border-primary/10 relative overflow-hidden">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-lg">🍗</span>
-                          <div>
-                            <p className="font-medium text-sm">Lemon Herb Chicken</p>
-                            <p className="text-xs text-muted-foreground">Ready in 30 mins</p>
+                    <div>
+                      <h3 className="font-semibold group-hover:text-primary transition-colors">Instant Meal Ideas</h3>
+                      <p className="text-sm text-muted-foreground">Based on your mood and energy</p>
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-primary ml-auto opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                  </div>
+
+                  <div className="space-y-6">
+                    {/* Cook at Home Section */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-sm font-medium text-primary">Recommended: Cook at Home</span>
+                        <div className="h-px flex-1 bg-primary/10" />
+                      </div>
+                      <div className="space-y-3">
+                        <div className="bg-gradient-to-r from-primary/5 to-green-500/5 rounded-xl p-3 border border-primary/10 relative overflow-hidden group-hover:border-primary/30 transition-all">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-lg">🍗</span>
+                            <div>
+                              <p className="font-medium text-sm">Lemon Herb Chicken</p>
+                              <p className="text-xs text-muted-foreground">Ready in 30 mins</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-gradient-to-r from-primary/5 to-green-500/5 rounded-xl p-3 border border-primary/10 group-hover:border-primary/30 transition-all">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-lg">🐟</span>
+                            <div>
+                              <p className="font-medium text-sm">Baked Salmon Bowl</p>
+                              <p className="text-xs text-muted-foreground">Ready in 25 mins</p>
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <div className="bg-gradient-to-r from-primary/5 to-green-500/5 rounded-xl p-3 border border-primary/10">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-lg">🐟</span>
-                          <div>
-                            <p className="font-medium text-sm">Baked Salmon Bowl</p>
-                            <p className="text-xs text-muted-foreground">Ready in 25 mins</p>
+                    </div>
+                    {/* Eat Out Section */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-sm font-medium text-primary/80">Eat Out Options</span>
+                        <div className="h-px flex-1 bg-primary/10" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-white/80 rounded-xl p-3 border border-primary/5">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-lg">🍜</span>
+                            <p className="font-medium text-sm">Ramen Bowl</p>
+                          </div>
+                        </div>
+                        <div className="bg-white/80 rounded-xl p-3 border border-primary/5">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-lg">🥗</span>
+                            <p className="font-medium text-sm">Poke Bowl</p>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  {/* Eat Out Section */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-sm font-medium text-primary/80">Eat Out Options</span>
-                      <div className="h-px flex-1 bg-primary/10" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-white/80 rounded-xl p-3 border border-primary/5">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-lg">🍜</span>
-                          <p className="font-medium text-sm">Ramen Bowl</p>
-                        </div>
-                      </div>
-                      <div className="bg-white/80 rounded-xl p-3 border border-primary/5">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-lg">🥗</span>
-                          <p className="font-medium text-sm">Poke Bowl</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Order In Section */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-sm font-medium text-primary/80">Order In Options</span>
-                      <div className="h-px flex-1 bg-primary/10" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-white/80 rounded-xl p-3 border border-primary/5">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-lg">🍛</span>
-                          <p className="font-medium text-sm">Thai Curry</p>
+                    {/* Order In Section */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-sm font-medium text-primary/80">Order In Options</span>
+                        <div className="h-px flex-1 bg-primary/10" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-white/80 rounded-xl p-3 border border-primary/5">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-lg">🍛</span>
+                            <p className="font-medium text-sm">Thai Curry</p>
+                          </div>
+                        </div>
+                        <div className="bg-white/80 rounded-xl p-3 border border-primary/5">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-lg">🥘</span>
+                            <p className="font-medium text-sm">Burrito Bowl</p>
+                          </div>
                         </div>
                       </div>
-                      <div className="bg-white/80 rounded-xl p-3 border border-primary/5">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-lg">🥘</span>
-                          <p className="font-medium text-sm">Burrito Bowl</p>
-                        </div>
-                      </div>
                     </div>
-                  </div>
 
-                  
+                    
+                  </div>
                 </div>
-              </div>
+              </Link>
             </motion.div>
           </div>
         </div>
