@@ -82,20 +82,19 @@ export function SEO({
   image = '/og-image.png',
   url = BASE_URL
 }: SEOProps) {
-  const imageUrl = `${BASE_URL}${image}`;
-  const canonicalUrl = url;
+  const imageUrl = image.startsWith('http') ? image : `${BASE_URL}${image}`;
 
   return (
     <Helmet>
+      {/* Basic Meta Tags */}
       <title>{title}</title>
+      <meta name="description" content={description} />
+      
+      {/* Open Graph Meta Tags */}
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={imageUrl} />
-      <meta property="og:url" content={canonicalUrl} />
-      <meta property="og:type" content="website" />
-      
-      <meta name="description" content={description} />
-      <link rel="canonical" href={canonicalUrl} />
+      <meta property="og:url" content={url} />
     </Helmet>
   );
 }
