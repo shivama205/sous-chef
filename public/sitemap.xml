@@ -1,26 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://sous-chef.in/</loc>
-    <lastmod>2024-02-20</lastmod>
+    <loc>https://souschef.in/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://sous-chef.in/meal-plan</loc>
-    <lastmod>2024-02-20</lastmod>
-    <changefreq>weekly</changefreq>
+    <loc>https://souschef.in/meal-suggestions</loc>
+    <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://sous-chef.in/recipe-finder</loc>
-    <lastmod>2024-02-20</lastmod>
-    <changefreq>weekly</changefreq>
+    <loc>https://souschef.in/recipe-finder</loc>
+    <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://sous-chef.in/healthy-alternative</loc>
-    <lastmod>2024-02-20</lastmod>
+    <loc>https://souschef.in/healthy-alternative</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://souschef.in/meal-plan</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

@@ -1,7 +1,14 @@
 User-agent: *
 Allow: /
-Disallow: /billing
-Disallow: /profile
-Disallow: /shared/meal-plan/*
+Allow: /meal-suggestions
+Allow: /recipe-finder
+Allow: /healthy-alternative
+Allow: /meal-plan
 
-Sitemap: https://sous-chef.in/sitemap.xml 
+# Disallow private routes
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /profile
+
+# Sitemap location
+Sitemap: https://souschef.in/sitemap.xml 
