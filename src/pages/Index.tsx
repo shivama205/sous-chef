@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { Brain, ChefHat, ArrowRight, Sparkles, Clock, Star, Utensils, Apple, Heart, Users, Trophy } from "lucide-react";
 import { useAuth } from "@/providers/AuthProvider";
+import { SEO } from "@/components/SEO";
 
 const LoggedInView = () => {
   return (
@@ -495,6 +496,14 @@ export default function Index() {
 
   return (
     <BaseLayout>
+      <SEO 
+        title="SousChef - Your AI-Powered Kitchen Assistant"
+        description="Get instant, personalized meal ideas based on your energy level and cravings. Plan meals, find recipes, and discover healthy alternatives with your AI kitchen assistant."
+        keywords="meal planning, recipe finder, healthy cooking, AI kitchen assistant, meal suggestions, cooking tips, personalized meals"
+        type="website"
+        canonical="https://sous-chef.in"
+        image="/og-image.png"
+      />
       <main>
         {user ? <LoggedInView /> : <LoggedOutView />}
       </main>
