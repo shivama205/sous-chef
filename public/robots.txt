@@ -47,4 +47,4 @@ Allow: /sitemap.xml
 Sitemap: https://sous-chef.in/sitemap.xml
 
 # Crawl-delay for heavy crawlers
-Crawl-delay: 10 
+Crawl-delay: 10
