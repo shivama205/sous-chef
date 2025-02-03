@@ -12,7 +12,6 @@ interface SEOProps {
   image?: string;
   squareImage?: string;
   url?: string;
-  baseUrl?: string;
   type?: string;
   structuredData?: Record<string, any>;
   noindex?: boolean;
@@ -20,15 +19,35 @@ interface SEOProps {
   breadcrumbs?: BreadcrumbItem[];
 }
 
+const BASE_URL = 'https://sous-chef.in';
+
+const DEFAULT_TITLE = 'SousChef - Your AI Cooking Companion';
+const DEFAULT_DESCRIPTION = 'Get instant meal ideas based on your mood, discover recipes, find healthy alternatives, and plan your meals with AI assistance. Your personal sous chef for smarter, healthier cooking.';
+const DEFAULT_KEYWORDS = [
+  'AI cooking assistant',
+  'meal suggestions',
+  'recipe finder',
+  'healthy alternatives',
+  'meal planning',
+  'cooking ideas',
+  'personalized recipes',
+  'mood-based meals',
+  'smart kitchen assistant',
+  'healthy cooking',
+  'dietary recommendations',
+  'nutrition assistant'
+];
+
 // Organization data for JSON-LD
 const ORGANIZATION_DATA = {
+  "@context": "https://schema.org",
   "@type": "Organization",
-  "@id": "https://sous-chef.in/#organization",
+  "@id": `${BASE_URL}/#organization`,
   "name": "SousChef",
-  "url": "https://sous-chef.in",
+  "url": BASE_URL,
   "logo": {
     "@type": "ImageObject",
-    "url": "https://sous-chef.in/logo-1.jpeg",
+    "url": `${BASE_URL}/logo-1.jpeg`,
     "width": 512,
     "height": 512
   },
@@ -40,75 +59,30 @@ const ORGANIZATION_DATA = {
   ]
 };
 
-// Default website data for JSON-LD
-const WEBSITE_DATA = {
-  "@type": "WebSite",
-  "@id": "https://sous-chef.in/#website",
-  "url": "https://sous-chef.in",
-  "name": "SousChef - Your AI Cooking Companion",
-  "description": "Get instant meal ideas based on your mood, discover recipes, find healthy alternatives, and plan your meals with AI assistance. Your personal sous chef for smarter, healthier cooking.",
-  "publisher": {
-    "@id": "https://sous-chef.in/#organization"
-  },
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": {
-      "@type": "EntryPoint",
-      "urlTemplate": "https://sous-chef.in/recipe-finder?q={search_term_string}"
-    },
-    "query-input": "required name=search_term_string"
-  }
-};
-
-// Generate breadcrumb list JSON-LD
-const generateBreadcrumbList = (breadcrumbs: BreadcrumbItem[]) => ({
-  "@type": "BreadcrumbList",
-  "@id": "https://sous-chef.in/#breadcrumb",
-  "itemListElement": breadcrumbs.map((item, index) => ({
-    "@type": "ListItem",
-    "position": index + 1,
-    "name": item.name,
-    "item": item.item.startsWith('http') ? item.item : `https://sous-chef.in${item.item}`
-  }))
-});
-
 // Generate WebPage JSON-LD
-const generateWebPage = (props: SEOProps) => ({
+const generateWebPage = (props: SEOProps & { absoluteUrl: string }) => ({
+  "@context": "https://schema.org",
   "@type": "WebPage",
-  "@id": `${props.url}#webpage`,
-  "url": props.url,
+  "@id": `${props.absoluteUrl}#webpage`,
+  "url": props.absoluteUrl,
   "name": props.title,
   "description": props.description,
   "isPartOf": {
-    "@id": "https://sous-chef.in/#website"
+    "@id": `${BASE_URL}/#website`
   },
-  "breadcrumb": {
-    "@id": "https://sous-chef.in/#breadcrumb"
-  },
-  "inLanguage": "en-US"
+  "inLanguage": "en-US",
+  "publisher": {
+    "@id": `${BASE_URL}/#organization`
+  }
 });
 
 export function SEO({
-  title = 'SousChef - Your AI Cooking Companion',
-  description = 'Get instant meal ideas based on your mood, discover recipes, find healthy alternatives, and plan your meals with AI assistance. Your personal sous chef for smarter, healthier cooking.',
-  keywords = [
-    'AI cooking assistant',
-    'meal suggestions',
-    'recipe finder',
-    'healthy alternatives',
-    'meal planning',
-    'cooking ideas',
-    'personalized recipes',
-    'mood-based meals',
-    'smart kitchen assistant',
-    'healthy cooking',
-    'dietary recommendations',
-    'nutrition assistant'
-  ],
+  title = DEFAULT_TITLE,
+  description = DEFAULT_DESCRIPTION,
+  keywords = DEFAULT_KEYWORDS,
   image = '/og-image.png',
   squareImage = '/og-image-square.png',
   url = '/',
-  baseUrl = 'https://sous-chef.in',
   type = 'website',
   structuredData,
   noindex = false,
@@ -116,76 +90,20 @@ export function SEO({
   breadcrumbs = []
 }: SEOProps) {
   const siteTitle = title.includes('SousChef') ? title : `${title} | SousChef`;
-  
-  // More consistent URL handling
-  const getAbsoluteUrl = (path: string) => {
-    if (path.startsWith('http')) return path;
-    return `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`;
-  };
+  const absoluteUrl = url.startsWith('http') ? url : `${BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
+  const absoluteImageUrl = image.startsWith('http') ? image : `${BASE_URL}${image.startsWith('/') ? image : `/${image}`}`;
+  const absoluteSquareImageUrl = squareImage.startsWith('http') ? squareImage : `${BASE_URL}${squareImage.startsWith('/') ? squareImage : `/${squareImage}`}`;
 
-  const absoluteImageUrl = getAbsoluteUrl(image);
-  const absoluteSquareImageUrl = getAbsoluteUrl(squareImage);
-  const canonicalUrl = getAbsoluteUrl(url);
-
-  // Update organization data to use baseUrl
-  const organizationData = {
-    ...ORGANIZATION_DATA,
-    "@id": `${baseUrl}/#organization`,
-    "url": baseUrl,
-    "logo": {
-      ...ORGANIZATION_DATA.logo,
-      "url": getAbsoluteUrl(ORGANIZATION_DATA.logo.url)
-    }
-  };
-
-  // Update website data to use baseUrl
-  const websiteData = {
-    ...WEBSITE_DATA,
-    "@id": `${baseUrl}/#website`,
-    "url": baseUrl,
-    "potentialAction": {
-      ...WEBSITE_DATA.potentialAction,
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": `${baseUrl}/recipe-finder?q={search_term_string}`
-      }
-    }
-  };
-
-  // Update breadcrumb generation to use baseUrl
-  const generateBreadcrumbListWithBase = (items: BreadcrumbItem[]) => ({
-    "@type": "BreadcrumbList",
-    "@id": `${baseUrl}/#breadcrumb`,
-    "itemListElement": items.map((item, index) => ({
-      "@type": "ListItem",
-      "position": index + 1,
-      "name": item.name,
-      "item": getAbsoluteUrl(item.item)
-    }))
+  // Prepare JSON-LD structured data
+  const pageStructuredData = generateWebPage({
+    title: siteTitle,
+    description,
+    absoluteUrl
   });
 
-  // Update webpage generation to use baseUrl
-  const generateWebPageWithBase = (props: SEOProps) => ({
-    "@type": "WebPage",
-    "@id": `${getAbsoluteUrl(props.url || '')}#webpage`,
-    "url": getAbsoluteUrl(props.url || ''),
-    "name": props.title,
-    "description": props.description,
-    "isPartOf": {
-      "@id": `${baseUrl}/#website`
-    },
-    "breadcrumb": {
-      "@id": `${baseUrl}/#breadcrumb`
-    },
-    "inLanguage": "en-US"
-  });
-
-  // Prepare JSON-LD structured data with updated functions
   const jsonLd = [
-    organizationData,
-    websiteData,
-    generateWebPageWithBase({ title: siteTitle, description, url: canonicalUrl }),
-    ...(breadcrumbs.length > 0 ? [generateBreadcrumbListWithBase(breadcrumbs)] : []),
+    ORGANIZATION_DATA,
+    pageStructuredData,
     ...(structuredData ? [structuredData] : [])
   ];
 
@@ -195,62 +113,61 @@ export function SEO({
       <title>{siteTitle}</title>
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords.join(', ')} />
+      <link rel="canonical" href={absoluteUrl} />
       
-      {/* Primary Open Graph Meta Tags */}
+      {/* Open Graph Meta Tags */}
+      <meta property="og:site_name" content="SousChef" />
       <meta property="og:title" content={siteTitle} />
       <meta property="og:description" content={description} />
-      <meta property="og:url" content={canonicalUrl} />
       <meta property="og:type" content={type} />
-      <meta property="og:site_name" content="SousChef" />
+      <meta property="og:url" content={absoluteUrl} />
       
-      {/* Regular OG Image (16:9) */}
+      {/* Primary Image (16:9) */}
       <meta property="og:image" content={absoluteImageUrl} />
       <meta property="og:image:secure_url" content={absoluteImageUrl} />
-      <meta property="og:image:type" content="image/png" />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
+      <meta property="og:image:type" content="image/png" />
       <meta property="og:image:alt" content={`${siteTitle} - Preview Image`} />
-      
-      {/* Square OG Image (1:1) for WhatsApp and other platforms */}
+
+      {/* Square Image (1:1) for WhatsApp */}
       <meta property="og:image" content={absoluteSquareImageUrl} />
       <meta property="og:image:secure_url" content={absoluteSquareImageUrl} />
-      <meta property="og:image:type" content="image/png" />
       <meta property="og:image:width" content="400" />
       <meta property="og:image:height" content="400" />
+      <meta property="og:image:type" content="image/png" />
       <meta property="og:image:alt" content={`${siteTitle} - Preview Image (Square)`} />
-      
-      {/* Enhanced Twitter Card Meta Tags */}
+
+      {/* Twitter Card Meta Tags */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:site" content="@souschef" />
       <meta name="twitter:creator" content="@souschef" />
       <meta name="twitter:title" content={siteTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={absoluteImageUrl} />
-      <meta name="twitter:image:src" content={absoluteImageUrl} />
       <meta name="twitter:image:alt" content={`${siteTitle} - Preview Image`} />
-      <meta name="twitter:domain" content={baseUrl.replace('https://', '')} />
-      
-      {/* Additional SEO Meta Tags */}
-      <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <link rel="canonical" href={canonicalUrl} />
+      <meta name="twitter:domain" content={BASE_URL.replace('https://', '')} />
 
+      {/* Robots Meta Tags */}
+      <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
+      
       {/* Alternate Language URLs */}
       {alternateUrls.map(({ lang, url: altUrl }) => (
         <link 
           key={lang}
           rel="alternate" 
           hrefLang={lang} 
-          href={getAbsoluteUrl(altUrl)}
+          href={altUrl.startsWith('http') ? altUrl : `${BASE_URL}${altUrl.startsWith('/') ? altUrl : `/${altUrl}`}`}
         />
       ))}
 
-      {/* Enhanced JSON-LD Structured Data */}
+      {/* Structured Data */}
       <script type="application/ld+json">
         {JSON.stringify(jsonLd)}
       </script>
 
       {/* PWA Meta Tags */}
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
       <meta name="application-name" content="SousChef" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="default" />
