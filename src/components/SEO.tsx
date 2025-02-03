@@ -77,27 +77,18 @@ const generateWebPage = (props: SEOProps & { absoluteUrl: string }) => ({
 });
 
 export function SEO({
-  title = DEFAULT_TITLE,
-  description = DEFAULT_DESCRIPTION,
-  image = '/og-image.png',
-  url = '/'
+  title = 'SousChef - Your AI Cooking Companion',
+  description = 'Get instant meal ideas based on your mood and energy level',
+  image = '/og-image.png'
 }: SEOProps) {
-  const siteTitle = title.includes('SousChef') ? title : `${title} | SousChef`;
-  const absoluteUrl = url.startsWith('http') ? url : `${BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
-  const absoluteImageUrl = image.startsWith('http') ? image : `${BASE_URL}${image.startsWith('/') ? image : `/${image}`}`;
+  const imageUrl = `https://sous-chef.in${image}`;
 
   return (
     <Helmet>
-      {/* Essential Meta Tags */}
-      <title>{siteTitle}</title>
-      <meta name="description" content={description} />
-      <link rel="canonical" href={absoluteUrl} />
-      
-      {/* Basic Open Graph Tags - These are the most important for WhatsApp */}
-      <meta property="og:title" content={siteTitle} />
+      <title>{title}</title>
+      <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
-      <meta property="og:image" content={absoluteImageUrl} />
-      <meta property="og:url" content={absoluteUrl} />
+      <meta property="og:image" content={imageUrl} />
       <meta property="og:type" content="website" />
     </Helmet>
   );
