@@ -52,28 +52,31 @@ export function MetaTags() {
   const config = metaConfigs[location.pathname] || metaConfigs['/'];
 
   useEffect(() => {
-    // Update meta tags
     document.title = config.title;
-    document.querySelector('meta[name="description"]')?.setAttribute('content', config.description);
-    document.querySelector('meta[name="keywords"]')?.setAttribute('content', config.keywords || '');
+    
+    const metaTags = {
+      'description': config.description,
+      'keywords': config.keywords || '',
+      'og:title': config.title,
+      'og:description': config.description,
+      'og:type': config.type || 'website',
+      'og:image': config.image || '/og-image.png',
+      'og:url': `https://sous-chef.in${location.pathname}`,
+      'twitter:title': config.title,
+      'twitter:description': config.description,
+      'twitter:image': config.image || '/og-image.png'
+    };
 
-    // Update Open Graph tags
-    document.querySelector('meta[property="og:title"]')?.setAttribute('content', config.title);
-    document.querySelector('meta[property="og:description"]')?.setAttribute('content', config.description);
-    document.querySelector('meta[property="og:type"]')?.setAttribute('content', config.type || 'website');
-    document.querySelector('meta[property="og:image"]')?.setAttribute('content', config.image || '/og-image.png');
-    document.querySelector('meta[property="og:url"]')?.setAttribute('content', `https://sous-chef.in${location.pathname}`);
-
-    // Update Twitter Card tags
-    document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', config.title);
-    document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', config.description);
-    document.querySelector('meta[name="twitter:image"]')?.setAttribute('content', config.image || '/og-image.png');
-
-    // Update canonical URL
-    const canonicalElement = document.querySelector('link[rel="canonical"]');
-    if (canonicalElement) {
-      canonicalElement.setAttribute('href', `https://sous-chef.in${location.pathname}`);
-    }
+    Object.entries(metaTags).forEach(([name, content]) => {
+      const selector = name.startsWith('og:') 
+        ? `meta[property="${name}"]`
+        : `meta[name="${name}"]`;
+      
+      const element = document.querySelector(selector);
+      if (element) {
+        element.setAttribute('content', content);
+      }
+    });
   }, [location.pathname, config]);
 
   return null;
