@@ -20,6 +20,7 @@ import { Recipe } from "@/types/recipeFinder";
 import { findRecipes, saveRecipe, getUserRecipes } from "@/services/recipeFinder";
 import { getUserMacros } from "@/services/userMacros";
 import { useNavigate } from "react-router-dom";
+import { SEO } from "@/components/SEO";
 
 const suggestionList = [
   "Ensure ingredients are spelled correctly",
@@ -264,6 +265,13 @@ export default function RecipeFinder() {
 
   return (
     <BaseLayout>
+      <SEO 
+        title="Recipe Finder"
+        description="Find the perfect recipe for any occasion. Search by ingredients, cuisine, or dietary requirements and discover delicious, healthy recipes."
+        keywords="recipe search, recipe finder, cooking recipes, meal recipes, ingredient search, cuisine finder, dietary recipes"
+        type="website"
+        canonical="https://sous-chef.in/recipe-finder"
+      />
       {user ? (
         <div className="container mx-auto px-4 py-8 space-y-12">
           <PageHeader

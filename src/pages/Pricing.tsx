@@ -6,6 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Check } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
+import { SEO } from "@/components/SEO";
 
 interface PricingPlan {
   id: string;
@@ -133,6 +134,13 @@ export function Pricing() {
 
   return (
     <BaseLayout>
+      <SEO 
+        title="Pricing Plans"
+        description="Explore SousChef's pricing plans and choose the perfect subscription for your meal planning needs. Start with our free plan or upgrade for premium features."
+        keywords="pricing plans, subscription plans, meal planning pricing, premium features, free plan"
+        type="website"
+        canonical="https://sous-chef.in/pricing"
+      />
       <div className="container mx-auto px-4 py-8 space-y-12">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto">

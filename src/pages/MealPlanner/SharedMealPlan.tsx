@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,6 +10,7 @@ import html2canvas from 'html2canvas';
 import MealPlanDownloadView from "@/components/MealPlanDownloadView";
 import { motion } from "framer-motion";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
+import { SEO } from "@/components/SEO";
 
 export function SharedMealPlan() {
   const { id } = useParams();
@@ -113,31 +113,34 @@ export function SharedMealPlan() {
     );
   }
 
-  const seoData = {
-    title: `${planName} - SousChef Meal Plan`,
-    description: "A personalized meal plan created with SousChef AI.",
-    structuredData: {
-      "@context": "https://schema.org",
-      "@type": "Recipe",
-      "name": planName,
-      "description": "A personalized meal plan created with SousChef AI.",
-      "image": previewImageUrl || "https://sous-chef.in/og-image.jpg",
-      "nutrition": {
-        "@type": "NutritionInformation",
-        "calories": `${mealPlan?.days.reduce((total, day) => 
-          total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionalValue.calories, 0), 0)} calories`,
-        "proteinContent": `${mealPlan?.days.reduce((total, day) => 
-          total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionalValue.protein, 0), 0)}g`,
-        "carbohydrateContent": `${mealPlan?.days.reduce((total, day) => 
-          total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionalValue.carbs, 0), 0)}g`,
-        "fatContent": `${mealPlan?.days.reduce((total, day) => 
-          total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionalValue.fat, 0), 0)}g`
-      }
-    }
-  };
-
   return (
     <BaseLayout>
+      <SEO 
+        title={`${planName} - SousChef Meal Plan`}
+        description={`View this personalized meal plan created with SousChef AI. ${mealPlan?.days.length} days of balanced meals with detailed nutritional information.`}
+        keywords="shared meal plan, personalized meal plan, healthy eating, meal planning, nutrition tracking"
+        type="article"
+        canonical={`https://sous-chef.in/shared/meal-plan/${id}`}
+        image={previewImageUrl || "https://sous-chef.in/og-image.jpg"}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "Recipe",
+          "name": planName,
+          "description": "A personalized meal plan created with SousChef AI.",
+          "image": previewImageUrl || "https://sous-chef.in/og-image.jpg",
+          "nutrition": {
+            "@type": "NutritionInformation",
+            "calories": `${mealPlan?.days.reduce((total, day) => 
+              total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionalValue.calories, 0), 0)} calories`,
+            "proteinContent": `${mealPlan?.days.reduce((total, day) => 
+              total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionalValue.protein, 0), 0)}g`,
+            "carbohydrateContent": `${mealPlan?.days.reduce((total, day) => 
+              total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionalValue.carbs, 0), 0)}g`,
+            "fatContent": `${mealPlan?.days.reduce((total, day) => 
+              total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionalValue.fat, 0), 0)}g`
+          }
+        }}
+      />
       <main className="container mx-auto px-4 py-8">
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-6">

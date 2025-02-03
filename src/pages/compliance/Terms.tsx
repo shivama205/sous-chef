@@ -1,10 +1,18 @@
 import { FileText } from 'lucide-react'
 import { BaseLayout } from '@/components/layouts/BaseLayout'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { SEO } from "@/components/SEO"
 
 export default function Terms() {
   return (
     <BaseLayout>
+      <SEO 
+        title="Terms of Service"
+        description="Review SousChef's terms of service to understand our policies, user agreements, and service conditions for using our AI-powered meal planning platform."
+        keywords="terms of service, user agreement, service terms, legal terms, usage policy"
+        type="website"
+        canonical="https://sous-chef.in/terms"
+      />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <PageHeader
           icon={FileText}

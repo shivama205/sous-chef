@@ -16,6 +16,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { SEO } from "@/components/SEO";
 
 export default function SharedRecipe() {
   const { id } = useParams();
@@ -191,6 +192,13 @@ export default function SharedRecipe() {
 
   return (
     <BaseLayout>
+      <SEO 
+        title={`${recipe?.meal_name || 'Recipe'} - SousChef Recipe`}
+        description={`Discover this delicious ${recipe?.meal_name} recipe with detailed ingredients, instructions, and nutritional information. Ready in ${recipe?.cooking_time} minutes.`}
+        keywords="shared recipe, cooking instructions, ingredients list, nutritional information, healthy cooking"
+        type="article"
+        canonical={`https://sous-chef.in/shared/recipe/${id}`}
+      />
       <div className="container max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Header Section */}
         <div className="flex items-center justify-between">

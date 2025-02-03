@@ -16,6 +16,7 @@ import { Accordion, AccordionContent, AccordionTrigger, AccordionItem } from "@/
 import { FeatureCard } from "@/components/ui/FeatureCard";
 import { LoginDialog } from "@/components/LoginDialog";
 import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
+import { SEO } from "@/components/SEO";
 
 const suggestionList = [
   "Ensure meal name is spelled correctly",
@@ -160,6 +161,13 @@ export default function HealthyAlternative() {
 
   return (
     <BaseLayout>
+      <SEO 
+        title="Healthy Food Alternatives"
+        description="Discover healthier alternatives to your favorite foods. Get AI-powered suggestions for ingredient swaps and cooking modifications to make your meals healthier."
+        keywords="healthy alternatives, food substitutes, healthy swaps, healthy cooking, nutritious options, diet alternatives"
+        type="website"
+        canonical="https://sous-chef.in/healthy-alternative"
+      />
       {user ? (
         <div className="container mx-auto px-4 py-8 space-y-12">
           <PageHeader

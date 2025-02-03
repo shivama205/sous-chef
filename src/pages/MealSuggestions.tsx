@@ -15,6 +15,7 @@ import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
 import { useToast } from "@/components/ui/use-toast";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { LoginDialog } from "@/components/LoginDialog";
+import { SEO } from "@/components/SEO";
 
 export function MealSuggestions() {
   const [isLoading, setIsLoading] = useState(false);
@@ -71,6 +72,13 @@ export function MealSuggestions() {
 
   return (
     <BaseLayout>
+      <SEO 
+        title="Quick Meal Suggestions"
+        description="Get instant meal ideas based on your mood and energy level. Our AI suggests personalized meal options whether you want to cook, order in, or eat out."
+        keywords="quick meals, meal suggestions, food recommendations, easy recipes, meal ideas, AI food suggestions"
+        type="website"
+        canonical="https://sous-chef.in/meal-suggestions"
+      />
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Header */}
