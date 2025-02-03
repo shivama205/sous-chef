@@ -10,6 +10,7 @@ interface SEOProps {
   description?: string;
   keywords?: string[];
   image?: string;
+  squareImage?: string;
   url?: string;
   type?: string;
   structuredData?: Record<string, any>;
@@ -90,6 +91,7 @@ export function SEO({
   description = 'Create personalized meal plans, find recipes, and get healthy alternatives with SousChef\'s AI-powered platform. Your personal AI chef for healthy eating.',
   keywords = ['meal planning', 'healthy recipes', 'AI chef', 'nutrition', 'meal prep', 'diet planning', 'recipe finder', 'healthy alternatives', 'cooking assistant'],
   image = '/og-image.png',
+  squareImage = '/og-image-square.png',
   url = 'https://sous-chef.in',
   type = 'website',
   structuredData,
@@ -99,6 +101,7 @@ export function SEO({
 }: SEOProps) {
   const siteTitle = title.includes('SousChef') ? title : `${title} | SousChef`;
   const absoluteImageUrl = image.startsWith('http') ? image : `https://sous-chef.in${image}`;
+  const absoluteSquareImageUrl = squareImage.startsWith('http') ? squareImage : `https://sous-chef.in${squareImage}`;
   const canonicalUrl = url.startsWith('http') ? url : `https://sous-chef.in${url}`;
   
   // Prepare JSON-LD structured data
@@ -117,25 +120,39 @@ export function SEO({
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords.join(', ')} />
       
-      {/* Enhanced Open Graph Meta Tags */}
+      {/* Primary Open Graph Meta Tags */}
       <meta property="og:title" content={siteTitle} />
       <meta property="og:description" content={description} />
+      <meta property="og:url" content={canonicalUrl} />
+      <meta property="og:type" content={type} />
+      <meta property="og:site_name" content="SousChef" />
+      
+      {/* Regular OG Image (16:9) */}
       <meta property="og:image" content={absoluteImageUrl} />
       <meta property="og:image:secure_url" content={absoluteImageUrl} />
       <meta property="og:image:type" content="image/png" />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
       <meta property="og:image:alt" content={`${siteTitle} - Preview Image`} />
-      <meta property="og:url" content={canonicalUrl} />
-      <meta property="og:type" content={type} />
-      <meta property="og:site_name" content="SousChef" />
+      
+      {/* Square OG Image (1:1) for WhatsApp and other platforms */}
+      <meta property="og:image" content={absoluteSquareImageUrl} />
+      <meta property="og:image:secure_url" content={absoluteSquareImageUrl} />
+      <meta property="og:image:type" content="image/png" />
+      <meta property="og:image:width" content="400" />
+      <meta property="og:image:height" content="400" />
+      <meta property="og:image:alt" content={`${siteTitle} - Preview Image (Square)`} />
       
       {/* Enhanced Twitter Card Meta Tags */}
       <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:site" content="@souschef" />
+      <meta name="twitter:creator" content="@souschef" />
       <meta name="twitter:title" content={siteTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={absoluteImageUrl} />
+      <meta name="twitter:image:src" content={absoluteImageUrl} />
       <meta name="twitter:image:alt" content={`${siteTitle} - Preview Image`} />
+      <meta name="twitter:domain" content="sous-chef.in" />
       
       {/* Additional SEO Meta Tags */}
       <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
