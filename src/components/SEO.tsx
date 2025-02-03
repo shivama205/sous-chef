@@ -184,4 +184,4 @@ export function SEO({
       <meta name="theme-color" content="#18181b" />
     </Helmet>
   );
-} 
+}
