@@ -3,7 +3,7 @@ import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { Brain, ChefHat, ArrowRight, Sparkles, Clock, Star, Utensils, Apple, Heart, Users, Trophy } from "lucide-react";
+import { Brain, ChefHat, ArrowRight, Sparkles, Clock, Star, Utensils, Apple, Heart, Users, Trophy, Check } from "lucide-react";
 import { useAuth } from "@/providers/AuthProvider";
 import { SEO } from "@/components/SEO";
 
@@ -311,6 +311,224 @@ const LoggedOutView = () => {
             </motion.div>
           </div>
         </div>
+      </section>
+
+      {/* Feature Previews */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-3xl font-bold mb-4"
+          >
+            Your AI-Powered Kitchen Assistant
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-lg text-muted-foreground"
+          >
+            Experience how SousChef makes meal planning and cooking easier
+          </motion.p>
+        </div>
+
+        {/* Quick Meal Ideas Preview */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="grid lg:grid-cols-2 gap-12 items-center mb-24"
+        >
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                <Brain className="w-6 h-6 text-blue-500" />
+              </div>
+              <h3 className="text-2xl font-semibold">Quick Meal Ideas</h3>
+            </div>
+            <p className="text-lg text-muted-foreground">
+              Feeling tired? Tell us your mood and energy level, and we'll suggest personalized meal options - whether you want to cook, order, or eat out.
+            </p>
+            <ul className="space-y-3">
+              <li className="flex items-center gap-3 text-muted-foreground">
+                <div className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-blue-500" />
+                </div>
+                <span>Instant suggestions based on your energy level</span>
+              </li>
+              <li className="flex items-center gap-3 text-muted-foreground">
+                <div className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-blue-500" />
+                </div>
+                <span>Multiple options: cook, order, or eat out</span>
+              </li>
+              <li className="flex items-center gap-3 text-muted-foreground">
+                <div className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-blue-500" />
+                </div>
+                <span>Considers dietary restrictions and preferences</span>
+              </li>
+            </ul>
+            <Button asChild size="lg" variant="outline" className="gap-2">
+              <Link to="/meal-suggestions">
+                Try Quick Ideas
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </Button>
+          </div>
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-primary/20 rounded-3xl blur-3xl" />
+            <div className="relative bg-white/50 backdrop-blur-sm border border-blue-500/10 rounded-3xl overflow-hidden">
+              <div className="aspect-[4/3] bg-gradient-to-br from-blue-500/5 to-primary/5">
+                {/* We'll add a video/animation preview here */}
+                <div className="p-6">
+                  <div className="animate-pulse space-y-4">
+                    <div className="h-8 w-3/4 bg-blue-500/10 rounded-lg" />
+                    <div className="h-24 bg-blue-500/5 rounded-lg" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="h-16 bg-blue-500/5 rounded-lg" />
+                      <div className="h-16 bg-blue-500/5 rounded-lg" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Recipe Finder Preview */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="grid lg:grid-cols-2 gap-12 items-center mb-24"
+        >
+          <div className="order-2 lg:order-1 relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-primary/20 rounded-3xl blur-3xl" />
+            <div className="relative bg-white/50 backdrop-blur-sm border border-purple-500/10 rounded-3xl overflow-hidden">
+              <div className="aspect-[4/3] bg-gradient-to-br from-purple-500/5 to-primary/5">
+                {/* We'll add a video/animation preview here */}
+                <div className="p-6">
+                  <div className="animate-pulse space-y-4">
+                    <div className="h-8 w-3/4 bg-purple-500/10 rounded-lg" />
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="h-32 bg-purple-500/5 rounded-lg" />
+                      <div className="h-32 bg-purple-500/5 rounded-lg" />
+                      <div className="h-32 bg-purple-500/5 rounded-lg" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="order-1 lg:order-2 space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center">
+                <Utensils className="w-6 h-6 text-purple-500" />
+              </div>
+              <h3 className="text-2xl font-semibold">Recipe Finder</h3>
+            </div>
+            <p className="text-lg text-muted-foreground">
+              Find the perfect recipe using ingredients you already have. Our AI understands your preferences and suggests recipes that match your needs.
+            </p>
+            <ul className="space-y-3">
+              <li className="flex items-center gap-3 text-muted-foreground">
+                <div className="w-6 h-6 rounded-full bg-purple-500/10 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-purple-500" />
+                </div>
+                <span>Search by available ingredients</span>
+              </li>
+              <li className="flex items-center gap-3 text-muted-foreground">
+                <div className="w-6 h-6 rounded-full bg-purple-500/10 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-purple-500" />
+                </div>
+                <span>Filter by cuisine and dietary needs</span>
+              </li>
+              <li className="flex items-center gap-3 text-muted-foreground">
+                <div className="w-6 h-6 rounded-full bg-purple-500/10 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-purple-500" />
+                </div>
+                <span>Detailed instructions and nutritional info</span>
+              </li>
+            </ul>
+            <Button asChild size="lg" variant="outline" className="gap-2">
+              <Link to="/recipe-finder">
+                Try Recipe Finder
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </Button>
+          </div>
+        </motion.div>
+
+        {/* Meal Planning Preview */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="grid lg:grid-cols-2 gap-12 items-center"
+        >
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center">
+                <ChefHat className="w-6 h-6 text-green-500" />
+              </div>
+              <h3 className="text-2xl font-semibold">AI Meal Planning</h3>
+            </div>
+            <p className="text-lg text-muted-foreground">
+              Let AI handle your weekly meal planning. Get personalized plans that match your nutritional goals and schedule.
+            </p>
+            <ul className="space-y-3">
+              <li className="flex items-center gap-3 text-muted-foreground">
+                <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-green-500" />
+                </div>
+                <span>Personalized weekly meal plans</span>
+              </li>
+              <li className="flex items-center gap-3 text-muted-foreground">
+                <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-green-500" />
+                </div>
+                <span>Automatic macro tracking</span>
+              </li>
+              <li className="flex items-center gap-3 text-muted-foreground">
+                <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-green-500" />
+                </div>
+                <span>Smart grocery lists</span>
+              </li>
+            </ul>
+            <Button asChild size="lg" variant="outline" className="gap-2">
+              <Link to="/meal-plan">
+                Try Meal Planning
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </Button>
+          </div>
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-primary/20 rounded-3xl blur-3xl" />
+            <div className="relative bg-white/50 backdrop-blur-sm border border-green-500/10 rounded-3xl overflow-hidden">
+              <div className="aspect-[4/3] bg-gradient-to-br from-green-500/5 to-primary/5">
+                {/* We'll add a video/animation preview here */}
+                <div className="p-6">
+                  <div className="animate-pulse space-y-4">
+                    <div className="h-8 w-3/4 bg-green-500/10 rounded-lg" />
+                    <div className="grid grid-cols-7 gap-2">
+                      {[...Array(7)].map((_, i) => (
+                        <div key={i} className="space-y-2">
+                          <div className="h-6 bg-green-500/10 rounded" />
+                          <div className="h-24 bg-green-500/5 rounded" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </section>
 
       {/* How It Works */}
