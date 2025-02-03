@@ -10,7 +10,6 @@ import { MealPlan } from "@/types/mealPlan";
 import html2canvas from 'html2canvas';
 import MealPlanDownloadView from "@/components/MealPlanDownloadView";
 import { motion } from "framer-motion";
-import { SEO } from "@/components/SEO";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
 
 export function SharedMealPlan() {
@@ -139,15 +138,6 @@ export function SharedMealPlan() {
 
   return (
     <BaseLayout>
-      <SEO 
-        title={seoData.title}
-        description={seoData.description}
-        image={previewImageUrl || "https://sous-chef.in/og-image.jpg"}
-        type="article"
-        keywords={["meal plan", "healthy eating", "nutrition plan", "personalized diet", "AI meal planning"]}
-        url={`https://sous-chef.in/shared/meal-plan/${id}`}
-        structuredData={seoData.structuredData}
-      />
       <main className="container mx-auto px-4 py-8">
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-6">

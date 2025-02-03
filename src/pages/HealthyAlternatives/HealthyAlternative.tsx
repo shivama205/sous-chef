@@ -16,7 +16,6 @@ import { Accordion, AccordionContent, AccordionTrigger, AccordionItem } from "@/
 import { FeatureCard } from "@/components/ui/FeatureCard";
 import { LoginDialog } from "@/components/LoginDialog";
 import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
-import { SEO } from "@/components/SEO";
 
 const suggestionList = [
   "Ensure meal name is spelled correctly",
@@ -161,12 +160,6 @@ export default function HealthyAlternative() {
 
   return (
     <BaseLayout>
-      <SEO 
-        title="Healthy Alternatives - Find Nutritious Food Options"
-        description="Discover healthy alternatives to your favorite meals. Get personalized suggestions based on your dietary needs and preferences using AI-powered recommendations."
-        keywords={["healthy alternatives", "nutritious food", "healthy substitutes", "diet-friendly options", "healthy eating", "food alternatives"]}
-        type="website"
-      />
       {user ? (
         <div className="container mx-auto px-4 py-8 space-y-12">
           <PageHeader

@@ -1,17 +1,10 @@
 import { Info } from 'lucide-react'
 import { BaseLayout } from '@/components/layouts/BaseLayout'
 import { PageHeader } from '@/components/ui/PageHeader'
-import { SEO } from '@/components/SEO'
 
 export default function About() {
   return (
     <BaseLayout>
-      <SEO 
-        title="About SousChef - Our Mission and Vision"
-        description="Learn about SousChef's mission to make healthy eating accessible through AI-powered meal planning. Discover how we help you achieve your nutritional goals."
-        keywords={["about souschef", "meal planning mission", "healthy eating vision", "nutrition technology", "AI meal planning"]}
-        type="website"
-      />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <PageHeader
           icon={Info}

@@ -1,7 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom"
 import { BaseLayout } from "@/components/layouts/BaseLayout"
 import { Button } from "@/components/ui/button"
-import { SEO } from "@/components/SEO"
 import { BlogPost } from "@/types/blog"
 import { ArrowLeft, Clock, User, Calendar, Tag, Image as ImageIcon } from "lucide-react"
 import { format } from "date-fns"
@@ -247,14 +246,6 @@ export default function BlogPostPage() {
 
   return (
     <BaseLayout>
-      <SEO 
-        title={post.title}
-        description={post.seoDescription || post.excerpt}
-        keywords={post.seoKeywords || post.tags}
-        image={post.imageUrl}
-        type="article"
-      />
-      
       <article className="min-h-screen">
         {/* Hero Section */}
         <div className="bg-gradient-to-b from-primary/10 to-background border-b">

@@ -6,14 +6,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import NavigationBar from "@/components/NavigationBar";
 import { format } from "date-fns";
-import { Calculator, Settings, ChefHat, History, Star, Clock, Calendar, Utensils, ShoppingCart, Leaf } from "lucide-react";
+import { Settings, ChefHat, History, Star, Clock, Calendar, Utensils } from "lucide-react";
 import { SavedRecipes } from "@/components/profile/SavedRecipes";
 import { SavedMealPlans } from "@/components/profile/SavedMealPlans";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { Activity } from "@/types/activity";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
-import { SEO } from "@/components/SEO";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
 
 interface UserStats {
@@ -86,12 +85,6 @@ export default function Profile() {
 
   return (
     <BaseLayout>
-      <SEO 
-        title="My Profile - SousChef"
-        description="Manage your SousChef profile, view saved meal plans, recipes, and account settings."
-        keywords={["profile", "account settings", "saved recipes", "meal plans", "user preferences"]}
-        type="website"
-      />
       <div className="min-h-screen bg-gray-50">
         <NavigationBar />
         
