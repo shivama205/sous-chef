@@ -13,7 +13,7 @@ const defaultSEO = {
   title: 'SousChef - Your AI-Powered Kitchen Assistant',
   description: 'SousChef helps you plan meals, find recipes, and discover healthy alternatives. Get personalized meal suggestions and cooking tips from your AI kitchen assistant.',
   keywords: 'meal planning, recipe finder, healthy cooking, AI kitchen assistant, meal suggestions, cooking tips',
-  image: '/og-image.png',
+  image: '/og-image-compressed.jpg',
   type: 'website' as const,
   url: 'https://sous-chef.in'
 };
