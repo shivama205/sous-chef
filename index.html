@@ -31,11 +31,103 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     
+    <!-- Inter font -->
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    
     <!-- Canonical URL -->
     <link rel="canonical" href="https://sous-chef.in/" />
+
+    <style>
+      :root {
+        --font-sans: 'Inter var', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+        
+        /* Base Colors */
+        --primary: 142 84% 45%;
+        --primary-foreground: 0 0% 100%;
+        
+        --secondary: 199 84% 48%;
+        --secondary-foreground: 0 0% 100%;
+        
+        --accent: 24 95% 53%;
+        --accent-foreground: 0 0% 100%;
+        
+        --background: 0 0% 100%;
+        --foreground: 222 47% 11%;
+        
+        --muted: 210 40% 98%;
+        --muted-foreground: 215 16% 47%;
+        
+        --card: 0 0% 100%;
+        --card-foreground: 222 47% 11%;
+        
+        --popover: 0 0% 100%;
+        --popover-foreground: 222 47% 11%;
+        
+        --border: 214 32% 91%;
+        --input: 214 32% 91%;
+        --ring: 222 47% 11%;
+        
+        --radius: 0.75rem;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --background: 222 47% 11%;
+          --foreground: 210 40% 98%;
+          
+          --card: 222 47% 11%;
+          --card-foreground: 210 40% 98%;
+          
+          --popover: 222 47% 11%;
+          --popover-foreground: 210 40% 98%;
+          
+          --border: 216 34% 17%;
+          --input: 216 34% 17%;
+          
+          --muted: 217 33% 17%;
+          --muted-foreground: 215 20% 65%;
+        }
+      }
+
+      *, ::before, ::after {
+        border-color: hsl(var(--border));
+      }
+
+      body {
+        font-family: var(--font-sans);
+        background-color: hsl(var(--background));
+        color: hsl(var(--foreground));
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* Improve Page Transitions */
+      ::view-transition-old(root),
+      ::view-transition-new(root) {
+        animation: none;
+        mix-blend-mode: normal;
+      }
+
+      /* Disable transitions on resize */
+      .resize-animation-stopper * {
+        animation: none !important;
+        transition: none !important;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Disable animations/transitions on window resize
+      let resizeTimer;
+      window.addEventListener("resize", () => {
+        document.body.classList.add("resize-animation-stopper");
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          document.body.classList.remove("resize-animation-stopper");
+        }, 400);
+      });
+    </script>
   </body>
 </html>
