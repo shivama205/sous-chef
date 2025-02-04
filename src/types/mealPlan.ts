@@ -1,5 +1,6 @@
 import { NutritionalValue } from "./healthyAlternative";
 import { UserMacros } from "./macros";
+import { Preferences } from "./preferences";
 
 export enum MealTime {
   Breakfast = "Breakfast",
@@ -42,6 +43,6 @@ export interface MealPlanGenerationRequest {
   days: number;
   dietaryRestrictions?: string;
   cuisinePreferences?: string[];
-  userMacros?: UserMacros;
+  preferences: Preferences;
 }
 

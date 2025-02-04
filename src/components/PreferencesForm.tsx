@@ -8,9 +8,10 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, ChevronDown } from "lucide-react";
+import { MealPlanGenerationRequest } from "@/types/mealPlan";
 
 interface PreferencesFormProps {
-  onSubmit: (preferences: Preferences) => void;
+  onSubmit: (request: MealPlanGenerationRequest) => void;
   isLoading?: boolean;
   preferences: Preferences | null;
   setPreferences: (preferences: Preferences) => void;
@@ -55,7 +56,13 @@ export function PreferencesForm({ onSubmit, isLoading, preferences, setPreferenc
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (preferences) {
-      onSubmit(preferences);
+      const request: MealPlanGenerationRequest = {
+        days: preferences.days,
+        dietaryRestrictions: preferences.dietaryRestrictions,
+        cuisinePreferences: preferences.cuisinePreferences,
+        preferences: preferences
+      };
+      onSubmit(request);
     }
   };
 
@@ -139,7 +146,7 @@ export function PreferencesForm({ onSubmit, isLoading, preferences, setPreferenc
             <div className="space-y-2">
               <Label htmlFor="targetProtein" className="text-sm text-muted-foreground">
                 {showPerMealTargets ? "Protein per Meal (g)" : "Daily Protein (g)"}
-              </Label>
+                </Label>
               <Input
                 id="targetProtein"
                 type="number"

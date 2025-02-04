@@ -68,10 +68,10 @@ export async function generatePrompt(request: MealPlanGenerationRequest): Promis
     ${request.cuisinePreferences?.length ? `Preferred Cuisines: ${request.cuisinePreferences.join(', ')}` : 'No specific cuisine preferences (include a variety of cuisines).'}
     
     Nutritional Targets:
-    - Daily Calories: ${request.userMacros?.calories ? request.userMacros.calories : '2000'}kcal
-    - Daily Protein: ${request.userMacros?.protein ? request.userMacros.protein : '100'}g
-    - Daily Carbs: ${request.userMacros?.carbs ? request.userMacros.carbs : '150'}g
-    - Daily Fat: ${request.userMacros?.fat ? request.userMacros.fat : '50'}g
+    - Daily Calories: ${request.preferences.targetCalories}kcal
+    - Daily Protein: ${request.preferences.targetProtein}g
+    - Daily Carbs: ${request.preferences.targetCarbs}g
+    - Daily Fat: ${request.preferences.targetFat}g
 
     Do not include any other text in the response.
 
