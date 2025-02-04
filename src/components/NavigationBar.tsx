@@ -7,17 +7,12 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuGroup,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
-import { Leaf, ChefHat, Apple, Sparkles, Menu, X, Utensils, Brain, Coffee, User as UserIcon, CreditCard, LogOut } from "lucide-react";
+import { Leaf, ChefHat, Apple, Sparkles, Menu, X, Utensils, Brain, User as UserIcon, CreditCard, LogOut } from "lucide-react";
 import GoogleSignInButton from "./GoogleSignInButton";
 
 const NavigationBar = () => {
@@ -65,7 +60,7 @@ const NavigationBar = () => {
           <Link to="/" className="flex items-center space-x-2">
             <ChefHat className="w-8 h-8 text-primary" />
             <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              SousChef
+              MySideChef
             </span>
           </Link>
           

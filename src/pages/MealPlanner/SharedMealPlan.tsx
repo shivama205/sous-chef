@@ -115,31 +115,12 @@ export function SharedMealPlan() {
 
   return (
     <BaseLayout>
-      <SEO 
-        title={`${planName} - SousChef Meal Plan`}
-        description={`View this personalized meal plan created with SousChef AI. ${mealPlan?.days.length} days of balanced meals with detailed nutritional information.`}
-        keywords="shared meal plan, personalized meal plan, healthy eating, meal planning, nutrition tracking"
+      <SEO
+        title={`${planName} - Shared Meal Plan`}
+        description={`Check out this personalized meal plan created using SideChef AI!`}
+        canonical={`https://mysidechef.com/shared/meal-plan/${id}`}
+        image={previewImageUrl || "https://mysidechef.com/og-image.jpg"}
         type="article"
-        canonical={`https://sous-chef.in/shared/meal-plan/${id}`}
-        image={previewImageUrl || "https://sous-chef.in/og-image.jpg"}
-        structuredData={{
-          "@context": "https://schema.org",
-          "@type": "Recipe",
-          "name": planName,
-          "description": "A personalized meal plan created with SousChef AI.",
-          "image": previewImageUrl || "https://sous-chef.in/og-image.jpg",
-          "nutrition": {
-            "@type": "NutritionInformation",
-            "calories": `${mealPlan?.days.reduce((total, day) => 
-              total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionalValue.calories, 0), 0)} calories`,
-            "proteinContent": `${mealPlan?.days.reduce((total, day) => 
-              total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionalValue.protein, 0), 0)}g`,
-            "carbohydrateContent": `${mealPlan?.days.reduce((total, day) => 
-              total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionalValue.carbs, 0), 0)}g`,
-            "fatContent": `${mealPlan?.days.reduce((total, day) => 
-              total + day.meals.reduce((dayTotal, meal) => dayTotal + meal.nutritionalValue.fat, 0), 0)}g`
-          }
-        }}
       />
       <main className="container mx-auto px-4 py-8">
         <Card className="p-6">
@@ -149,7 +130,7 @@ export function SharedMealPlan() {
             </div>
             <div>
               <h1 className="text-3xl font-bold">{planName}</h1>
-              <p className="text-gray-600">A personalized meal plan created with SousChef AI</p>
+              <p className="text-gray-600">A personalized meal plan created with MySideChef AI</p>
             </div>
           </div>
 
@@ -234,7 +215,7 @@ export function SharedMealPlan() {
 
           {/* CTA */}
           <div className="mt-8 text-center">
-            <p className="text-gray-600 mb-4">Create your own personalized meal plan with SousChef</p>
+            <p className="text-gray-600 mb-4">Create your own personalized meal plan with MySideChef</p>
             <Button onClick={() => window.location.href = "/meal-plan"} className="w-full max-w-md">
               Create Your Own Meal Plan
             </Button>

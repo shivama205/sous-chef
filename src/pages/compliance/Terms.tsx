@@ -8,10 +8,10 @@ export default function Terms() {
     <BaseLayout>
       <SEO 
         title="Terms of Service"
-        description="Review SousChef's terms of service to understand our policies, user agreements, and service conditions for using our AI-powered meal planning platform."
+        description="Review SideChef's terms of service and usage conditions."
         keywords="terms of service, user agreement, service terms, legal terms, usage policy"
         type="website"
-        canonical="https://sous-chef.in/terms"
+        canonical="https://mysidechef.com/terms"
       />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <PageHeader
@@ -31,7 +31,7 @@ export default function Terms() {
                 You agree that if You provide any information that is untrue, inaccurate, not current or incomplete, We shall have the right to indefinitely suspend or terminate or block access of your membership on the Platform.
               </p>
               <p>
-                You agree to immediately notify SousChef of any unauthorized use / breach of your password or account and ensure that you exit from your account at the end of each session.
+                You agree to immediately notify MySideChef of any unauthorized use / breach of your password or account and ensure that you exit from your account at the end of each session.
               </p>
             </div>
           </section>
@@ -40,16 +40,16 @@ export default function Terms() {
             <h2 className="text-2xl font-semibold mb-4">2. Services Offered</h2>
             <div className="text-gray-600 space-y-4">
               <p>
-                SousChef provides a number of Internet-based services through the Platform. Our services include meal planning, recipe management, and nutritional analysis tools (collectively, "Services"). The Services can be accessed through the Platform through various subscription plans offered.
+                MySideChef provides a number of Internet-based services through the Platform. Our services include meal planning, recipe management, and nutritional analysis tools (collectively, "Services"). The Services can be accessed through the Platform through various subscription plans offered.
               </p>
               <p>
                 The use of Services shall be additionally governed by specific policies, including but not limited to subscription policy, cancellation policy, refund policy, etc. (which are found on the FAQ tab on the Platform and all of which are incorporated here by reference).
               </p>
               <p>
-                It is clarified that for any subscription cancellation request, users are required to follow the cancellation procedure outlined in our FAQ section. Refunds, if applicable, will be processed according to our refund policy. SousChef assumes no liability for subscriptions that are cancelled outside of the specified cancellation window.
+                It is clarified that for any subscription cancellation request, users are required to follow the cancellation procedure outlined in our FAQ section. Refunds, if applicable, will be processed according to our refund policy. MySideChef assumes no liability for subscriptions that are cancelled outside of the specified cancellation window.
               </p>
               <p>
-                SousChef does not warrant that Service descriptions or other content on the Platform is accurate, complete, reliable, current, or error-free and assumes no liability in this regard.
+                MySideChef does not warrant that Service descriptions or other content on the Platform is accurate, complete, reliable, current, or error-free and assumes no liability in this regard.
               </p>
             </div>
           </section>
@@ -58,7 +58,7 @@ export default function Terms() {
             <h2 className="text-2xl font-semibold mb-4">3. Platform Usage</h2>
             <div className="text-gray-600 space-y-4">
               <p>
-                You agree, understand and acknowledge that SousChef is an online platform that enables you to:
+                You agree, understand and acknowledge that MySideChef is an online platform that enables you to:
               </p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Create and manage personalized meal plans</li>
@@ -77,10 +77,10 @@ export default function Terms() {
             <h2 className="text-2xl font-semibold mb-4">4. Intellectual Property Rights</h2>
             <div className="text-gray-600 space-y-4">
               <p>
-                All content present on the Platform, including but not limited to text, recipes, meal plans, graphics, user interface, visual interface, photographs, trademarks, logos, sounds, music, artwork and computer code (collectively, "Content"), including but not limited to the design, structure, selection, coordination, expression, look and feel and arrangement of such Content is owned, controlled or licensed by or to SousChef and is protected by trade dress, copyright, patent and trademark laws, and various other intellectual property rights.
+                All content present on the Platform, including but not limited to text, recipes, meal plans, graphics, user interface, visual interface, photographs, trademarks, logos, sounds, music, artwork and computer code (collectively, "Content"), including but not limited to the design, structure, selection, coordination, expression, look and feel and arrangement of such Content is owned, controlled or licensed by or to MySideChef and is protected by trade dress, copyright, patent and trademark laws, and various other intellectual property rights.
               </p>
               <p>
-                Except as expressly provided in these Terms of Use, no part of the Platform and no Content may be copied, reproduced, republished, uploaded, posted, publicly displayed, encoded, translated, transmitted or distributed in any way to any other computer, server, website or other medium for publication or distribution or for any commercial enterprise, without SousChef's express prior written consent.
+                Except as expressly provided in these Terms of Use, no part of the Platform and no Content may be copied, reproduced, republished, uploaded, posted, publicly displayed, encoded, translated, transmitted or distributed in any way to any other computer, server, website or other medium for publication or distribution or for any commercial enterprise, without MySideChef's express prior written consent.
               </p>
             </div>
           </section>
@@ -89,7 +89,7 @@ export default function Terms() {
             <h2 className="text-2xl font-semibold mb-4">5. Indemnification</h2>
             <div className="text-gray-600 space-y-4">
               <p>
-                You shall indemnify and hold harmless SousChef, its owners, licensees, affiliates, subsidiaries, group companies (as applicable) and their respective officers, directors, agents, and employees, from any claim or demand, or actions including reasonable attorneys' fees, made by any third party or penalty imposed due to or arising out of:
+                You shall indemnify and hold harmless MySideChef, its owners, licensees, affiliates, subsidiaries, group companies (as applicable) and their respective officers, directors, agents, and employees, from any claim or demand, or actions including reasonable attorneys' fees, made by any third party or penalty imposed due to or arising out of:
               </p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Your breach of these Terms of Use, Privacy Policy or other Policies</li>
@@ -104,7 +104,7 @@ export default function Terms() {
             <h2 className="text-2xl font-semibold mb-4">6. Limitation of Liability</h2>
             <div className="text-gray-600 space-y-4">
               <p>
-                In no event shall SousChef, its officers, directors, employees, or agents, be liable to you for any direct, indirect, incidental, special, punitive, or consequential damages whatsoever resulting from:
+                In no event shall MySideChef, its officers, directors, employees, or agents, be liable to you for any direct, indirect, incidental, special, punitive, or consequential damages whatsoever resulting from:
               </p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Any errors, mistakes, or inaccuracies of content</li>

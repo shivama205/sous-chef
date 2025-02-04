@@ -1,4 +1,4 @@
-# SousChef robots.txt
+# MySideChef robots.txt
 
 # Allow all bots to access these paths
 User-agent: *
@@ -44,7 +44,7 @@ Disallow: /*.txt$
 Allow: /sitemap.xml
 
 # Sitemap location
-Sitemap: https://sous-chef.in/sitemap.xml
+Sitemap: https://mysidechef.com/sitemap.xml
 
 # Crawl-delay for heavy crawlers
 Crawl-delay: 10

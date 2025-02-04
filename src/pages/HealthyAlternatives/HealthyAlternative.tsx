@@ -166,7 +166,7 @@ export default function HealthyAlternative() {
         description="Discover healthier alternatives to your favorite foods. Get AI-powered suggestions for ingredient swaps and cooking modifications to make your meals healthier."
         keywords="healthy alternatives, food substitutes, healthy swaps, healthy cooking, nutritious options, diet alternatives"
         type="website"
-        canonical="https://sous-chef.in/healthy-alternative"
+        canonical="https://mysidechef.com/healthy-alternative"
       />
       {user ? (
         <div className="container mx-auto px-4 py-8 space-y-12">

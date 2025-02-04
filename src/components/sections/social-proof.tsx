@@ -5,7 +5,7 @@ import { Star, Quote, Users, Trophy, Heart, ChefHat } from "lucide-react"
 
 const testimonials = [
   {
-    content: "SousChef has completely transformed how I plan my meals. The AI suggestions are spot-on!",
+    content: "MySideChef has completely transformed how I plan my meals. The AI suggestions are spot-on!",
     author: "Sarah M.",
     role: "Busy Parent",
     rating: 5

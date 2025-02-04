@@ -153,7 +153,7 @@ export default function SharedRecipe() {
       try {
         await navigator.share({
           title: recipe?.meal_name || "Shared Recipe",
-          text: "Check out this delicious recipe I found on SousChef!",
+          text: "Check out this delicious recipe I found on MySideChef!",
           url: shareUrl,
         });
       } catch (error) {
@@ -193,11 +193,11 @@ export default function SharedRecipe() {
   return (
     <BaseLayout>
       <SEO 
-        title={`${recipe?.meal_name || 'Recipe'} - SousChef Recipe`}
-        description={`Discover this delicious ${recipe?.meal_name} recipe with detailed ingredients, instructions, and nutritional information. Ready in ${recipe?.cooking_time} minutes.`}
+        title={`${recipe?.meal_name || 'Recipe'} - SideChef`}
+        description={`Discover this delicious ${recipe?.meal_name} recipe shared from SideChef`}
         keywords="shared recipe, cooking instructions, ingredients list, nutritional information, healthy cooking"
         type="article"
-        canonical={`https://sous-chef.in/shared/recipe/${id}`}
+        canonical={`https://mysidechef.com/shared/recipe/${id}`}
       />
       <div className="container max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Header Section */}

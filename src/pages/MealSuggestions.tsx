@@ -77,7 +77,7 @@ export function MealSuggestions() {
         description="Get instant meal ideas based on your mood and energy level. Our AI suggests personalized meal options whether you want to cook, order in, or eat out."
         keywords="quick meals, meal suggestions, food recommendations, easy recipes, meal ideas, AI food suggestions"
         type="website"
-        canonical="https://sous-chef.in/meal-suggestions"
+        canonical="https://mysidechef.com/meal-suggestions"
       />
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-8">

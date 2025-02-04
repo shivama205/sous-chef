@@ -12,7 +12,6 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleRedirect = async () => {
       try {
-        console.log("Auth state:", { user, loading });
 
         // If still loading, wait
         if (loading) {
@@ -38,14 +37,10 @@ export default function AuthCallback() {
           }
         }
 
-        console.log("User authenticated:", user?.id);
-
         // Get stored redirect info
         const redirectPath = sessionStorage.getItem('redirectPath');
         const redirectStateStr = sessionStorage.getItem('redirectState');
         
-        console.log("Redirect info:", { redirectPath, redirectStateStr });
-
         // Clean up stored data
         sessionStorage.removeItem('redirectPath');
         sessionStorage.removeItem('redirectState');

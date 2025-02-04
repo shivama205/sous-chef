@@ -5,7 +5,7 @@ const testimonials = [
   {
     name: "Sarah Johnson",
     role: "Busy Parent",
-    content: "SousChef has transformed how I plan meals for my family. The AI suggestions are spot-on!",
+    content: "MySideChef has transformed how I plan meals for my family. The AI suggestions are spot-on!",
     rating: 5
   },
   {

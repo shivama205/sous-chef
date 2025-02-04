@@ -7,16 +7,16 @@ export default function About() {
   return (
     <BaseLayout>
       <SEO 
-        title="About SousChef"
-        description="Learn about SousChef, your AI-powered kitchen assistant. Discover our mission to make healthy cooking and meal planning easier for everyone."
-        keywords="about souschef, AI kitchen assistant, meal planning app, cooking assistant, healthy eating platform"
+        title="About Us"
+        description="Learn more about MySideChef and our mission to make healthy eating easier with AI-powered meal planning."
+        keywords="about mysidechef, AI kitchen assistant, meal planning app, cooking assistant, healthy eating platform"
         type="website"
-        canonical="https://sous-chef.in/about"
+        canonical="https://mysidechef.com/about"
       />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <PageHeader
           icon={Info}
-          title="About SousChef"
+          title="About MySideChef"
           description="Empowering healthy eating through smart meal planning"
         />
         
@@ -25,7 +25,7 @@ export default function About() {
             <h2 className="text-2xl font-semibold mb-4">Our Mission</h2>
             <div className="text-gray-600 space-y-4">
               <p>
-                At SousChef, we believe that healthy eating shouldn't be complicated. Our mission is to make nutritious meal planning accessible, enjoyable, and sustainable for everyone. We combine cutting-edge technology with nutritional expertise to help you make informed decisions about your diet.
+                At MySideChef, we believe that healthy eating shouldn't be complicated. Our mission is to make nutritious meal planning accessible, enjoyable, and sustainable for everyone. We combine cutting-edge technology with nutritional expertise to help you make informed decisions about your diet.
               </p>
             </div>
           </section>
@@ -34,7 +34,7 @@ export default function About() {
             <h2 className="text-2xl font-semibold mb-4">What We Do</h2>
             <div className="text-gray-600 space-y-4">
               <p>
-                SousChef is more than just a meal planning platform. We're your personal nutrition assistant, helping you:
+                MySideChef is more than just a meal planning platform. We're your personal nutrition assistant, helping you:
               </p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Create personalized meal plans based on your dietary preferences and goals</li>
@@ -65,7 +65,7 @@ export default function About() {
             <h2 className="text-2xl font-semibold mb-4">Our Team</h2>
             <div className="text-gray-600 space-y-4">
               <p>
-                SousChef is built by a passionate team of nutritionists, software engineers, and food enthusiasts. We combine expertise in:
+                MySideChef is built by a passionate team of nutritionists, software engineers, and food enthusiasts. We combine expertise in:
               </p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Nutrition and dietetics</li>
@@ -80,7 +80,7 @@ export default function About() {
             <h2 className="text-2xl font-semibold mb-4">Join Us</h2>
             <div className="text-gray-600 space-y-4">
               <p>
-                Start your journey to healthier eating with SousChef today. Whether you're looking to maintain a balanced diet, achieve specific health goals, or simply make meal planning easier, we're here to help.
+                Start your journey to healthier eating with MySideChef today. Whether you're looking to maintain a balanced diet, achieve specific health goals, or simply make meal planning easier, we're here to help.
               </p>
               <p>
                 Have questions or suggestions? We'd love to hear from you at support@souschef.in

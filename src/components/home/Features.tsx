@@ -38,7 +38,7 @@ export function Features() {
   return (
     <section className="py-8 sm:py-12 bg-accent/30">
       <div className="container px-4 mx-auto">
-        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">Why Choose SousChef?</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">Why Choose MySideChef?</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {features.map((feature, index) => (
             <Card key={index} className="p-4 sm:p-6 bg-white/80 backdrop-blur-sm border-0 shadow-sm">

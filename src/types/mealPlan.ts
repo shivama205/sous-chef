@@ -46,3 +46,8 @@ export interface MealPlanGenerationRequest {
   preferences: Preferences;
 }
 
+export interface MealPlanShareProps {
+  mealPlanId: string;
+  mealPlanData: MealPlan;
+  planName: string;
+}

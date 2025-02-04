@@ -8,10 +8,10 @@ export default function Privacy() {
     <BaseLayout>
       <SEO 
         title="Privacy Policy"
-        description="Learn about how SousChef protects and handles your data. Review our privacy policy to understand data collection, usage, and your privacy rights."
+        description="Read about how SideChef protects your privacy and handles your data."
         keywords="privacy policy, data protection, user privacy, data security, privacy rights, data handling"
         type="website"
-        canonical="https://sous-chef.in/privacy"
+        canonical="https://mysidechef.com/privacy"
       />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <PageHeader
@@ -25,7 +25,7 @@ export default function Privacy() {
             <h2 className="text-2xl font-semibold mb-4">1. Information Collection and Processing</h2>
             <div className="text-gray-600 space-y-4">
               <p>
-                SousChef ("we", "us", "our") takes every reasonable step to ensure that your personal information that we process is accurate and, where necessary, kept up to date, and any of your personal information that we process that you inform us is inaccurate (having regard to the purposes for which they are processed) is erased or rectified.
+                MySideChef ("we", "us", "our") takes every reasonable step to ensure that your personal information that we process is accurate and, where necessary, kept up to date, and any of your personal information that we process that you inform us is inaccurate (having regard to the purposes for which they are processed) is erased or rectified.
               </p>
               <p>
                 We collect and process the following types of information:

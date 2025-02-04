@@ -1,56 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://sous-chef.in/</loc>
-    <lastmod>2025-02-03</lastmod>
-    <changefreq>weekly</changefreq>
+    <loc>https://mysidechef.com/</loc>
+    <lastmod>2025-02-04</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://sous-chef.in/meal-suggestions</loc>
-    <lastmod>2025-02-03</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://sous-chef.in/recipe-finder</loc>
-    <lastmod>2025-02-03</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://sous-chef.in/healthy-alternative</loc>
-    <lastmod>2025-02-03</lastmod>
+    <loc>https://mysidechef.com/meal-suggestions</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sous-chef.in/meal-plan</loc>
-    <lastmod>2025-02-03</lastmod>
+    <loc>https://mysidechef.com/recipe-finder</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sous-chef.in/blog</loc>
-    <lastmod>2025-02-03</lastmod>
-    <changefreq>daily</changefreq>
+    <loc>https://mysidechef.com/healthy-alternative</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sous-chef.in/about</loc>
-    <lastmod>2025-02-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <loc>https://mysidechef.com/meal-plan</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sous-chef.in/privacy</loc>
-    <lastmod>2025-02-03</lastmod>
+    <loc>https://mysidechef.com/blog</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://mysidechef.com/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://sous-chef.in/terms</loc>
-    <lastmod>2025-02-03</lastmod>
+    <loc>https://mysidechef.com/privacy</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://mysidechef.com/terms</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>

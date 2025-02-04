@@ -352,8 +352,8 @@ export const MealPlanDetails = () => {
         try {
           if (navigator.share) {
             await navigator.share({
-              title: `${name || 'My Meal Plan'} - SousChef`,
-              text: "Check out my personalized meal plan created with SousChef!",
+              title: `${name || 'My Meal Plan'} - MySideChef`,
+              text: "Check out my personalized meal plan created with MySideChef!",
               url: shareUrl,
             });
             toast({
@@ -408,8 +408,8 @@ export const MealPlanDetails = () => {
       try {
         if (navigator.share) {
           await navigator.share({
-            title: `${name || 'My Meal Plan'} - SousChef`,
-            text: "Check out my personalized meal plan created with SousChef!",
+            title: `${name || 'My Meal Plan'} - MySideChef`,
+            text: "Check out my personalized meal plan created with MySideChef!",
             url: shareUrl,
           });
           toast({

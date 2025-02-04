@@ -165,12 +165,12 @@ export default function Index() {
   return (
     <BaseLayout>
       <SEO 
-        title="SousChef - Your AI-Powered Kitchen Assistant"
+        title="MySideChef - Your AI-Powered Kitchen Assistant"
         description="Get instant, personalized meal ideas based on your energy level and cravings. Plan meals, find recipes, and discover healthy alternatives with your AI kitchen assistant."
         keywords="meal planning, recipe finder, healthy cooking, AI kitchen assistant, meal suggestions, cooking tips, personalized meals"
         type="website"
-        canonical="https://sous-chef.in"
-        image="https://sous-chef.in/og-image-compressed.jpg"
+        canonical="https://mysidechef.com"
+        image="https://mysidechef.com/og-image-compressed.jpg"
       />
       <main>
         {user ? <LoggedInView /> : <LoggedOutView />}

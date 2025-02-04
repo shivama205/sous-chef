@@ -270,7 +270,7 @@ export default function RecipeFinder() {
         description="Find the perfect recipe for any occasion. Search by ingredients, cuisine, or dietary requirements and discover delicious, healthy recipes."
         keywords="recipe search, recipe finder, cooking recipes, meal recipes, ingredient search, cuisine finder, dietary recipes"
         type="website"
-        canonical="https://sous-chef.in/recipe-finder"
+        canonical="https://mysidechef.com/recipe-finder"
       />
       {user ? (
         <div className="container mx-auto px-4 py-8 space-y-12">

@@ -67,7 +67,7 @@ This project is configured for deployment with Vercel. Simply:
 2. Import your repository in Vercel
 3. Vercel will automatically detect the Vite configuration and deploy your app
 
-The project is currently deployed at: https://sous-chef.in
+The project is currently deployed at: https://mysidechef.com
 
 ## I want to use a custom domain - is that possible?
 

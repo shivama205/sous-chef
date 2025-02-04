@@ -27,16 +27,16 @@ export const messages = {
 
 export const seo = {
   title: {
-    home: "SousChef AI - Personalized Meal Planning Made Easy",
-    mealPlan: "Create Your Perfect Meal Plan - SousChef AI",
-    profile: "Your Profile - SousChef AI",
-    blog: "Healthy Living Blog - SousChef AI",
+    home: "MySideChef AI - Personalized Meal Planning Made Easy",
+    mealPlan: "Create Your Perfect Meal Plan - MySideChef AI",
+    profile: "Your Profile - MySideChef AI",
+    blog: "Healthy Living Blog - MySideChef AI",
   },
   description: {
-    home: "Transform your eating habits with AI-powered personalized meal plans. Get healthy alternatives and track your nutrition with SousChef AI.",
+    home: "Transform your eating habits with AI-powered personalized meal plans. Get healthy alternatives and track your nutrition with MySideChef AI.",
     mealPlan: "Create a personalized meal plan tailored to your dietary preferences and nutritional goals.",
     profile: "Manage your meal plans, track your progress, and customize your preferences.",
-    blog: "Discover healthy living tips, nutrition advice, and delicious recipes on the SousChef AI blog.",
+    blog: "Discover healthy living tips, nutrition advice, and delicious recipes on the MySideChef AI blog.",
   },
 };
 

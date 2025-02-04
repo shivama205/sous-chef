@@ -26,7 +26,7 @@ const plans: PricingPlan[] = [
     id: "1",
     slug: "basic",
     name: "Basic",
-    description: "Perfect for trying out SousChef",
+    description: "Perfect for trying out MySideChef",
     price_monthly: 299,
     price_yearly: 2999,
     features: [
@@ -136,10 +136,10 @@ export function Pricing() {
     <BaseLayout>
       <SEO 
         title="Pricing Plans"
-        description="Explore SousChef's pricing plans and choose the perfect subscription for your meal planning needs. Start with our free plan or upgrade for premium features."
+        description="Explore MySideChef's pricing plans and choose the perfect subscription for your meal planning needs. Start with our free plan or upgrade for premium features."
         keywords="pricing plans, subscription plans, meal planning pricing, premium features, free plan"
         type="website"
-        canonical="https://sous-chef.in/pricing"
+        canonical="https://mysidechef.com/pricing"
       />
       <div className="container mx-auto px-4 py-8 space-y-12">
         {/* Header */}

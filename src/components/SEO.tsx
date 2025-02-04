@@ -9,26 +9,23 @@ interface SEOProps {
   canonical?: string;
 }
 
-const defaultSEO = {
-  title: 'SousChef - Your AI-Powered Kitchen Assistant',
-  description: 'SousChef helps you plan meals, find recipes, and discover healthy alternatives. Get personalized meal suggestions and cooking tips from your AI kitchen assistant.',
-  keywords: 'meal planning, recipe finder, healthy cooking, AI kitchen assistant, meal suggestions, cooking tips',
-  image: '/og-image-compressed.jpg',
-  type: 'website' as const,
-  url: 'https://sous-chef.in'
+const defaults = {
+  title: 'SideChef - Your AI Powered Meal Planning Assistant',
+  description: 'Get personalized meal plans, recipe suggestions, and healthy alternatives with AI.',
+  url: 'https://mysidechef.com'
 };
 
 export function SEO({ 
-  title = defaultSEO.title,
-  description = defaultSEO.description,
-  keywords = defaultSEO.keywords,
-  image = defaultSEO.image,
-  type = defaultSEO.type,
+  title = defaults.title,
+  description = defaults.description,
+  keywords = 'meal planning, recipe finder, healthy cooking, AI kitchen assistant, meal suggestions, cooking tips',
+  image = '/og-image-compressed.jpg',
+  type = 'website' as const,
   canonical
 }: SEOProps) {
-  const fullTitle = title === defaultSEO.title ? title : `${title} | SousChef`;
-  const url = canonical || defaultSEO.url;
-  const fullImage = image.startsWith('http') ? image : `${defaultSEO.url}${image}`;
+  const fullTitle = title === defaults.title ? title : `${title} | MySideChef`;
+  const url = canonical || defaults.url;
+  const fullImage = image.startsWith('http') ? image : `${defaults.url}${image}`;
 
   return (
     <Helmet>
@@ -46,7 +43,7 @@ export function SEO({
       <meta property="og:image" content={fullImage} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:site_name" content="SousChef" />
+      <meta property="og:site_name" content="MySideChef" />
 
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />

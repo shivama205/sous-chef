@@ -2,13 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Share2, Download } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
-import { MealPlan } from "@/types/mealPlan";
-
-interface MealPlanShareProps {
-  mealPlanId: string;
-  mealPlanData: MealPlan;
-  planName: string;
-}
+import { MealPlanShareProps } from "@/types/mealPlan";
 
 export const MealPlanShare: React.FC<MealPlanShareProps> = ({
   mealPlanId,
@@ -16,13 +10,13 @@ export const MealPlanShare: React.FC<MealPlanShareProps> = ({
   planName,
 }) => {
   const handleShare = async () => {
-    const shareUrl = `https://sous-chef.in/shared/meal-plan/${mealPlanId}`;
+    const shareUrl = `https://mysidechef.com/shared/meal-plan/${mealPlanId}`;
     
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${planName} - SousChef Meal Plan`,
-          text: "Check out this personalized meal plan I created using SousChef AI!",
+          title: `${planName} - MySideChef Meal Plan`,
+          text: "Check out this personalized meal plan I created using MySideChef AI!",
           url: shareUrl,
         });
       } catch (error) {

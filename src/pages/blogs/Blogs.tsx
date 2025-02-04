@@ -176,7 +176,7 @@ export function Blog() {
         description="Discover expert tips, guides, and insights about nutrition, meal planning, and healthy living. Read our latest articles on cooking, diet, and wellness."
         keywords="nutrition blog, meal planning, healthy recipes, cooking tips, diet advice, wellness guides"
         type="blog"
-        canonical="https://sous-chef.in/blog"
+        canonical="https://mysidechef.com/blog"
       />
       
       <div className="container mx-auto px-4 py-8 space-y-12">
