@@ -9,9 +9,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: true,
     autoRefreshToken: true,
-    storageKey: 'supabase.auth.token',
-    storage: window.localStorage
+    persistSession: true,
+    detectSessionInUrl: true // This will help with the redirect flow
   }
 });

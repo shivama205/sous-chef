@@ -15,7 +15,7 @@ const GoogleSignInButton = ({ redirectPath, state }: GoogleSignInButtonProps) =>
 
   const handleSignIn = async () => {
     try {
-      // Store redirect info in sessionStorage
+      // Store redirect info in sessionStorage before initiating sign in
       if (redirectPath) {
         sessionStorage.setItem('redirectPath', redirectPath);
       }
@@ -26,12 +26,17 @@ const GoogleSignInButton = ({ redirectPath, state }: GoogleSignInButtonProps) =>
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: window.location.origin, // Simplified: redirect to origin instead of callback
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent'
+          }
         }
       });
 
       if (error) throw error;
     } catch (error) {
+      console.error('Sign in error:', error);
       toast({
         title: "Error signing in",
         description: "There was an error signing in with Google. Please try again.",
