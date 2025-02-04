@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { StandardButton } from "@/components/ui/StandardButton";
 import { Card } from "@/components/ui/card";
 import { Preferences, Cuisine } from "../types/preferences";
@@ -18,6 +18,39 @@ interface PreferencesFormProps {
 
 export function PreferencesForm({ onSubmit, isLoading, preferences, setPreferences }: PreferencesFormProps) {
   const [showPerMealTargets, setShowPerMealTargets] = useState(false);
+  const caloriesFocusedRef = useRef(false);
+  const proteinFocusedRef = useRef(false);
+  
+  // Local states for input values
+  const [caloriesInput, setCaloriesInput] = useState(() => {
+    if (!preferences) return "";
+    return showPerMealTargets 
+      ? Math.round(preferences.targetCalories / 5).toString()
+      : preferences.targetCalories.toString();
+  });
+  
+  const [proteinInput, setProteinInput] = useState(() => {
+    if (!preferences) return "";
+    return showPerMealTargets 
+      ? Math.round(preferences.targetProtein / 5).toString()
+      : preferences.targetProtein.toString();
+  });
+
+  // Update local input states when preferences or meal target mode changes
+  useEffect(() => {
+    if (preferences) {
+      setCaloriesInput(
+        showPerMealTargets 
+          ? Math.round(preferences.targetCalories / 5).toString()
+          : preferences.targetCalories.toString()
+      );
+      setProteinInput(
+        showPerMealTargets 
+          ? Math.round(preferences.targetProtein / 5).toString()
+          : preferences.targetProtein.toString()
+      );
+    }
+  }, [preferences, showPerMealTargets]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,104 +68,110 @@ export function PreferencesForm({ onSubmit, isLoading, preferences, setPreferenc
     }
   };
 
+  const handleCaloriesBlur = () => {
+    if (preferences) {
+      const numericValue = parseInt(caloriesInput) || 0;
+      const finalValue = showPerMealTargets ? numericValue * 5 : numericValue;
+      handlePreferenceChange('targetCalories', finalValue);
+    }
+  };
+
+  const handleProteinBlur = () => {
+    if (preferences) {
+      const numericValue = parseInt(proteinInput) || 0;
+      const finalValue = showPerMealTargets ? numericValue * 5 : numericValue;
+      handlePreferenceChange('targetProtein', finalValue);
+    }
+  };
+
   if (!preferences) return null;
 
   return (
-    <Card className="w-full backdrop-blur-sm bg-white/80 border-0 shadow-xl rounded-2xl p-4 sm:p-6">
-      <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
-        <div className="space-y-4 sm:space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="days" className="text-base font-semibold">Days to Plan</Label>
-            <Select 
-              value={preferences.days.toString()} 
-              onValueChange={(value) => handlePreferenceChange('days', parseInt(value))}
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <Card className="w-full backdrop-blur-sm bg-white/80 border-0 shadow-xl rounded-2xl p-4 sm:p-6 space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="days" className="text-base font-semibold">Days to Plan</Label>
+          <Select 
+            value={preferences.days.toString()} 
+            onValueChange={(value) => handlePreferenceChange('days', parseInt(value))}
+          >
+            <SelectTrigger className="h-11">
+              <SelectValue placeholder="Select number of days" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">1 day</SelectItem>
+              <SelectItem value="3">3 days</SelectItem>
+              <SelectItem value="5">5 days</SelectItem>
+              <SelectItem value="7">7 days</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <Label className="text-base font-semibold">Nutritional Targets</Label>
+            <StandardButton
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowPerMealTargets(!showPerMealTargets)}
+              className="text-sm text-muted-foreground hover:text-primary"
             >
-              <SelectTrigger className="h-11">
-                <SelectValue placeholder="Select number of days" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">1 day</SelectItem>
-                <SelectItem value="3">3 days</SelectItem>
-                <SelectItem value="5">5 days</SelectItem>
-                <SelectItem value="7">7 days</SelectItem>
-              </SelectContent>
-            </Select>
+              {showPerMealTargets ? "Switch to Daily Totals" : "Switch to Per Meal"}
+              <ChevronDown className={`ml-1 h-4 w-4 transition-transform ${showPerMealTargets ? "rotate-180" : ""}`} />
+            </StandardButton>
           </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label className="text-base font-semibold">Nutritional Targets</Label>
-              <StandardButton
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowPerMealTargets(!showPerMealTargets)}
-                className="text-sm text-muted-foreground hover:text-primary"
-              >
-                {showPerMealTargets ? "Switch to Daily Totals" : "Switch to Per Meal"}
-                <ChevronDown className={`ml-1 h-4 w-4 transition-transform ${showPerMealTargets ? "rotate-180" : ""}`} />
-              </StandardButton>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="targetCalories" className="text-sm text-muted-foreground">
+                {showPerMealTargets ? "Calories per Meal" : "Daily Calories"}
+              </Label>
+              <Input
+                id="targetCalories"
+                type="number"
+                value={caloriesInput}
+                onChange={(e) => setCaloriesInput(e.target.value)}
+                onBlur={handleCaloriesBlur}
+                placeholder={showPerMealTargets ? "e.g. 400" : "e.g. 2000"}
+                className="h-11"
+              />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="targetCalories" className="text-sm text-muted-foreground">
-                  {showPerMealTargets ? "Calories per Meal" : "Daily Calories"}
-                </Label>
-                <Input
-                  id="targetCalories"
-                  type="number"
-                  value={showPerMealTargets && preferences.targetCalories 
-                    ? Math.round(preferences.targetCalories / 5) 
-                    : preferences.targetCalories}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value);
-                    handlePreferenceChange('targetCalories', showPerMealTargets ? value * 5 : value);
-                  }}
-                  placeholder={showPerMealTargets ? "e.g. 400" : "e.g. 2000"}
-                  className="h-11"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="targetProtein" className="text-sm text-muted-foreground">
-                  {showPerMealTargets ? "Protein per Meal (g)" : "Daily Protein (g)"}
-                </Label>
-                <Input
-                  id="targetProtein"
-                  type="number"
-                  value={showPerMealTargets && preferences.targetProtein 
-                    ? Math.round(preferences.targetProtein / 5) 
-                    : preferences.targetProtein}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value);
-                    handlePreferenceChange('targetProtein', showPerMealTargets ? value * 5 : value);
-                  }}
-                  placeholder={showPerMealTargets ? "e.g. 30" : "e.g. 150"}
-                  className="h-11"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="targetProtein" className="text-sm text-muted-foreground">
+                {showPerMealTargets ? "Protein per Meal (g)" : "Daily Protein (g)"}
+              </Label>
+              <Input
+                id="targetProtein"
+                type="number"
+                value={proteinInput}
+                onChange={(e) => setProteinInput(e.target.value)}
+                onBlur={handleProteinBlur}
+                placeholder={showPerMealTargets ? "e.g. 30" : "e.g. 150"}
+                className="h-11"
+              />
             </div>
           </div>
+        </div>
 
-          <div className="space-y-4">
-            <CuisineSelector 
-              cuisinePreferences={preferences.cuisinePreferences} 
-              setCuisinePreferences={(cuisines) => handlePreferenceChange('cuisinePreferences', cuisines)} 
-            />
-          </div>
+        <div className="space-y-4">
+          <CuisineSelector 
+            cuisinePreferences={preferences.cuisinePreferences} 
+            setCuisinePreferences={(cuisines) => handlePreferenceChange('cuisinePreferences', cuisines)} 
+          />
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="dietaryRestrictions" className="text-base font-semibold">
-              Dietary Restrictions
-              <span className="text-sm font-normal text-muted-foreground ml-2">(Optional)</span>
-            </Label>
-            <Textarea
-              id="dietaryRestrictions"
-              value={preferences.dietaryRestrictions}
-              onChange={(e) => handlePreferenceChange('dietaryRestrictions', e.target.value)}
-              placeholder="Enter any dietary restrictions or allergies..."
-              className="min-h-[100px]"
-            />
-          </div>
+        <div className="space-y-2">
+          <Label htmlFor="dietaryRestrictions" className="text-base font-semibold">
+            Dietary Restrictions
+            <span className="text-sm font-normal text-muted-foreground ml-2">(Optional)</span>
+          </Label>
+          <Textarea
+            id="dietaryRestrictions"
+            value={preferences.dietaryRestrictions}
+            onChange={(e) => handlePreferenceChange('dietaryRestrictions', e.target.value)}
+            placeholder="Enter any dietary restrictions or allergies..."
+            className="min-h-[100px]"
+          />
         </div>
 
         <StandardButton 
@@ -150,7 +189,7 @@ export function PreferencesForm({ onSubmit, isLoading, preferences, setPreferenc
             'Generate Meal Plan'
           )}
         </StandardButton>
-      </form>
-    </Card>
+      </Card>
+    </form>
   );
 }
