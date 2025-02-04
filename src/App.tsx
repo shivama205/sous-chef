@@ -4,8 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/providers/AuthProvider";
-import { ThemeProvider } from "@/providers/ThemeProvider";
-import { MetaTags } from "@/components/MetaTags";
 import Index from "./pages/Index";
 import { MealPlan } from "./pages/MealPlanner/MealPlan";
 import HealthyAlternative from "./pages/HealthyAlternatives/HealthyAlternative";
@@ -29,7 +27,7 @@ import AuthCallback from "./pages/auth/callback";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <ThemeProvider>
+  <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
         <BrowserRouter>
@@ -60,7 +58,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
-  </ThemeProvider>
+  </QueryClientProvider>
 );
 
 export default App;
