@@ -21,6 +21,7 @@ export function PreferencesForm({ onSubmit, isLoading, preferences, setPreferenc
   const [showPerMealTargets, setShowPerMealTargets] = useState(false);
   const caloriesFocusedRef = useRef(false);
   const proteinFocusedRef = useRef(false);
+  const [dietaryRestrictionsInput, setDietaryRestrictionsInput] = useState(() => preferences?.dietaryRestrictions || "");
   
   // Local states for input values
   const [caloriesInput, setCaloriesInput] = useState(() => {
@@ -37,7 +38,7 @@ export function PreferencesForm({ onSubmit, isLoading, preferences, setPreferenc
       : preferences.targetProtein.toString();
   });
 
-  // Update local input states when preferences or meal target mode changes
+  // Update local input states when preferences change
   useEffect(() => {
     if (preferences) {
       setCaloriesInput(
@@ -50,6 +51,7 @@ export function PreferencesForm({ onSubmit, isLoading, preferences, setPreferenc
           ? Math.round(preferences.targetProtein / 5).toString()
           : preferences.targetProtein.toString()
       );
+      setDietaryRestrictionsInput(preferences.dietaryRestrictions || "");
     }
   }, [preferences, showPerMealTargets]);
 
@@ -88,6 +90,12 @@ export function PreferencesForm({ onSubmit, isLoading, preferences, setPreferenc
       const numericValue = parseInt(proteinInput) || 0;
       const finalValue = showPerMealTargets ? numericValue * 5 : numericValue;
       handlePreferenceChange('targetProtein', finalValue);
+    }
+  };
+
+  const handleDietaryRestrictionsBlur = () => {
+    if (preferences) {
+      handlePreferenceChange('dietaryRestrictions', dietaryRestrictionsInput);
     }
   };
 
@@ -174,8 +182,9 @@ export function PreferencesForm({ onSubmit, isLoading, preferences, setPreferenc
           </Label>
           <Textarea
             id="dietaryRestrictions"
-            value={preferences.dietaryRestrictions}
-            onChange={(e) => handlePreferenceChange('dietaryRestrictions', e.target.value)}
+            value={dietaryRestrictionsInput}
+            onChange={(e) => setDietaryRestrictionsInput(e.target.value)}
+            onBlur={handleDietaryRestrictionsBlur}
             placeholder="Enter any dietary restrictions or allergies..."
             className="min-h-[100px]"
           />
