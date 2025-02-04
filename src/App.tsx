@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/providers/AuthProvider";
 import Analytics from "@/components/Analytics";
+import { CookieConsent } from "@/components/CookieConsent";
 import Index from "./pages/Index";
 import { MealPlan } from "./pages/MealPlanner/MealPlan";
 import HealthyAlternative from "./pages/HealthyAlternatives/HealthyAlternative";
@@ -57,6 +58,7 @@ const App = () => (
             <Route path="/payment/status" element={<PaymentStatus />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
           </Routes>
+          <CookieConsent />
         </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>

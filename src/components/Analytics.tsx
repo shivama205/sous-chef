@@ -7,7 +7,7 @@ import { EventName, EventCategory, Feature } from '@/constants/eventTaxonomy';
 declare global {
   interface Window {
     gtag: (
-      command: 'config' | 'event',
+      command: 'config' | 'event' | 'consent',
       targetId: string,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       params?: any
@@ -40,7 +40,8 @@ export const Analytics = () => {
   }, []);
 
   useEffect(() => {
-    if (location) {
+    const consent = localStorage.getItem('analytics-consent');
+    if (consent === 'accepted' && location) {
       // Get the base route (first segment of the path)
       const baseRoute = '/' + location.pathname.split('/')[1];
       const feature = routeToFeature[baseRoute] || routeToFeature[location.pathname];

@@ -13,8 +13,24 @@
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+
+      // Set default consent to 'denied' until user provides consent
+      gtag('consent', 'default', {
+        'analytics_storage': 'denied'
+      });
+
+      // Check for existing consent
+      const analyticsConsent = localStorage.getItem('analytics-consent');
+      if (analyticsConsent === 'accepted') {
+        gtag('consent', 'update', {
+          'analytics_storage': 'granted'
+        });
+      }
+
       gtag('js', new Date());
-      gtag('config', 'G-ZDSB2CW3G5');
+      gtag('config', 'G-ZDSB2CW3G5', {
+        'anonymize_ip': true // Enable IP anonymization for GDPR compliance
+      });
     </script>
     
     <!-- Favicon -->
