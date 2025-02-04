@@ -170,7 +170,7 @@ export default function Index() {
         keywords="meal planning, recipe finder, healthy cooking, AI kitchen assistant, meal suggestions, cooking tips, personalized meals"
         type="website"
         canonical="https://sous-chef.in"
-        image="https://sous-chef.in/og-image.png"
+        image="https://sous-chef.in/og-image-compressed.jpg"
       />
       <main>
         {user ? <LoggedInView /> : <LoggedOutView />}
