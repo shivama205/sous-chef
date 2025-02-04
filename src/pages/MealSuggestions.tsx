@@ -14,8 +14,12 @@ import { useAuth } from "@/providers/AuthProvider";
 import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
 import { LoginDialog } from "@/components/LoginDialog";
 import { SEO } from "@/components/SEO";
+import { usePageTracking } from "@/hooks/usePageTracking";
+import { trackEvent } from "@/services/analyticsTracker";
+import { EventName, EventCategory, Feature } from "@/constants/eventTaxonomy";
 
 export function MealSuggestions() {
+  usePageTracking();
   const [isLoading, setIsLoading] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [suggestions, setSuggestions] = useState<SuggestedMeal[]>([]);
@@ -43,6 +47,18 @@ export function MealSuggestions() {
     e.preventDefault();
     setIsLoading(true);
 
+    trackEvent({
+      action: EventName.FormSubmit,
+      category: EventCategory.Engagement,
+      feature: Feature.MealSuggestions,
+      label: 'meal_suggestions_request',
+      metadata: {
+        mealType: request.mealType,
+        dietaryRestrictions: request.dietaryRestrictions,
+        preferences: request.preferences
+      }
+    });
+
     try {
       const meals = await suggestMeals(request);
       setSuggestions(meals);
@@ -63,15 +79,39 @@ export function MealSuggestions() {
   };
 
   const handleRecipeClick = (meal: SuggestedMeal) => (e: React.MouseEvent) => {
-    e.preventDefault();
+    trackEvent({
+      action: EventName.ButtonClick,
+      category: EventCategory.Engagement,
+      feature: Feature.MealSuggestions,
+      label: 'suggested_recipe_click',
+      metadata: {
+        recipeName: meal.name,
+        mealType: meal.type,
+        difficulty: meal.difficulty,
+        cookingTime: meal.cookingTime
+      }
+    });
+    
     if (!user) {
       setSelectedMeal(meal);
       setShowSignIn(true);
       return;
     }
-
-    // Navigate to new recipe page
+    
     navigate('/recipe/new', { state: { meal } });
+  };
+
+  const handleLoginPrompt = () => {
+    trackEvent({
+      action: EventName.ButtonClick,
+      category: EventCategory.Auth,
+      feature: Feature.MealSuggestions,
+      label: 'login_prompt',
+      metadata: {
+        source: 'meal_suggestions'
+      }
+    });
+    setShowSignIn(true);
   };
 
   return (
@@ -421,7 +461,7 @@ export function MealSuggestions() {
                     <p className="text-muted-foreground max-w-md mx-auto">
                       Sign in to unlock full recipes, save your favorites, and get personalized meal plans tailored to your preferences!
                     </p>
-                    <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
+                    <Button asChild size="lg" className="bg-primary hover:bg-primary/90" onClick={handleLoginPrompt}>
                       <Link to="/sign-in" className="gap-2">
                         Sign in to Get Started
                         <ArrowRight className="w-4 h-4" />

@@ -28,11 +28,11 @@ import AuthCallback from "./pages/auth/callback";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Analytics />
-        <BrowserRouter>
+  <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Analytics />
           <Toaster />
           <Sonner />
           <Routes>
@@ -57,10 +57,10 @@ const App = () => (
             <Route path="/payment/status" element={<PaymentStatus />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
           </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </BrowserRouter>
 );
 
 export default App;

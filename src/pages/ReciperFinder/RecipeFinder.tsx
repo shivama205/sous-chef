@@ -21,6 +21,9 @@ import { findRecipes, saveRecipe, getUserRecipes } from "@/services/recipeFinder
 import { getUserMacros } from "@/services/userMacros";
 import { useNavigate } from "react-router-dom";
 import { SEO } from "@/components/SEO";
+import { usePageTracking } from "@/hooks/usePageTracking";
+import { trackEvent } from "@/services/analyticsTracker";
+import { EventName, EventCategory, Feature } from "@/constants/eventTaxonomy";
 
 const suggestionList = [
   "Ensure ingredients are spelled correctly",
@@ -69,6 +72,7 @@ const NoRecipesFound = ({ suggestions }: { suggestions: string[] }) => (
 );
 
 export default function RecipeFinder() {
+  usePageTracking();
   const { user } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -85,6 +89,16 @@ export default function RecipeFinder() {
   const [recentRecipes, setRecentRecipes] = useState<Recipe[]>([]);
   const navigate = useNavigate();
   const onDrop = async (acceptedFiles: File[]) => {
+    trackEvent({
+      action: EventName.ButtonClick,
+      category: EventCategory.Engagement,
+      feature: Feature.RecipeFinder,
+      label: 'image_upload',
+      metadata: {
+        fileCount: acceptedFiles.length,
+        fileTypes: acceptedFiles.map(file => file.type)
+      }
+    });
     if (acceptedFiles.length === 0) {
       toast({
         title: "No files selected",
@@ -183,6 +197,17 @@ export default function RecipeFinder() {
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 100);
+
+      trackEvent({
+        action: EventName.FormSubmit,
+        category: EventCategory.Engagement,
+        feature: Feature.RecipeFinder,
+        label: 'recipe_search',
+        metadata: {
+          searchType: 'text',
+          query: ingredients.join(', ')
+        }
+      });
     } catch (error) {
       console.error("Error finding recipes:", error);
       setSuggestions(suggestionList);
@@ -223,41 +248,53 @@ export default function RecipeFinder() {
   }, [user]);
 
   const handleSaveRecipe = async (recipe: Recipe) => {
+    trackEvent({
+      action: EventName.RecipeSave,
+      category: EventCategory.Engagement,
+      feature: Feature.RecipeFinder,
+      label: 'save_recipe',
+      metadata: {
+        recipeName: recipe.meal_name,
+        cookingTime: recipe.cooking_time,
+        ingredients: recipe.ingredients.length
+      }
+    });
+
     if (!user) {
       setLoginDialogOpen(true);
       return;
     }
 
     try {
-      const savedRecipe = await saveRecipe(user.id, recipe);
-      // Update the recipes array with the saved recipe that has the ID
-      setRecipes(prevRecipes => 
-        prevRecipes.map(r => 
-          r.meal_name === recipe.meal_name ? savedRecipe : r
-        )
-      );
-      // Update the saved IDs set
-      setSavedRecipeIds(prev => {
-        const newSet = new Set(prev);
-        newSet.add(savedRecipe.id);
-        return newSet;
-      });
-      
+      await saveRecipe(user.id, recipe);
       toast({
-        title: "Recipe Saved",
-        description: "Recipe has been saved to your collection.",
+        title: "Recipe saved!",
+        description: "You can find it in your saved recipes.",
       });
     } catch (error) {
       console.error("Error saving recipe:", error);
       toast({
-        title: "Error",
-        description: "Failed to save recipe. Please try again.",
+        title: "Error saving recipe",
+        description: "Please try again later.",
         variant: "destructive",
       });
     }
   };
 
   const handleRecipeClick = (recipe: Recipe) => {
+    trackEvent({
+      action: EventName.RecipeView,
+      category: EventCategory.Content,
+      feature: Feature.RecipeFinder,
+      label: 'view_recipe_details',
+      metadata: {
+        recipeName: recipe.meal_name,
+        cookingTime: recipe.cooking_time,
+        ingredientCount: recipe.ingredients.length,
+        source: 'recipe_finder'
+      }
+    });
+
     if (recipe.id) {
       navigate(`/recipe/${recipe.id}`);
     }
