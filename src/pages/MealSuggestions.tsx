@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,23 +6,21 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChefHat, Clock, Utensils, ArrowRight, Loader2, Brain, Coffee } from "lucide-react";
 import { suggestMeals, type SuggestedMeal, type MealSuggestionRequest } from "@/services/mealSuggestions";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
 import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
-import { useToast } from "@/components/ui/use-toast";
-import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { LoginDialog } from "@/components/LoginDialog";
 import { SEO } from "@/components/SEO";
 
 export function MealSuggestions() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
-  const [pendingRecipe, setPendingRecipe] = useState<SuggestedMeal | null>(null);
   const [suggestions, setSuggestions] = useState<SuggestedMeal[]>([]);
   const [selectedMeal, setSelectedMeal] = useState<SuggestedMeal | null>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
   const [request, setRequest] = useState<MealSuggestionRequest>({
     preferences: [],
     mealType: undefined,
@@ -34,6 +32,12 @@ export function MealSuggestions() {
 
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (suggestions.length > 0 && !isLoading) {
+      suggestionsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [suggestions, isLoading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -218,6 +222,7 @@ export function MealSuggestions() {
           {/* Results */}
           {suggestions.length > 0 && (
             <motion.div
+              ref={suggestionsRef}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
