@@ -6,6 +6,12 @@ import { X } from 'lucide-react';
 
 const CONSENT_KEY = 'analytics-consent';
 
+declare global {
+  interface Window {
+    dataLayer: any[];
+  }
+}
+
 export const CookieConsent = () => {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -20,22 +26,24 @@ export const CookieConsent = () => {
   const handleAccept = () => {
     localStorage.setItem(CONSENT_KEY, 'accepted');
     setIsVisible(false);
-    // Initialize GA
-    if (typeof window.gtag === 'function') {
-      window.gtag('consent', 'update', {
+    
+    // Update GTM dataLayer with consent
+    if (window.dataLayer) {
+      window.dataLayer.push({
+        'event': 'update_consent',
         'analytics_storage': 'granted'
       });
     }
-    // Reload the page to ensure GA is properly initialized
-    window.location.reload();
   };
 
   const handleDecline = () => {
     localStorage.setItem(CONSENT_KEY, 'declined');
     setIsVisible(false);
-    // Disable GA
-    if (typeof window.gtag === 'function') {
-      window.gtag('consent', 'update', {
+    
+    // Update GTM dataLayer with consent
+    if (window.dataLayer) {
+      window.dataLayer.push({
+        'event': 'update_consent',
         'analytics_storage': 'denied'
       });
     }

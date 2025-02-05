@@ -29,7 +29,7 @@ export function SEO({
   author = defaults.author,
   language = defaults.language
 }: SEOProps) {
-  const fullTitle = title === defaults.title ? title : `${title} | MySideChef`;
+  const fullTitle = title === defaults.title ? title : `${title}`;
   const url = canonical || defaults.url;
   const fullImage = image.startsWith('http') ? image : `${defaults.url}${image}`;
 
