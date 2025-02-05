@@ -38,7 +38,16 @@ export function MealSuggestions() {
 
   useEffect(() => {
     if (suggestions.length > 0 && !isLoading) {
-      suggestionsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Add a small delay to ensure content is rendered
+      const scrollTimeout = setTimeout(() => {
+        suggestionsRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+          inline: 'nearest'
+        });
+      }, 100);
+
+      return () => clearTimeout(scrollTimeout);
     }
   }, [suggestions, isLoading]);
 
