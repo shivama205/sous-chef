@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
+import { dataLayer } from '@/services/dataLayer';
 
 const CONSENT_KEY = 'analytics-consent';
 
@@ -26,27 +27,13 @@ export const CookieConsent = () => {
   const handleAccept = () => {
     localStorage.setItem(CONSENT_KEY, 'accepted');
     setIsVisible(false);
-    
-    // Update GTM dataLayer with consent
-    if (window.dataLayer) {
-      window.dataLayer.push({
-        'event': 'update_consent',
-        'analytics_storage': 'granted'
-      });
-    }
+    dataLayer.trackConsentUpdate('granted');
   };
 
   const handleDecline = () => {
     localStorage.setItem(CONSENT_KEY, 'declined');
     setIsVisible(false);
-    
-    // Update GTM dataLayer with consent
-    if (window.dataLayer) {
-      window.dataLayer.push({
-        'event': 'update_consent',
-        'analytics_storage': 'denied'
-      });
-    }
+    dataLayer.trackConsentUpdate('denied');
   };
 
   if (!isVisible) return null;

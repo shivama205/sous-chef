@@ -15,8 +15,7 @@ import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
 import { LoginDialog } from "@/components/LoginDialog";
 import { SEO } from "@/components/SEO";
 import { usePageTracking } from "@/hooks/usePageTracking";
-import { trackEvent } from "@/services/analyticsTracker";
-import { EventName, EventCategory, Feature } from "@/constants/eventTaxonomy";
+import { dataLayer } from "@/services/dataLayer";
 
 export function MealSuggestions() {
   usePageTracking();
@@ -47,21 +46,26 @@ export function MealSuggestions() {
     e.preventDefault();
     setIsLoading(true);
 
-    trackEvent({
-      action: EventName.FormSubmit,
-      category: EventCategory.Engagement,
-      feature: Feature.MealSuggestions,
-      label: 'meal_suggestions_request',
-      metadata: {
-        mealType: request.mealType,
-        dietaryRestrictions: request.dietaryRestrictions,
-        preferences: request.preferences
-      }
+    // Track meal suggestions request
+    dataLayer.trackRecipeSearch({
+      search_term: request.mealType || 'any',
+      search_type: 'meal_suggestions',
+      results_count: 0, // Will be updated after results
+      user_id: user?.id,
     });
 
     try {
       const meals = await suggestMeals(request);
       setSuggestions(meals);
+
+      // Track successful suggestions
+      dataLayer.trackRecipeSearch({
+        search_term: request.mealType || 'any',
+        search_type: 'meal_suggestions',
+        results_count: meals.length,
+        user_id: user?.id,
+      });
+
       toast({
         title: "Yay! 🎉",
         description: "We've found some tasty meals to make your life easier!",
@@ -79,17 +83,12 @@ export function MealSuggestions() {
   };
 
   const handleRecipeClick = (meal: SuggestedMeal) => (e: React.MouseEvent) => {
-    trackEvent({
-      action: EventName.ButtonClick,
-      category: EventCategory.Engagement,
-      feature: Feature.MealSuggestions,
-      label: 'suggested_recipe_click',
-      metadata: {
-        recipeName: meal.name,
-        mealType: meal.type,
-        difficulty: meal.difficulty,
-        cookingTime: meal.cookingTime
-      }
+    // Track recipe view
+    dataLayer.trackRecipeView({
+      recipe_name: meal.name,
+      recipe_category: meal.type,
+      cooking_time: meal.cookingTime,
+      user_id: user?.id,
     });
     
     if (!user) {
@@ -102,16 +101,26 @@ export function MealSuggestions() {
   };
 
   const handleLoginPrompt = () => {
-    trackEvent({
-      action: EventName.ButtonClick,
-      category: EventCategory.Auth,
-      feature: Feature.MealSuggestions,
-      label: 'login_prompt',
-      metadata: {
-        source: 'meal_suggestions'
-      }
-    });
+    // Track login prompt interaction
+    dataLayer.trackUserLogin(
+      'meal_suggestions_prompt',
+      undefined
+    );
     setShowSignIn(true);
+  };
+
+  // Track form field changes
+  const handleFieldChange = (field: keyof MealSuggestionRequest, value: any) => {
+    setRequest(prev => ({ ...prev, [field]: value }));
+    
+    // Track significant form interactions
+    if (['mealType', 'cookingTime', 'difficulty'].includes(field)) {
+      dataLayer.trackFormField({
+        field_name: field,
+        field_value: value,
+        user_id: user?.id
+      });
+    }
   };
 
   return (
@@ -157,7 +166,7 @@ export function MealSuggestions() {
                     </Label>
                     <Select
                       value={request.mealType}
-                      onValueChange={(value: any) => setRequest(prev => ({ ...prev, mealType: value }))}
+                      onValueChange={(value) => handleFieldChange('mealType', value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="I need ideas for..." />
@@ -178,7 +187,7 @@ export function MealSuggestions() {
                     </Label>
                     <Select
                       value={request.cookingTime}
-                      onValueChange={(value: any) => setRequest(prev => ({ ...prev, cookingTime: value }))}
+                      onValueChange={(value) => handleFieldChange('cookingTime', value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Be honest..." />
@@ -198,7 +207,7 @@ export function MealSuggestions() {
                     </Label>
                     <Select
                       value={request.difficulty}
-                      onValueChange={(value: any) => setRequest(prev => ({ ...prev, difficulty: value }))}
+                      onValueChange={(value) => handleFieldChange('difficulty', value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="How adventurous are you?" />
@@ -219,7 +228,7 @@ export function MealSuggestions() {
                     <Textarea
                       placeholder="Tell us about your dietary needs... (e.g., vegetarian, no nuts, low-carb, etc.)"
                       value={request.dietaryRestrictions}
-                      onChange={(e) => setRequest(prev => ({ ...prev, dietaryRestrictions: e.target.value }))}
+                      onChange={(e) => handleFieldChange('dietaryRestrictions', e.target.value)}
                       className="min-h-[80px]"
                     />
                   </div>
@@ -232,7 +241,7 @@ export function MealSuggestions() {
                     <Textarea
                       placeholder="Anything specific you're in the mood for? Or things you definitely don't want?"
                       value={request.instructions}
-                      onChange={(e) => setRequest(prev => ({ ...prev, instructions: e.target.value }))}
+                      onChange={(e) => handleFieldChange('instructions', e.target.value)}
                       className="min-h-[80px]"
                     />
                   </div>

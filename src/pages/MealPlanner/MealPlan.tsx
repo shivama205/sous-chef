@@ -18,6 +18,9 @@ import type { Preferences } from "@/types/preferences";
 import type { UserMacros } from "@/types/macros";
 import type { User } from "@supabase/supabase-js";
 import { MealPlanGenerationRequest } from "@/types/mealPlan";
+import { useAuth } from "@/providers/AuthProvider";
+import { usePageTracking } from "@/hooks/usePageTracking";
+import { dataLayer } from "@/services/dataLayer";
 
 const features = [
   {
@@ -75,7 +78,8 @@ export function MealPlan() {
   const [calculatedMacros, setCalculatedMacros] = useState<UserMacros | null>(null);
   const [savedMacros, setSavedMacros] = useState<UserMacros | null>(null);
   const [currentPreferences, setCurrentPreferences] = useState<Preferences>(initialPreferences);
-  const [user, setUser] = useState<User | null>(null);
+  const { user } = useAuth();
+  usePageTracking();
 
   useEffect(() => {
     const getUser = async () => {
@@ -144,6 +148,13 @@ export function MealPlan() {
     setIsGenerating(true);
 
     try {
+      // Track meal plan creation start
+      dataLayer.trackMealPlanCreate({
+        plan_duration: request.duration || '7_days',
+        recipe_count: request.recipes?.length || 0,
+        user_id: user?.id
+      });
+
       const newMealPlan = await generateMealPlan(request);
       
       navigate("/meal-plan/new", { 
@@ -256,6 +267,58 @@ export function MealPlan() {
     } finally {
       setIsSavingMacros(false);
     }
+  };
+
+  const handleSharePlan = async (planId: string, planData: any) => {
+    try {
+      // Track meal plan share
+      dataLayer.trackMealPlanShare({
+        plan_id: planId,
+        plan_duration: planData.duration,
+        recipe_count: planData.recipes.length,
+        user_id: user?.id
+      });
+
+      // ... rest of share plan logic
+    } catch (error) {
+      console.error('Error sharing meal plan:', error);
+    }
+  };
+
+  const handleViewPlan = (planId: string, planData: any) => {
+    // Track meal plan view
+    dataLayer.trackMealPlanView({
+      plan_id: planId,
+      plan_duration: planData.duration,
+      recipe_count: planData.recipes.length,
+      user_id: user?.id
+    });
+
+    // ... rest of view plan logic
+  };
+
+  const handleRecipeSelect = (recipe: any) => {
+    // Track recipe selection in meal plan
+    dataLayer.trackRecipeView({
+      recipe_id: recipe.id,
+      recipe_name: recipe.name,
+      recipe_category: 'meal_plan',
+      cooking_time: recipe.cookingTime,
+      user_id: user?.id
+    });
+
+    // ... rest of recipe selection logic
+  };
+
+  const handleFormFieldChange = (field: string, value: any) => {
+    // Track significant form field changes
+    dataLayer.trackFormField({
+      field_name: field,
+      field_value: value,
+      user_id: user?.id
+    });
+
+    // ... rest of form field change logic
   };
 
   const LoggedInView = () => (

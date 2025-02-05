@@ -1,105 +1,64 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { dataLayer } from '@/services/dataLayer';
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
   loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  session: null,
   loading: true,
 });
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const useAuth = () => useContext(AuthContext);
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let mounted = true;
-
-    async function getInitialSession() {
-      try {
-        // Get initial session
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
-        
-        // Only update state if component is still mounted
-        if (mounted) {
-          if (initialSession) {
-            console.log("Initial session found:", initialSession.user.id);
-            setSession(initialSession);
-            setUser(initialSession.user);
-          } else {
-            console.log("No initial session found");
-            setSession(null);
-            setUser(null);
-          }
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error("Error getting initial session:", error);
-        if (mounted) {
-          setSession(null);
-          setUser(null);
-          setLoading(false);
-        }
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+      
+      // Track if user is already logged in
+      if (session?.user) {
+        dataLayer.trackUserLogin('session_restore', session.user.id);
       }
-    }
-
-    getInitialSession();
+    });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.log("Auth state changed:", event, currentSession?.user?.id);
-      
-      if (mounted) {
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        setLoading(false);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
 
-        // Handle token refresh
-        if (event === 'TOKEN_REFRESHED' && currentSession) {
-          console.log("Token refreshed for user:", currentSession.user.id);
-          localStorage.setItem('supabase.auth.token', JSON.stringify(currentSession));
-        }
-
-        // Handle sign out
-        if (event === 'SIGNED_OUT') {
-          console.log("User signed out");
-          localStorage.removeItem('supabase.auth.token');
-          setSession(null);
-          setUser(null);
-        }
+      // Track auth events
+      if (event === 'SIGNED_IN') {
+        dataLayer.trackUserLogin(
+          session?.user?.app_metadata?.provider || 'email',
+          session?.user?.id
+        );
+      } else if (event === 'SIGNED_OUT') {
+        dataLayer.trackUserLogout(session?.user?.id);
+      } else if (event === 'USER_UPDATED') {
+        // Track user profile updates if needed
       }
     });
 
     return () => {
-      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
 
-  const value = {
-    user,
-    session,
-    loading,
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, loading }}>
       {children}
     </AuthContext.Provider>
   );
-}
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 }; 

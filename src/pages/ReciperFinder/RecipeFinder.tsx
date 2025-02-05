@@ -15,15 +15,13 @@ import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { useAuth } from "@/providers/AuthProvider";
 import { useDropzone } from "react-dropzone";
 import { UserMacros } from "@/types/macros";
-import { trackFeatureUsage } from "@/utils/analytics";
 import { Recipe } from "@/types/recipeFinder";
 import { findRecipes, saveRecipe, getUserRecipes } from "@/services/recipeFinder";
 import { getUserMacros } from "@/services/userMacros";
 import { useNavigate } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { usePageTracking } from "@/hooks/usePageTracking";
-import { trackEvent } from "@/services/analyticsTracker";
-import { EventName, EventCategory, Feature } from "@/constants/eventTaxonomy";
+import { dataLayer } from "@/services/dataLayer";
 
 const suggestionList = [
   "Ensure ingredients are spelled correctly",
@@ -89,16 +87,6 @@ export default function RecipeFinder() {
   const [recentRecipes, setRecentRecipes] = useState<Recipe[]>([]);
   const navigate = useNavigate();
   const onDrop = async (acceptedFiles: File[]) => {
-    trackEvent({
-      action: EventName.ButtonClick,
-      category: EventCategory.Engagement,
-      feature: Feature.RecipeFinder,
-      label: 'image_upload',
-      metadata: {
-        fileCount: acceptedFiles.length,
-        fileTypes: acceptedFiles.map(file => file.type)
-      }
-    });
     if (acceptedFiles.length === 0) {
       toast({
         title: "No files selected",
@@ -189,6 +177,14 @@ export default function RecipeFinder() {
       setRecipes(recipes);
       setSuggestions([]);
 
+      // Track successful search
+      dataLayer.trackRecipeSearch({
+        search_term: ingredients.join(', '),
+        search_type: 'ingredients',
+        results_count: recipes.length,
+        user_id: user.id
+      });
+
       toast({
         title: "Success",
         description: "Found recipes for your ingredients!",
@@ -197,17 +193,6 @@ export default function RecipeFinder() {
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 100);
-
-      trackEvent({
-        action: EventName.FormSubmit,
-        category: EventCategory.Engagement,
-        feature: Feature.RecipeFinder,
-        label: 'recipe_search',
-        metadata: {
-          searchType: 'text',
-          query: ingredients.join(', ')
-        }
-      });
     } catch (error) {
       console.error("Error finding recipes:", error);
       setSuggestions(suggestionList);
@@ -248,18 +233,6 @@ export default function RecipeFinder() {
   }, [user]);
 
   const handleSaveRecipe = async (recipe: Recipe) => {
-    trackEvent({
-      action: EventName.RecipeSave,
-      category: EventCategory.Engagement,
-      feature: Feature.RecipeFinder,
-      label: 'save_recipe',
-      metadata: {
-        recipeName: recipe.meal_name,
-        cookingTime: recipe.cooking_time,
-        ingredients: recipe.ingredients.length
-      }
-    });
-
     if (!user) {
       setLoginDialogOpen(true);
       return;
@@ -267,6 +240,15 @@ export default function RecipeFinder() {
 
     try {
       await saveRecipe(user.id, recipe);
+      
+      // Track recipe save
+      dataLayer.trackRecipeSave({
+        recipe_id: recipe.id,
+        recipe_name: recipe.meal_name,
+        cooking_time: recipe.cooking_time,
+        user_id: user.id
+      });
+
       toast({
         title: "Recipe saved!",
         description: "You can find it in your saved recipes.",
@@ -282,17 +264,12 @@ export default function RecipeFinder() {
   };
 
   const handleRecipeClick = (recipe: Recipe) => {
-    trackEvent({
-      action: EventName.RecipeView,
-      category: EventCategory.Content,
-      feature: Feature.RecipeFinder,
-      label: 'view_recipe_details',
-      metadata: {
-        recipeName: recipe.meal_name,
-        cookingTime: recipe.cooking_time,
-        ingredientCount: recipe.ingredients.length,
-        source: 'recipe_finder'
-      }
+    // Track recipe view
+    dataLayer.trackRecipeView({
+      recipe_id: recipe.id,
+      recipe_name: recipe.meal_name,
+      cooking_time: recipe.cooking_time,
+      user_id: user?.id
     });
 
     if (recipe.id) {
