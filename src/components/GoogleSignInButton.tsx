@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "./ui/use-toast";
+import { dataLayer } from "@/services/dataLayer";
 
 interface GoogleSignInButtonProps {
   redirectPath?: string;
@@ -26,7 +27,7 @@ const GoogleSignInButton = ({ redirectPath, state }: GoogleSignInButtonProps) =>
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin, // Simplified: redirect to origin instead of callback
+          redirectTo: window.location.origin,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent'

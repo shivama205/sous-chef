@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User } from '@supabase/supabase-js';
+import { User, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { dataLayer } from '@/services/dataLayer';
 
@@ -24,30 +24,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
-      
-      // Track if user is already logged in
-      if (session?.user) {
-        dataLayer.trackUserLogin('session_restore', session.user.id);
-      }
     });
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session) => {
       setUser(session?.user ?? null);
       setLoading(false);
 
       // Track auth events
-      if (event === 'SIGNED_IN') {
-        dataLayer.trackUserLogin(
-          session?.user?.app_metadata?.provider || 'email',
-          session?.user?.id
-        );
-      } else if (event === 'SIGNED_OUT') {
-        dataLayer.trackUserLogout(session?.user?.id);
-      } else if (event === 'USER_UPDATED') {
-        // Track user profile updates if needed
+      switch (event) {
+        case 'SIGNED_IN':
+          if (!session?.user?.last_sign_in_at) {
+            // This is a new signup
+            dataLayer.trackUserSignup(
+              session?.user?.app_metadata?.provider || 'email',
+              session?.user?.id
+            );
+          } else {
+            // This is a login
+            dataLayer.trackUserLogin(
+              session?.user?.app_metadata?.provider || 'email',
+              session?.user?.id
+            );
+          }
+          break;
+        case 'SIGNED_OUT':
+          dataLayer.trackUserLogout(session?.user?.id);
+          break;
       }
     });
 
