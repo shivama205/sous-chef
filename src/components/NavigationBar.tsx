@@ -111,6 +111,11 @@ const NavigationBar = () => {
                 <Link to={item.path} className="flex items-center gap-2">
                   <span className="group-hover:text-primary transition-colors">{item.icon}</span>
                   <span className="group-hover:text-primary transition-colors">{item.label}</span>
+                  {item.path === "/pricing" && (
+                    <span className="ml-1 inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-primary/10 text-primary">
+                      Free
+                    </span>
+                  )}
                 </Link>
               </Button>
             ))}
@@ -238,6 +243,11 @@ const NavigationBar = () => {
                     {item.icon}
                   </div>
                   <span>{item.label}</span>
+                  {item.path === "/pricing" && (
+                    <span className="ml-1 inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-primary/10 text-primary">
+                      Free
+                    </span>
+                  )}
                 </Link>
               ))}
             </div>

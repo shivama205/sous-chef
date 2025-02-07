@@ -40,11 +40,14 @@ export function MealSuggestions() {
     if (suggestions.length > 0 && !isLoading) {
       // Add a longer delay to ensure content and animations are rendered
       const scrollTimeout = setTimeout(() => {
-        suggestionsRef.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-          inline: 'nearest'
-        });
+        const cookAtHomeSection = document.getElementById('cook-at-home-section');
+        if (cookAtHomeSection) {
+          cookAtHomeSection.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+            inline: 'nearest'
+          });
+        }
       }, 300);
 
       return () => clearTimeout(scrollTimeout);
@@ -292,7 +295,7 @@ export function MealSuggestions() {
                 <h2 className="text-2xl font-semibold text-center">Here's What We Found For You! 🎉</h2>
                 
                 {/* Cook at Home Section */}
-                <div className="space-y-6">
+                <div className="space-y-6" id="cook-at-home-section">
                   <div className="flex items-center gap-4 justify-center">
                     <div className="h-px flex-1 bg-gradient-to-r from-transparent to-primary/10" />
                     <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-full">
@@ -467,30 +470,36 @@ export function MealSuggestions() {
                   </div>
                 </div>
 
-                {/* Sign In Nudge */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                >
-                  <Card className="bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 border-primary/10">
-                    <div className="p-8 text-center space-y-4">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                        <ChefHat className="w-6 h-6 text-primary" />
+                {/* Sign In Nudge - Only show for non-logged in users */}
+                {!user && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                  >
+                    <Card className="bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 border-primary/10">
+                      <div className="p-8 text-center space-y-4">
+                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                          <ChefHat className="w-6 h-6 text-primary" />
+                        </div>
+                        <h3 className="text-xl font-semibold">Want More Personalized Recipes?</h3>
+                        <p className="text-muted-foreground max-w-md mx-auto">
+                          Sign in to unlock full recipes, save your favorites, and get personalized meal plans tailored to your preferences!
+                        </p>
+                        <Button 
+                          size="lg" 
+                          className="bg-primary hover:bg-primary/90 text-white"
+                          onClick={handleLoginPrompt}
+                        >
+                          <span className="flex items-center gap-2">
+                            Sign in to Get Started
+                            <ArrowRight className="w-4 h-4" />
+                          </span>
+                        </Button>
                       </div>
-                      <h3 className="text-xl font-semibold">Want More Personalized Recipes?</h3>
-                      <p className="text-muted-foreground max-w-md mx-auto">
-                        Sign in to unlock full recipes, save your favorites, and get personalized meal plans tailored to your preferences!
-                      </p>
-                      <Button asChild size="lg" className="bg-primary hover:bg-primary/90" onClick={handleLoginPrompt}>
-                        <Link to="/sign-in" className="gap-2">
-                          Sign in to Get Started
-                          <ArrowRight className="w-4 h-4" />
-                        </Link>
-                      </Button>
-                    </div>
-                  </Card>
-                </motion.div>
+                    </Card>
+                  </motion.div>
+                )}
               </motion.div>
             </div>
           )}
