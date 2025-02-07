@@ -35,6 +35,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       // Track auth events
       switch (event) {
+        case 'INITIAL_SESSION':
+          dataLayer.trackUserLogin(
+            session?.user?.app_metadata?.provider || 'email',
+            session?.user?.id
+          );
+          break;
         case 'SIGNED_IN':
           if (!session?.user?.last_sign_in_at) {
             // This is a new signup
@@ -52,6 +58,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           break;
         case 'SIGNED_OUT':
           dataLayer.trackUserLogout(session?.user?.id);
+          break;
+        case 'USER_UPDATED':
+          dataLayer.trackUserLogin(
+            session?.user?.app_metadata?.provider || 'email',
+            session?.user?.id
+          );
           break;
       }
     });

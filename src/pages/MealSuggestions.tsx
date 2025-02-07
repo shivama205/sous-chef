@@ -38,14 +38,14 @@ export function MealSuggestions() {
 
   useEffect(() => {
     if (suggestions.length > 0 && !isLoading) {
-      // Add a small delay to ensure content is rendered
+      // Add a longer delay to ensure content and animations are rendered
       const scrollTimeout = setTimeout(() => {
         suggestionsRef.current?.scrollIntoView({
           behavior: 'smooth',
-          block: 'start',
+          block: 'center',
           inline: 'nearest'
         });
-      }, 100);
+      }, 300);
 
       return () => clearTimeout(scrollTimeout);
     }
@@ -279,216 +279,220 @@ export function MealSuggestions() {
 
           {/* Results */}
           {suggestions.length > 0 && (
-            <motion.div
+            <div
               ref={suggestionsRef}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="space-y-12"
+              className="pt-8"
             >
-              <h2 className="text-2xl font-semibold text-center">Here's What We Found For You! 🎉</h2>
-              
-              {/* Cook at Home Section */}
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 justify-center">
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent to-primary/10" />
-                  <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-full">
-                    <ChefHat className="w-5 h-5 text-primary" />
-                    <span className="text-lg font-medium text-primary">Recommended: Cook at Home</span>
-                  </div>
-                  <div className="h-px flex-1 bg-gradient-to-l from-transparent to-primary/10" />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {suggestions
-                    .filter(meal => meal.type === "cook-at-home")
-                    .slice(0, 2)
-                    .map((meal, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.2 }}
-                      >
-                        <Card className="overflow-hidden group hover:shadow-lg transition-all duration-300">
-                          <div className="p-6">
-                            <div className="flex items-start justify-between gap-6 mb-4">
-                              <div className="flex-1">
-                                <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">{meal.name}</h3>
-                                {meal.description && (
-                                  <p className="text-sm text-muted-foreground mt-2">{meal.description}</p>
-                                )}
-                              </div>
-                              {meal.cookingTime && (
-                                <div className="flex-shrink-0 flex flex-col items-center gap-1 bg-primary/5 px-4 py-2 rounded-lg">
-                                  <Clock className="w-4 h-4 text-primary" />
-                                  <div className="text-sm font-medium">{meal.cookingTime}</div>
-                                  <div className="text-xs text-muted-foreground">mins</div>
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="grid grid-cols-4 gap-3">
-                              <div className="bg-primary/5 p-3 rounded-lg">
-                                <div className="text-xs text-primary/60 font-medium">Protein</div>
-                                <div className="font-semibold mt-1">{meal.nutritionalValue.protein}g</div>
-                              </div>
-                              <div className="bg-primary/5 p-3 rounded-lg">
-                                <div className="text-xs text-primary/60 font-medium">Carbs</div>
-                                <div className="font-semibold mt-1">{meal.nutritionalValue.carbs}g</div>
-                              </div>
-                              <div className="bg-primary/5 p-3 rounded-lg">
-                                <div className="text-xs text-primary/60 font-medium">Fat</div>
-                                <div className="font-semibold mt-1">{meal.nutritionalValue.fat}g</div>
-                              </div>
-                              <div className="bg-primary/5 p-3 rounded-lg">
-                                <div className="text-xs text-primary/60 font-medium">Calories</div>
-                                <div className="font-semibold mt-1">{meal.nutritionalValue.calories}</div>
-                              </div>
-                            </div>
-                            
-                            <div className="pt-4">
-                              <Button 
-                                variant="outline" 
-                                className="w-full group-hover:bg-primary group-hover:text-white transition-all duration-300"
-                                onClick={handleRecipeClick(meal)}
-                              >
-                                <span className="flex items-center gap-2">
-                                  <ChefHat className="w-4 h-4" />
-                                  Get Full Recipe & Instructions
-                                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                </span>
-                              </Button>
-                            </div>
-                          </div>
-                        </Card>
-                      </motion.div>
-                    ))}
-                </div>
-              </div>
-
-              {/* Quick Options Section */}
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 justify-center">
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent to-primary/10" />
-                  <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-full">
-                    <Brain className="w-5 h-5 text-primary" />
-                    <span className="text-lg font-medium text-primary">Other Options</span>
-                  </div>
-                  <div className="h-px flex-1 bg-gradient-to-l from-transparent to-primary/10" />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {/* Eat Out Options */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                        <span className="text-lg">🍽️</span>
-                      </div>
-                      <h3 className="font-medium text-lg">Eat Out Options</h3>
-                    </div>
-                    <div className="grid gap-4">
-                      {suggestions
-                        .filter(meal => meal.type === "eat-out")
-                        .slice(0, 2)
-                        .map((meal, index) => (
-                          <motion.div
-                            key={`eat-out-${index}`}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                          >
-                            <Card className="overflow-hidden hover:shadow-md transition-all duration-300">
-                              <div className="p-4">
-                                <div className="space-y-2">
-                                  <h3 className="font-medium text-lg">{meal.name}</h3>
-                                  <p className="text-sm text-muted-foreground line-clamp-2">{meal.description}</p>
-                                </div>
-                                <div className="mt-4 grid grid-cols-2 gap-2">
-                                  <div className="bg-orange-50 p-2 rounded-lg text-center">
-                                    <div className="text-xs text-orange-600/60 font-medium">Protein</div>
-                                    <div className="font-medium text-orange-600">{meal.nutritionalValue.protein}g</div>
-                                  </div>
-                                  <div className="bg-orange-50 p-2 rounded-lg text-center">
-                                    <div className="text-xs text-orange-600/60 font-medium">Calories</div>
-                                    <div className="font-medium text-orange-600">{meal.nutritionalValue.calories}</div>
-                                  </div>
-                                </div>
-                              </div>
-                            </Card>
-                          </motion.div>
-                        ))}
-                    </div>
-                  </div>
-
-                  {/* Order In Options */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                        <span className="text-lg">🛵</span>
-                      </div>
-                      <h3 className="font-medium text-lg">Order In / Delivery</h3>
-                    </div>
-                    <div className="grid gap-4">
-                      {suggestions
-                        .filter(meal => meal.type === "order-in")
-                        .slice(0, 2)
-                        .map((meal, index) => (
-                          <motion.div
-                            key={`order-in-${index}`}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: (index + 2) * 0.1 }}
-                          >
-                            <Card className="overflow-hidden hover:shadow-md transition-all duration-300">
-                              <div className="p-4">
-                                <div className="space-y-2">
-                                  <h3 className="font-medium text-lg">{meal.name}</h3>
-                                  <p className="text-sm text-muted-foreground line-clamp-2">{meal.description}</p>
-                                </div>
-                                <div className="mt-4 grid grid-cols-2 gap-2">
-                                  <div className="bg-blue-50 p-2 rounded-lg text-center">
-                                    <div className="text-xs text-blue-600/60 font-medium">Protein</div>
-                                    <div className="font-medium text-blue-600">{meal.nutritionalValue.protein}g</div>
-                                  </div>
-                                  <div className="bg-blue-50 p-2 rounded-lg text-center">
-                                    <div className="text-xs text-blue-600/60 font-medium">Calories</div>
-                                    <div className="font-medium text-blue-600">{meal.nutritionalValue.calories}</div>
-                                  </div>
-                                </div>
-                              </div>
-                            </Card>
-                          </motion.div>
-                        ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sign In Nudge */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
+                transition={{ duration: 0.5 }}
+                className="space-y-12"
               >
-                <Card className="bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 border-primary/10">
-                  <div className="p-8 text-center space-y-4">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                      <ChefHat className="w-6 h-6 text-primary" />
+                <h2 className="text-2xl font-semibold text-center">Here's What We Found For You! 🎉</h2>
+                
+                {/* Cook at Home Section */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4 justify-center">
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent to-primary/10" />
+                    <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-full">
+                      <ChefHat className="w-5 h-5 text-primary" />
+                      <span className="text-lg font-medium text-primary">Recommended: Cook at Home</span>
                     </div>
-                    <h3 className="text-xl font-semibold">Want More Personalized Recipes?</h3>
-                    <p className="text-muted-foreground max-w-md mx-auto">
-                      Sign in to unlock full recipes, save your favorites, and get personalized meal plans tailored to your preferences!
-                    </p>
-                    <Button asChild size="lg" className="bg-primary hover:bg-primary/90" onClick={handleLoginPrompt}>
-                      <Link to="/sign-in" className="gap-2">
-                        Sign in to Get Started
-                        <ArrowRight className="w-4 h-4" />
-                      </Link>
-                    </Button>
+                    <div className="h-px flex-1 bg-gradient-to-l from-transparent to-primary/10" />
                   </div>
-                </Card>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {suggestions
+                      .filter(meal => meal.type === "cook-at-home")
+                      .slice(0, 2)
+                      .map((meal, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.2 }}
+                        >
+                          <Card className="overflow-hidden group hover:shadow-lg transition-all duration-300">
+                            <div className="p-6">
+                              <div className="flex items-start justify-between gap-6 mb-4">
+                                <div className="flex-1">
+                                  <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">{meal.name}</h3>
+                                  {meal.description && (
+                                    <p className="text-sm text-muted-foreground mt-2">{meal.description}</p>
+                                  )}
+                                </div>
+                                {meal.cookingTime && (
+                                  <div className="flex-shrink-0 flex flex-col items-center gap-1 bg-primary/5 px-4 py-2 rounded-lg">
+                                    <Clock className="w-4 h-4 text-primary" />
+                                    <div className="text-sm font-medium">{meal.cookingTime}</div>
+                                    <div className="text-xs text-muted-foreground">mins</div>
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="grid grid-cols-4 gap-3">
+                                <div className="bg-primary/5 p-3 rounded-lg">
+                                  <div className="text-xs text-primary/60 font-medium">Protein</div>
+                                  <div className="font-semibold mt-1">{meal.nutritionalValue.protein}g</div>
+                                </div>
+                                <div className="bg-primary/5 p-3 rounded-lg">
+                                  <div className="text-xs text-primary/60 font-medium">Carbs</div>
+                                  <div className="font-semibold mt-1">{meal.nutritionalValue.carbs}g</div>
+                                </div>
+                                <div className="bg-primary/5 p-3 rounded-lg">
+                                  <div className="text-xs text-primary/60 font-medium">Fat</div>
+                                  <div className="font-semibold mt-1">{meal.nutritionalValue.fat}g</div>
+                                </div>
+                                <div className="bg-primary/5 p-3 rounded-lg">
+                                  <div className="text-xs text-primary/60 font-medium">Calories</div>
+                                  <div className="font-semibold mt-1">{meal.nutritionalValue.calories}</div>
+                                </div>
+                              </div>
+                              
+                              <div className="pt-4">
+                                <Button 
+                                  variant="outline" 
+                                  className="w-full group-hover:bg-primary group-hover:text-white transition-all duration-300"
+                                  onClick={handleRecipeClick(meal)}
+                                >
+                                  <span className="flex items-center gap-2">
+                                    <ChefHat className="w-4 h-4" />
+                                    Get Full Recipe & Instructions
+                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                  </span>
+                                </Button>
+                              </div>
+                            </div>
+                          </Card>
+                        </motion.div>
+                      ))}
+                  </div>
+                </div>
+
+                {/* Quick Options Section */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4 justify-center">
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent to-primary/10" />
+                    <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-full">
+                      <Brain className="w-5 h-5 text-primary" />
+                      <span className="text-lg font-medium text-primary">Other Options</span>
+                    </div>
+                    <div className="h-px flex-1 bg-gradient-to-l from-transparent to-primary/10" />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {/* Eat Out Options */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                          <span className="text-lg">🍽️</span>
+                        </div>
+                        <h3 className="font-medium text-lg">Eat Out Options</h3>
+                      </div>
+                      <div className="grid gap-4">
+                        {suggestions
+                          .filter(meal => meal.type === "eat-out")
+                          .slice(0, 2)
+                          .map((meal, index) => (
+                            <motion.div
+                              key={`eat-out-${index}`}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                            >
+                              <Card className="overflow-hidden hover:shadow-md transition-all duration-300">
+                                <div className="p-4">
+                                  <div className="space-y-2">
+                                    <h3 className="font-medium text-lg">{meal.name}</h3>
+                                    <p className="text-sm text-muted-foreground line-clamp-2">{meal.description}</p>
+                                  </div>
+                                  <div className="mt-4 grid grid-cols-2 gap-2">
+                                    <div className="bg-orange-50 p-2 rounded-lg text-center">
+                                      <div className="text-xs text-orange-600/60 font-medium">Protein</div>
+                                      <div className="font-medium text-orange-600">{meal.nutritionalValue.protein}g</div>
+                                    </div>
+                                    <div className="bg-orange-50 p-2 rounded-lg text-center">
+                                      <div className="text-xs text-orange-600/60 font-medium">Calories</div>
+                                      <div className="font-medium text-orange-600">{meal.nutritionalValue.calories}</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </Card>
+                            </motion.div>
+                          ))}
+                      </div>
+                    </div>
+
+                    {/* Order In Options */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                          <span className="text-lg">🛵</span>
+                        </div>
+                        <h3 className="font-medium text-lg">Order In / Delivery</h3>
+                      </div>
+                      <div className="grid gap-4">
+                        {suggestions
+                          .filter(meal => meal.type === "order-in")
+                          .slice(0, 2)
+                          .map((meal, index) => (
+                            <motion.div
+                              key={`order-in-${index}`}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: (index + 2) * 0.1 }}
+                            >
+                              <Card className="overflow-hidden hover:shadow-md transition-all duration-300">
+                                <div className="p-4">
+                                  <div className="space-y-2">
+                                    <h3 className="font-medium text-lg">{meal.name}</h3>
+                                    <p className="text-sm text-muted-foreground line-clamp-2">{meal.description}</p>
+                                  </div>
+                                  <div className="mt-4 grid grid-cols-2 gap-2">
+                                    <div className="bg-blue-50 p-2 rounded-lg text-center">
+                                      <div className="text-xs text-blue-600/60 font-medium">Protein</div>
+                                      <div className="font-medium text-blue-600">{meal.nutritionalValue.protein}g</div>
+                                    </div>
+                                    <div className="bg-blue-50 p-2 rounded-lg text-center">
+                                      <div className="text-xs text-blue-600/60 font-medium">Calories</div>
+                                      <div className="font-medium text-blue-600">{meal.nutritionalValue.calories}</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </Card>
+                            </motion.div>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sign In Nudge */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <Card className="bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 border-primary/10">
+                    <div className="p-8 text-center space-y-4">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                        <ChefHat className="w-6 h-6 text-primary" />
+                      </div>
+                      <h3 className="text-xl font-semibold">Want More Personalized Recipes?</h3>
+                      <p className="text-muted-foreground max-w-md mx-auto">
+                        Sign in to unlock full recipes, save your favorites, and get personalized meal plans tailored to your preferences!
+                      </p>
+                      <Button asChild size="lg" className="bg-primary hover:bg-primary/90" onClick={handleLoginPrompt}>
+                        <Link to="/sign-in" className="gap-2">
+                          Sign in to Get Started
+                          <ArrowRight className="w-4 h-4" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </Card>
+                </motion.div>
               </motion.div>
-            </motion.div>
+            </div>
           )}
 
           {/* Login Dialog */}
