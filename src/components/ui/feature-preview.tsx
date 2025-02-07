@@ -13,7 +13,10 @@ export interface FeaturePreviewProps extends Omit<HTMLMotionProps<"div">, keyof 
   benefits: string[]
   icon: React.ElementType
   color: "burgundy" | "taupe" | "cream"
-  animationUrl?: string
+  screenshot?: {
+    src: string
+    alt: string
+  }
   action: {
     label: string
     href: string
@@ -26,7 +29,10 @@ export interface FeaturePreviewProps extends Omit<HTMLMotionProps<"div">, keyof 
   benefits: string[]
   icon: React.ElementType
   color: "burgundy" | "taupe" | "cream"
-  animationUrl?: string
+  screenshot?: {
+    src: string
+    alt: string
+  }
   action: {
     label: string
     href: string
@@ -69,7 +75,7 @@ export function FeaturePreview({
   benefits,
   icon: Icon,
   color = "burgundy",
-  animationUrl,
+  screenshot,
   action,
   imagePosition = "right",
   ...props
@@ -119,14 +125,17 @@ export function FeaturePreview({
         variant="glass"
         className={cn("relative overflow-hidden", colors.border)}
       >
-        <div className="aspect-[4/3] bg-gradient-to-br from-white/5 to-white/10">
-          {animationUrl ? (
-            <iframe
-              src={animationUrl}
-              className="w-full h-full"
-              allow="autoplay"
-              title={`${title} Preview`}
-            />
+        <div className="aspect-[16/10] bg-gradient-to-br from-white/5 to-white/10">
+          {screenshot ? (
+            <div className="relative w-full h-full">
+              <img
+                src={screenshot.src}
+                alt={screenshot.alt}
+                className="absolute inset-0 w-full h-full object-cover rounded-lg"
+              />
+              {/* Gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-black/10 to-transparent rounded-lg" />
+            </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
               Preview
