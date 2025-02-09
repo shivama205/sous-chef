@@ -33,37 +33,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(session?.user ?? null);
       setLoading(false);
 
+      if (!session?.user) return;
+
+      const provider = session.user.app_metadata?.provider || 'email';
+      const userId = session.user.id;
+
       // Track auth events
       switch (event) {
-        case 'INITIAL_SESSION':
-          dataLayer.trackUserLogin(
-            session?.user?.app_metadata?.provider || 'email',
-            session?.user?.id
-          );
-          break;
         case 'SIGNED_IN':
-          if (!session?.user?.last_sign_in_at) {
-            // This is a new signup
-            dataLayer.trackUserSignup(
-              session?.user?.app_metadata?.provider || 'email',
-              session?.user?.id
-            );
-          } else {
-            // This is a login
-            dataLayer.trackUserLogin(
-              session?.user?.app_metadata?.provider || 'email',
-              session?.user?.id
-            );
+          // If this is the first sign in (no last_sign_in_at), it's a new signup
+          if (!session.user.last_sign_in_at) {
+            dataLayer.trackUserSignup(provider, userId);
           }
+          // Track login event for both initial and subsequent sign-ins
+          dataLayer.trackUserLogin(provider, userId);
           break;
         case 'SIGNED_OUT':
-          dataLayer.trackUserLogout(session?.user?.id);
-          break;
-        case 'USER_UPDATED':
-          dataLayer.trackUserLogin(
-            session?.user?.app_metadata?.provider || 'email',
-            session?.user?.id
-          );
+          // Track logout event
+          dataLayer.trackUserLogout(userId);
           break;
       }
     });
