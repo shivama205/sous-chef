@@ -5,17 +5,22 @@ import { ArrowRight } from "lucide-react"
 
 export function Hero() {
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative overflow-hidden min-h-[600px]">
       {/* Background Image */}
-      <div className="absolute inset-0 -z-10">
+      <div className="absolute inset-0 bg-gray-50">
         <img
-          src="/assets/download.jpeg"
+          src="/assets/hero-bg.jpg"
           alt="Monstera leaf background"
-          className="w-full h-full object-contain opacity-5 scale-75"
+          className="absolute inset-0 w-full h-full object-cover opacity-[0.25]"
+          onError={(e) => {
+            console.error('Error loading image:', e);
+            e.currentTarget.style.display = 'none';
+          }}
+          onLoad={() => console.log('Image loaded successfully')}
         />
       </div>
 
-      <div className="container mx-auto px-4">
+      <div className="relative container mx-auto px-4">
         <div className="relative py-24 sm:py-32">
           <div className="mx-auto max-w-2xl text-center">
             <motion.div
