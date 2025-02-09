@@ -3,11 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
-import { ChefHat, Star, Clock, Calendar, Utensils, Loader2, Dumbbell, Target, ChevronRight, ChevronLeft, Brain, Sparkles } from "lucide-react";
-import { SavedRecipes } from "@/components/profile/SavedRecipes";
-import { SavedMealPlans } from "@/components/profile/SavedMealPlans";
+import { ChefHat, Calendar, Target, Brain, Sparkles, Dumbbell, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,20 +13,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import type { Recipe } from "@/types/recipeFinder";
-import type { MealPlan } from "@/types/mealPlan";
-
-interface UserStats {
-  recipesCount: number;
-  plansCount: number;
-}
-
-interface SavedMealPlan {
-  id: string;
-  name: string;
-  plan: MealPlan;
-  created_at: string;
-}
 
 interface UserMacros {
   calories: number;
@@ -41,13 +24,6 @@ interface UserMacros {
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center p-8">
     <Loader2 className="w-8 h-8 animate-spin text-primary" />
-  </div>
-);
-
-const StatItem = ({ icon: Icon, label, value }: { icon: any; label: string; value: string | number }) => (
-  <div className="flex items-center gap-1">
-    <Icon className="w-4 h-4" />
-    <span>{value} {label}</span>
   </div>
 );
 
@@ -67,168 +43,54 @@ export default function Profile() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("recipes");
-  const [stats, setStats] = useState<UserStats>({
-    recipesCount: 0,
-    plansCount: 0
-  });
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [isSavingMacros, setIsSavingMacros] = useState(false);
+  const [showGoalsDialog, setShowGoalsDialog] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
   const [macros, setMacros] = useState<UserMacros>({
     calories: 2000,
     protein: 150,
     carbs: 200,
     fat: 65
   });
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [mealPlans, setMealPlans] = useState<SavedMealPlan[]>([]);
-  const [loadedTabs, setLoadedTabs] = useState<Set<string>>(new Set());
-  const [isLoadingStats, setIsLoadingStats] = useState(true);
-  const [isLoadingRecipes, setIsLoadingRecipes] = useState(false);
-  const [isLoadingMealPlans, setIsLoadingMealPlans] = useState(false);
-  const [isSavingMacros, setIsSavingMacros] = useState(false);
-  const [showGoalsDialog, setShowGoalsDialog] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
 
-  // Load basic stats and user macros
+  // Load user macros
   useEffect(() => {
-    let isMounted = true;
-
     const fetchData = async () => {
       if (!user) return;
       
       try {
         setIsLoadingStats(true);
-        const [recipesCount, plansCount, macrosData] = await Promise.all([
-          supabase
-            .from("saved_recipes")
-            .select("id", { count: "exact" })
-            .eq("user_id", user.id),
-          supabase
-            .from("saved_meal_plans")
-            .select("id", { count: "exact" })
-            .eq("user_id", user.id),
-          supabase
-            .from("user_macros")
-            .select("*")
-            .eq("user_id", user.id)
-            .maybeSingle()
-        ]);
+        const { data, error } = await supabase
+          .from("user_macros")
+          .select("*")
+          .eq("user_id", user.id)
+          .maybeSingle();
 
-        if (isMounted) {
-          setStats({
-            recipesCount: recipesCount.count || 0,
-            plansCount: plansCount.count || 0
+        if (error) throw error;
+
+        if (data) {
+          setMacros({
+            calories: data.calories || 2000,
+            protein: data.protein || 150,
+            carbs: data.carbs || 200,
+            fat: data.fat || 65
           });
-
-          if (macrosData.data) {
-            setMacros({
-              calories: macrosData.data.calories || 2000,
-              protein: macrosData.data.protein || 150,
-              carbs: macrosData.data.carbs || 200,
-              fat: macrosData.data.fat || 65
-            });
-          }
         }
       } catch (error) {
         console.error("Error fetching data:", error);
-        if (isMounted) {
-          toast({
-            title: "Error loading profile",
-            description: "Failed to load profile data. Please try refreshing the page.",
-            variant: "destructive"
-          });
-        }
+        toast({
+          title: "Error loading profile",
+          description: "Failed to load profile data. Please try refreshing the page.",
+          variant: "destructive"
+        });
       } finally {
-        if (isMounted) {
-          setIsLoadingStats(false);
-        }
+        setIsLoadingStats(false);
       }
     };
 
     fetchData();
-    return () => {
-      isMounted = false;
-    };
   }, [user?.id]);
-
-  // Handle tab changes and data loading
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadTabData = async () => {
-      if (!user || loadedTabs.has(activeTab)) return;
-
-      try {
-        if (activeTab === "recipes" && !loadedTabs.has("recipes")) {
-          setIsLoadingRecipes(true);
-          const { data, error } = await supabase
-            .from("saved_recipes")
-            .select("*")
-            .eq("user_id", user.id)
-            .order("created_at", { ascending: false });
-
-          if (error) throw error;
-          if (!isMounted) return;
-
-          const transformedRecipes = (data || []).map(record => ({
-            id: record.id,
-            name: record.name || '',
-            description: record.description || '',
-            cookingTime: record.cooking_time || 0,
-            ingredients: Array.isArray(record.ingredients) ? record.ingredients : [],
-            instructions: Array.isArray(record.instructions) ? record.instructions : [],
-            nutritionalValue: record.nutritional_value || {
-              calories: 0,
-              protein: 0,
-              carbs: 0,
-              fat: 0
-            },
-            imageUrl: record.image_url || null,
-            cuisineType: record.cuisine_type || 'Mixed',
-            difficulty: (record.difficulty || 'medium').toLowerCase() as 'easy' | 'medium' | 'hard',
-            created_at: record.created_at,
-            updated_at: record.updated_at
-          }));
-
-          setRecipes(transformedRecipes);
-          setLoadedTabs(prev => new Set([...prev, "recipes"]));
-        }
-
-        if (activeTab === "meal-plans" && !loadedTabs.has("meal-plans")) {
-          setIsLoadingMealPlans(true);
-          const { data, error } = await supabase
-            .from("saved_meal_plans")
-            .select("*")
-            .eq("user_id", user.id)
-            .order("created_at", { ascending: false });
-
-          if (error) throw error;
-          if (!isMounted) return;
-
-          setMealPlans(data || []);
-          setLoadedTabs(prev => new Set([...prev, "meal-plans"]));
-        }
-      } catch (error) {
-        console.error(`Error loading ${activeTab}:`, error);
-        if (isMounted) {
-          toast({
-            title: `Error loading ${activeTab}`,
-            description: `Failed to load your ${activeTab}. Please try again.`,
-            variant: "destructive"
-          });
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoadingRecipes(false);
-          setIsLoadingMealPlans(false);
-        }
-      }
-    };
-
-    loadTabData();
-    return () => {
-      isMounted = false;
-    };
-  }, [activeTab, user?.id, loadedTabs]);
 
   const handleSaveMacros = async () => {
     if (!user) return;
@@ -339,22 +201,6 @@ export default function Profile() {
     return null;
   }
 
-  const isLoading = (tab: string): boolean => {
-    if (!loadedTabs.has(tab)) {
-      switch (tab) {
-        case "recipes":
-          return isLoadingRecipes;
-        case "meal-plans":
-          return isLoadingMealPlans;
-        case "details":
-          return isLoadingStats;
-        default:
-          return false;
-      }
-    }
-    return false;
-  };
-
   return (
     <BaseLayout>
       <div className="min-h-screen bg-white">
@@ -387,21 +233,10 @@ export default function Profile() {
                     {user.user_metadata?.full_name || user.email}
                   </h1>
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-sm text-muted-foreground">
-                    <StatItem 
-                      icon={Calendar}
-                      label=""
-                      value={`Joined ${format(new Date(user.created_at), 'MMM yyyy')}`}
-                    />
-                    <StatItem 
-                      icon={Star}
-                      label={stats.recipesCount === 1 ? 'Recipe' : 'Recipes'}
-                      value={stats.recipesCount}
-                    />
-                    <StatItem 
-                      icon={Clock}
-                      label={stats.plansCount === 1 ? 'Plan' : 'Plans'}
-                      value={stats.plansCount}
-                    />
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>Joined {format(new Date(user.created_at), 'MMM yyyy')}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -411,59 +246,74 @@ export default function Profile() {
 
         {/* Main Content */}
         <main className="container mx-auto px-4 py-8">
-          <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            {/* Tab Bar */}
-            <div className="flex items-center justify-center sm:justify-start">
-              <TabsList className="bg-white border">
-                <TabsTrigger 
-                  value="recipes" 
-                  className="data-[state=active]:bg-primary/5"
-                >
-                  <ChefHat className="w-4 h-4 mr-2" />
-                  Recipes
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="meal-plans" 
-                  className="data-[state=active]:bg-primary/5"
-                >
-                  <Utensils className="w-4 h-4 mr-2" />
-                  Meal Plans
-                </TabsTrigger>
-              </TabsList>
-            </div>
+          <div className="max-w-2xl mx-auto space-y-6">
+            {/* Nutritional Goals Card */}
+            <Card className="p-6 bg-white border shadow-sm">
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold">Nutritional Goals</h2>
+                    <p className="text-sm text-muted-foreground">Your daily macro targets</p>
+                  </div>
+                  <Button
+                    onClick={() => setShowGoalsDialog(true)}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    Update Goals
+                  </Button>
+                </div>
 
-            {/* Tab Content */}
-            <div className="mt-6">
-              <TabsContent value="recipes" className="focus-visible:outline-none mt-0">
-                <Card className="border bg-white">
-                  {isLoading("recipes") ? (
-                    <LoadingSpinner />
-                  ) : (
-                    <SavedRecipes initialRecipes={recipes} />
-                  )}
-                </Card>
-              </TabsContent>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="bg-primary/5 p-4 rounded-lg text-center">
+                    <div className="text-sm text-primary/60 font-medium">Calories</div>
+                    <div className="text-2xl font-bold text-primary">{macros.calories}</div>
+                  </div>
+                  <div className="bg-primary/5 p-4 rounded-lg text-center">
+                    <div className="text-sm text-primary/60 font-medium">Protein</div>
+                    <div className="text-2xl font-bold text-primary">{macros.protein}g</div>
+                  </div>
+                  <div className="bg-primary/5 p-4 rounded-lg text-center">
+                    <div className="text-sm text-primary/60 font-medium">Carbs</div>
+                    <div className="text-2xl font-bold text-primary">{macros.carbs}g</div>
+                  </div>
+                  <div className="bg-primary/5 p-4 rounded-lg text-center">
+                    <div className="text-sm text-primary/60 font-medium">Fat</div>
+                    <div className="text-2xl font-bold text-primary">{macros.fat}g</div>
+                  </div>
+                </div>
+              </div>
+            </Card>
 
-              <TabsContent value="meal-plans" className="focus-visible:outline-none mt-0">
-                <Card className="border bg-white">
-                  {isLoading("meal-plans") ? (
-                    <LoadingSpinner />
-                  ) : (
-                    <SavedMealPlans initialMealPlans={mealPlans} />
-                  )}
-                </Card>
-              </TabsContent>
-            </div>
-          </Tabs>
+            {/* Account Info Card */}
+            <Card className="p-6 bg-white border shadow-sm">
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-lg font-semibold">Account Information</h2>
+                  <p className="text-sm text-muted-foreground">Your account details</p>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <Label>Full Name</Label>
+                    <div className="text-muted-foreground">
+                      {user.user_metadata?.full_name || "Not set"}
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Email</Label>
+                    <div className="text-muted-foreground">{user.email}</div>
+                  </div>
+                  <div>
+                    <Label>Member Since</Label>
+                    <div className="text-muted-foreground">
+                      {format(new Date(user.created_at), 'MMMM d, yyyy')}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
         </main>
-
-        {/* Floating Action Button */}
-        <Button
-          className="fixed bottom-6 right-6 rounded-full w-12 h-12 shadow-lg bg-primary hover:bg-primary/90 p-0"
-          onClick={() => setShowGoalsDialog(true)}
-        >
-          <Target className="w-6 h-6" />
-        </Button>
 
         {/* Goals Dialog */}
         <Dialog open={showGoalsDialog} onOpenChange={setShowGoalsDialog}>
