@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
-import { Leaf, ChefHat, Apple, Sparkles, Menu, X, Utensils, Brain, User as UserIcon, CreditCard, LogOut } from "lucide-react";
+import { Leaf, ChefHat, Apple, Sparkles, Menu, X, Utensils, Brain, User as UserIcon, CreditCard, LogOut, Heart } from "lucide-react";
 import GoogleSignInButton from "./GoogleSignInButton";
 
 const NavigationBar = () => {
@@ -49,7 +49,7 @@ const NavigationBar = () => {
     ],
     more: [
       { path: "/blog", label: "Blog", icon: <Leaf className="w-4 h-4" /> },
-      { path: "/pricing", label: "Pricing", icon: <Sparkles className="w-4 h-4" /> },
+      { path: "/pricing", label: "Support Us", icon: <Heart className="w-4 h-4" />, badge: "❤️" }
     ]
   };
 
@@ -111,9 +111,9 @@ const NavigationBar = () => {
                 <Link to={item.path} className="flex items-center gap-2">
                   <span className="group-hover:text-primary transition-colors">{item.icon}</span>
                   <span className="group-hover:text-primary transition-colors">{item.label}</span>
-                  {item.path === "/pricing" && (
+                  {item.badge && (
                     <span className="ml-1 inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-primary/10 text-primary">
-                      Free
+                      {item.badge}
                     </span>
                   )}
                 </Link>
@@ -243,9 +243,9 @@ const NavigationBar = () => {
                     {item.icon}
                   </div>
                   <span>{item.label}</span>
-                  {item.path === "/pricing" && (
+                  {item.badge && (
                     <span className="ml-1 inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-primary/10 text-primary">
-                      Free
+                      {item.badge}
                     </span>
                   )}
                 </Link>
