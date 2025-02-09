@@ -3,6 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <!-- Cache Control -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
     <title>MySideChef - Your AI-Powered Kitchen Assistant</title>
     
     <!-- Google Tag Manager -->
@@ -13,8 +18,32 @@
     })(window,document,'script','dataLayer','GTM-PW7NJ3TQ');</script>
     <!-- End Google Tag Manager -->
     
-    <!-- Preload critical assets -->
-    <link rel="preload" href="/logo.svg" as="image" type="image/svg+xml" fetchpriority="high" />
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+              // Check for updates on page load
+              registration.update();
+              
+              // Check for updates periodically
+              setInterval(() => {
+                registration.update();
+              }, 1000 * 60 * 60); // Check every hour
+            });
+
+          // Handle new service worker activation
+          let refreshing = false;
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+              refreshing = true;
+              window.location.reload();
+            }
+          });
+        });
+      }
+    </script>
     
     <!-- Initialize dataLayer with consent state -->
     <script>
@@ -26,6 +55,9 @@
         'analytics_storage': analyticsConsent === 'accepted' ? 'granted' : 'denied'
       });
     </script>
+    
+    <!-- Preload critical assets -->
+    <link rel="preload" href="/logo.svg" as="image" type="image/svg+xml" fetchpriority="high" />
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
