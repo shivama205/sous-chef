@@ -145,15 +145,6 @@ export function MealSuggestions() {
     navigate('/recipe/new', { state: { meal: recipeData } });
   };
 
-  const handleLoginPrompt = () => {
-    // Track login prompt interaction
-    dataLayer.trackUserLogin(
-      'meal_suggestions_prompt',
-      undefined
-    );
-    setShowSignIn(true);
-  };
-
   // Track form field changes
   const handleFieldChange = (field: keyof MealSuggestionRequest, value: any) => {
     setRequest(prev => ({ ...prev, [field]: value }));

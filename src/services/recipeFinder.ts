@@ -1,8 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { RecipeFinderRequest, Recipe } from '@/types/recipeFinder';
-import { FeatureName, RecipeFinderMetadata } from '@/types/features';
-import { trackFeatureUsage } from '@/utils/analytics';
 
 export async function findRecipes(request: RecipeFinderRequest): Promise<Recipe[]> {
   try {
@@ -11,19 +9,60 @@ export async function findRecipes(request: RecipeFinderRequest): Promise<Recipe[
       throw new Error('At least one ingredient is required');
     }
 
-    // Format request for the API
-    const formattedRequest = {
-      ingredients: request.ingredients,
-      dietary_restrictions: request.dietaryRestrictions || [],
-      additional_instructions: request.additionalInstructions || '',
-      macros: request.macros || null
-    };
-
     // Call OpenAI API
     const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    const prompt = `Generate recipe suggestions based on these ingredients: ${formattedRequest.ingredients.join(', ')}
+    const prompt = generatePrompt(request);
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+
+    try {
+      // Extract JSON from the response
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('No valid JSON found in response');
+      }
+
+      const data = JSON.parse(jsonMatch[0]);
+      if (!data.recipes || !Array.isArray(data.recipes)) {
+        throw new Error('Invalid recipe data format');
+      }
+
+      // Transform and validate each recipe
+      return data.recipes.map((recipe: any) => ({
+        name: recipe.name,
+        description: recipe.description,
+        cookingTime: recipe.cookingTime,
+        ingredients: recipe.ingredients,
+        instructions: recipe.instructions,
+        nutritionalValue: recipe.nutritionalValue,
+        difficulty: recipe.difficulty,
+        cuisineType: recipe.cuisineType,
+        imageUrl: null // Add placeholder for image
+      }));
+    } catch (parseError) {
+      console.error('Error parsing recipe data:', parseError);
+      throw new Error('Failed to parse recipe data');
+    }
+  } catch (error) {
+    console.error('Error finding recipes:', error);
+    throw error;
+  }
+}
+
+function generatePrompt(request: RecipeFinderRequest): string {
+  // Format request for the API
+  const formattedRequest = {
+    ingredients: request.ingredients,
+    dietary_restrictions: request.dietaryRestrictions || [],
+    additional_instructions: request.additionalInstructions || '',
+    macros: request.macros || null
+  };
+
+  return `
+  Generate recipe suggestions based on these ingredients: ${request.ingredients.join(', ')}
       ${formattedRequest.dietary_restrictions.length > 0 ? `\nDietary restrictions: ${formattedRequest.dietary_restrictions.join(', ')}` : ''}
       ${formattedRequest.additional_instructions ? `\nAdditional instructions: ${formattedRequest.additional_instructions}` : ''}
       ${formattedRequest.macros ? `\nTarget macros: Protein: ${formattedRequest.macros.protein}g, Carbs: ${formattedRequest.macros.carbs}g, Fat: ${formattedRequest.macros.fat}g` : ''}
@@ -46,71 +85,6 @@ export async function findRecipes(request: RecipeFinderRequest): Promise<Recipe[
           "cuisineType": "cuisine type"
         }]
       }`;
-
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-
-    try {
-      // Extract JSON from the response
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error('No valid JSON found in response');
-      }
-
-      const data = JSON.parse(jsonMatch[0]);
-      if (!data.recipes || !Array.isArray(data.recipes)) {
-        throw new Error('Invalid recipe data format');
-      }
-
-      // Transform and validate each recipe
-      return data.recipes.map((recipe: any) => ({
-        id: crypto.randomUUID(), // Generate temporary ID for new recipes
-        name: recipe.name,
-        description: recipe.description,
-        cookingTime: recipe.cookingTime,
-        ingredients: recipe.ingredients,
-        instructions: recipe.instructions,
-        nutritionalValue: recipe.nutritionalValue,
-        difficulty: recipe.difficulty,
-        cuisineType: recipe.cuisineType,
-        imageUrl: null // Add placeholder for image
-      }));
-    } catch (parseError) {
-      console.error('Error parsing recipe data:', parseError);
-      throw new Error('Failed to parse recipe data');
-    }
-  } catch (error) {
-    console.error('Error finding recipes:', error);
-    throw error;
-  }
-}
-
-function generatePrompt(request: RecipeFinderRequest): string {
-  return `
-  Suggest 3 possible recipes using the mentioned ingredients and dietary restrictions:
-  Ingredients: ${request.ingredients}
-  Dietary Restrictions: ${request.dietaryRestrictions}
-  Additional Instructions: ${request.additionalInstructions}
-
-  Also consider user's macros if provided:
-  Macros: ${request.macros}
-
-  Do not include any other text in the response.
-
-  Format the response as a JSON object with this structure:
-  [{
-    "meal_name": string,
-    "cooking_time": number,
-    "ingredients": string[],
-    "instructions": string[],
-    "nutritional_value": {
-      "calories": number,
-      "protein": number, 
-      "carbs": number,
-      "fat": number
-    }
-  }]`;
 }
 
 export async function saveRecipe(userId: string, recipe: Recipe) {
@@ -118,12 +92,12 @@ export async function saveRecipe(userId: string, recipe: Recipe) {
     // Transform recipe data to match database schema
     const recipeData = {
       user_id: userId,
-      name: recipe.name || recipe.meal_name, // Handle both name formats
-      description: recipe.description || `A delicious ${recipe.name || recipe.meal_name} recipe`,
-      cooking_time: recipe.cookingTime || recipe.cooking_time, // Handle both formats
+      name: recipe.name,
+      description: recipe.description || `A delicious ${recipe.name} recipe`,
+      cooking_time: recipe.cookingTime,
       ingredients: recipe.ingredients || [],
       instructions: recipe.instructions || [],
-      nutritional_value: recipe.nutritionalValue || recipe.nutritional_value || {
+      nutritional_value: recipe.nutritionalValue || {
         calories: 0,
         protein: 0,
         carbs: 0,
@@ -166,31 +140,44 @@ export async function saveRecipe(userId: string, recipe: Recipe) {
 
 export async function getUserRecipes(userId: string): Promise<Recipe[]> {
   try {
+    if (!userId) {
+      console.warn('No user ID provided to getUserRecipes');
+      return [];
+    }
+
     const { data, error } = await supabase
       .from('saved_recipes')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error getting user recipes:', error);
+      return []; // Return empty array instead of throwing
+    }
 
     // Transform database records to Recipe type
     return (data || []).map(record => ({
       id: record.id,
-      name: record.name,
-      description: record.description,
-      cookingTime: record.cooking_time,
-      ingredients: record.ingredients,
-      instructions: record.instructions,
-      nutritionalValue: record.nutritional_value,
-      imageUrl: record.image_url,
-      cuisineType: record.cuisine_type,
-      difficulty: record.difficulty,
-      createdAt: record.created_at,
-      updatedAt: record.updated_at
+      name: record.name || '', // Ensure name is never undefined
+      description: record.description || '',
+      cookingTime: record.cooking_time || 0,
+      ingredients: Array.isArray(record.ingredients) ? record.ingredients : [],
+      instructions: Array.isArray(record.instructions) ? record.instructions : [],
+      nutritionalValue: record.nutritional_value || {
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0
+      },
+      imageUrl: record.image_url || null,
+      cuisineType: record.cuisine_type || 'Mixed',
+      difficulty: (record.difficulty || 'medium').toLowerCase() as 'easy' | 'medium' | 'hard',
+      createdAt: record.created_at || new Date().toISOString(),
+      updatedAt: record.updated_at || new Date().toISOString()
     }));
   } catch (error) {
     console.error('Error getting user recipes:', error);
-    throw error;
+    return []; // Return empty array on any error
   }
 }

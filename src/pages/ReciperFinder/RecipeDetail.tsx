@@ -118,10 +118,9 @@ export default function RecipeDetail() {
       // Transform database record to match Recipe interface
       setRecipe({
         id: data.id,
-        name: data.name || data.meal_name, // Handle both name formats
-        description: data.description || `A delicious ${data.name || data.meal_name} recipe`,
+        name: data.name,
+        description: data.description || `A delicious ${data.name} recipe`,
         cookingTime: data.cooking_time,
-        cooking_time: data.cooking_time, // For backward compatibility
         ingredients: data.ingredients || [],
         instructions: data.instructions || [],
         nutritionalValue: data.nutritional_value || {
@@ -130,7 +129,6 @@ export default function RecipeDetail() {
           carbs: 0,
           fat: 0
         },
-        nutritional_value: data.nutritional_value, // For backward compatibility
         difficulty: (data.difficulty || 'medium').toLowerCase() as 'easy' | 'medium' | 'hard',
         cuisineType: data.cuisine_type || 'Mixed',
         imageUrl: data.image_url || null,
@@ -142,7 +140,7 @@ export default function RecipeDetail() {
       if (user) {
         dataLayer.trackRecipeView({
           recipe_id: data.id,
-          recipe_name: data.name || data.meal_name,
+          recipe_name: data.name,
           recipe_category: data.cuisine_type,
           cooking_time: data.cooking_time,
           user_id: user.id
@@ -338,7 +336,7 @@ export default function RecipeDetail() {
         const image = canvas.toDataURL('image/png');
         const link = document.createElement('a');
         link.href = image;
-        link.download = `${recipe?.meal_name || 'recipe'}.png`;
+        link.download = `${recipe?.name || 'recipe'}.png`;
         link.click();
       } catch (error) {
         console.error('Error downloading recipe:', error);
@@ -468,13 +466,13 @@ export default function RecipeDetail() {
           <Card className="p-6 bg-gradient-to-r from-primary to-primary/80 text-white">
             <div className="space-y-4">
               <h1 className="text-3xl font-bold">
-                {isNewRecipe ? suggestedMeal?.name : recipe?.meal_name}
+                {isNewRecipe ? suggestedMeal?.name : recipe?.name}
               </h1>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <Timer className="w-4 h-4" />
                   <span>
-                    {isNewRecipe ? suggestedMeal?.cookingTime : recipe?.cooking_time} mins
+                    {isNewRecipe ? suggestedMeal?.cookingTime : recipe?.cookingTime} mins
                   </span>
                 </div>
                 {!isNewRecipe && recipe?.created_at && (
@@ -533,25 +531,25 @@ export default function RecipeDetail() {
               <div className="text-center p-4 bg-primary/5 rounded-lg">
                 <div className="text-sm font-medium text-primary">Calories</div>
                 <div className="text-2xl font-bold">
-                  {isNewRecipe ? suggestedMeal?.nutritionalValue.calories : recipe?.nutritional_value.calories}
+                  {isNewRecipe ? suggestedMeal?.nutritionalValue.calories : recipe?.nutritionalValue.calories}
                 </div>
               </div>
               <div className="text-center p-4 bg-primary/5 rounded-lg">
                 <div className="text-sm font-medium text-primary">Protein</div>
                 <div className="text-2xl font-bold">
-                  {isNewRecipe ? suggestedMeal?.nutritionalValue.protein : recipe?.nutritional_value.protein}g
+                  {isNewRecipe ? suggestedMeal?.nutritionalValue.protein : recipe?.nutritionalValue.protein}g
                 </div>
               </div>
               <div className="text-center p-4 bg-primary/5 rounded-lg">
                 <div className="text-sm font-medium text-primary">Carbs</div>
                 <div className="text-2xl font-bold">
-                  {isNewRecipe ? suggestedMeal?.nutritionalValue.carbs : recipe?.nutritional_value.carbs}g
+                  {isNewRecipe ? suggestedMeal?.nutritionalValue.carbs : recipe?.nutritionalValue.carbs}g
                 </div>
               </div>
               <div className="text-center p-4 bg-primary/5 rounded-lg">
                 <div className="text-sm font-medium text-primary">Fat</div>
                 <div className="text-2xl font-bold">
-                  {isNewRecipe ? suggestedMeal?.nutritionalValue.fat : recipe?.nutritional_value.fat}g
+                  {isNewRecipe ? suggestedMeal?.nutritionalValue.fat : recipe?.nutritionalValue.fat}g
                 </div>
               </div>
             </div>
@@ -613,7 +611,7 @@ export default function RecipeDetail() {
                     onClick={() => {
                       const link = document.createElement('a');
                       link.href = previewImage;
-                      link.download = `${recipe?.meal_name || 'recipe'}.png`;
+                      link.download = `${recipe?.name || 'recipe'}.png`;
                       link.click();
                       setShowPreview(false);
                       setPreviewImage(""); // Clear the preview image

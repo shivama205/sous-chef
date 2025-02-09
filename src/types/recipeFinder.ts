@@ -17,19 +17,11 @@ export interface RecipeFinderRequest {
 export interface Recipe {
   id?: string;
   name: string;
-  meal_name?: string; // For backward compatibility
   description?: string;
   cookingTime: number;
-  cooking_time?: number; // For backward compatibility
   ingredients: string[];
   instructions: string[];
   nutritionalValue: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-  };
-  nutritional_value?: { // For backward compatibility
     calories: number;
     protein: number;
     carbs: number;

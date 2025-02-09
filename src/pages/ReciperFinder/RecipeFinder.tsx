@@ -10,7 +10,7 @@ import { LoginDialog } from "@/components/LoginDialog";
 import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { FeatureCard } from "@/components/ui/FeatureCard";
-import { Camera, ChefHat, Sparkles, History, Star, Utensils, Scale, Upload, Timer, UtensilsCrossed, ListChecks, Dumbbell } from "lucide-react";
+import { Camera, ChefHat, Sparkles, History, Star, Utensils, Scale, Upload, Timer, UtensilsCrossed, ListChecks, Dumbbell, Clock, ArrowRight } from "lucide-react";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { useAuth } from "@/providers/AuthProvider";
 import { useDropzone } from "react-dropzone";
@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import { dataLayer } from "@/services/dataLayer";
+import { motion } from "framer-motion";
 
 const suggestionList = [
   "Ensure ingredients are spelled correctly",
@@ -69,11 +70,18 @@ const NoRecipesFound = ({ suggestions }: { suggestions: string[] }) => (
   </Card>
 );
 
+// Add type safety for nutritional values
+const getNutritionalValue = (recipe: Recipe) => {
+  const defaultValue = { calories: 0, protein: 0, carbs: 0, fat: 0 };
+  return recipe.nutritionalValue || defaultValue;
+};
+
 export default function RecipeFinder() {
   usePageTracking();
   const { user } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingUserData, setIsLoadingUserData] = useState(false);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const resultsRef = useRef<HTMLDivElement>(null);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
@@ -122,23 +130,49 @@ export default function RecipeFinder() {
     noKeyboard: false
   });
 
+  // Combine user data loading into a single useEffect
   useEffect(() => {
-    const fetchUserMacros = async () => {
-      if (!user) return;
+    const loadUserData = async () => {
+      if (!user) {
+        setSavedRecipeIds(new Set());
+        setRecentRecipes([]);
+        setUserMacros(null);
+        return;
+      }
 
-      const { data: macros } = await supabase
-        .from("user_macros")
-        .select("*")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      setIsLoadingUserData(true);
+      try {
+        // Load macros and recipes in parallel
+        const [macrosResult, savedRecipes] = await Promise.all([
+          supabase.from("user_macros").select("*").eq("user_id", user.id).maybeSingle(),
+          getUserRecipes(user.id)
+        ]);
 
-      if (macros) {
-        setUserMacros(macros);
+        // Set macros if available
+        if (macrosResult.data) {
+          setUserMacros(macrosResult.data);
+        }
+
+        // Set recipes data
+        if (savedRecipes.length > 0) {
+          setSavedRecipeIds(new Set(savedRecipes.map(r => r.id)));
+          const sortedRecipes = savedRecipes
+            .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+            .slice(0, 5);
+          setRecentRecipes(sortedRecipes);
+        } else {
+          setSavedRecipeIds(new Set());
+          setRecentRecipes([]);
+        }
+      } catch (error) {
+        console.error("Error loading user data:", error);
+      } finally {
+        setIsLoadingUserData(false);
       }
     };
 
-    fetchUserMacros();
-  }, [user]);
+    loadUserData();
+  }, [user?.id]); // Only reload when user ID changes
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -206,32 +240,6 @@ export default function RecipeFinder() {
     }
   };
 
-  // Load saved recipes and recent recipes on mount
-  useEffect(() => {
-    const loadUserData = async () => {
-      if (!user) return;
-      try {
-        // Load saved recipe IDs
-        const savedRecipes = await getUserRecipes(user.id);
-        setSavedRecipeIds(new Set(savedRecipes.map(r => r.id)));
-        
-        // Set recent recipes from saved recipes, sorted by created_at
-        const sortedRecipes = savedRecipes
-          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-          .slice(0, 5); // Show only last 5 recipes
-        setRecentRecipes(sortedRecipes);
-      } catch (error) {
-        console.error("Error loading user data:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load your recipes. Please try again.",
-          variant: "destructive",
-        });
-      }
-    };
-    loadUserData();
-  }, [user]);
-
   const handleSaveRecipe = async (recipe: Recipe) => {
     if (!user) {
       setLoginDialogOpen(true);
@@ -264,17 +272,21 @@ export default function RecipeFinder() {
   };
 
   const handleRecipeClick = (recipe: Recipe) => {
+    console.log("in handleRecipeClick", recipe);
     // Track recipe view
     dataLayer.trackRecipeView({
-      recipe_id: recipe.id,
       recipe_name: recipe.name,
+      recipe_category: recipe.cuisineType,
       cooking_time: recipe.cookingTime,
-      user_id: user?.id
+      user_id: user?.id,
     });
-
-    if (recipe.id) {
-      navigate(`/recipe/${recipe.id}`);
+    
+    if (!user) {
+      setLoginDialogOpen(true);
+      return;
     }
+    
+    navigate('/recipe/new', { state: { meal: recipe } });
   };
 
   return (
@@ -364,95 +376,83 @@ export default function RecipeFinder() {
 
               {/* Results Section */}
               {recipes.length > 0 && (
-                <div ref={resultsRef} className="space-y-4 sm:space-y-6 mt-6">
-                  <h2 className="text-xl font-semibold">Found Recipes</h2>
-                  {recipes.map((recipe, index) => (
-                    <Card key={index} className="bg-white rounded-lg shadow-sm overflow-hidden">
-                      <div className="bg-gradient-to-r from-primary to-primary/80 py-3 px-4">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-semibold text-white">{recipe.name}</h3>
-                          <Button
-                            variant={savedRecipeIds.has(recipe.id ?? '') ? "secondary" : "outline"}
-                            size="sm"
-                            className={`flex items-center gap-2 ${
-                              savedRecipeIds.has(recipe.id ?? '') 
-                                ? "bg-white/10 text-white hover:bg-white/20" 
-                                : "bg-white text-primary hover:bg-white/90"
-                            }`}
-                            onClick={() => handleSaveRecipe(recipe)}
-                            disabled={savedRecipeIds.has(recipe.id ?? '')}
-                          >
-                            <Star className={`w-4 h-4 ${savedRecipeIds.has(recipe.id ?? '') ? "fill-current" : ""}`} />
-                            {savedRecipeIds.has(recipe.id ?? '') ? "Saved" : "Save Recipe"}
-                          </Button>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-white/80 mt-1">
-                          <Timer className="w-4 h-4" />
-                          <span>Cooking Time: {recipe.cookingTime} minutes</span>
-                        </div>
-                      </div>
+                <div ref={resultsRef} className="space-y-8 pt-8">
+                  <h2 className="text-2xl font-semibold text-center">Found Recipes</h2>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {recipes.map((recipe, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
+                          <div className="p-6 space-y-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1">
+                                <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
+                                  {recipe.name}
+                                </h3>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  {recipe.description}
+                                </p>
+                              </div>
+                              <div className="flex-shrink-0 flex flex-col items-center gap-1 bg-primary/5 px-3 py-2 rounded-lg">
+                                <Clock className="w-4 h-4 text-primary" />
+                                <span className="text-sm font-medium">{recipe.cookingTime}</span>
+                                <span className="text-xs text-muted-foreground">mins</span>
+                              </div>
+                            </div>
 
-                      <div className="divide-y divide-gray-100">
-                        {/* Ingredients Section */}
-                        <div className="p-4 space-y-3">
-                          <div className="flex items-center gap-2 mb-3">
-                            <UtensilsCrossed className="w-5 h-5 text-primary" />
-                            <h4 className="font-medium text-gray-900">Ingredients</h4>
-                          </div>
-                          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {recipe.ingredients.map((ingredient, i) => (
-                              <li key={i} className="flex items-start gap-2">
-                                <span className="w-1.5 h-1.5 rounded-full bg-primary/60 flex-shrink-0 mt-2" />
-                                <span className="text-sm text-gray-600">{ingredient}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
+                            <div className="grid grid-cols-4 gap-2">
+                              <div className="bg-primary/5 p-3 rounded-lg text-center">
+                                <div className="text-xs text-primary/60 font-medium">Calories</div>
+                                <div className="font-semibold">{getNutritionalValue(recipe).calories}</div>
+                              </div>
+                              <div className="bg-primary/5 p-3 rounded-lg text-center">
+                                <div className="text-xs text-primary/60 font-medium">Protein</div>
+                                <div className="font-semibold">{getNutritionalValue(recipe).protein}g</div>
+                              </div>
+                              <div className="bg-primary/5 p-3 rounded-lg text-center">
+                                <div className="text-xs text-primary/60 font-medium">Carbs</div>
+                                <div className="font-semibold">{getNutritionalValue(recipe).carbs}g</div>
+                              </div>
+                              <div className="bg-primary/5 p-3 rounded-lg text-center">
+                                <div className="text-xs text-primary/60 font-medium">Fat</div>
+                                <div className="font-semibold">{getNutritionalValue(recipe).fat}g</div>
+                              </div>
+                            </div>
 
-                        {/* Instructions Section */}
-                        <div className="p-4 space-y-3">
-                          <div className="flex items-center gap-2 mb-3">
-                            <ListChecks className="w-5 h-5 text-primary" />
-                            <h4 className="font-medium text-gray-900">Instructions</h4>
-                          </div>
-                          <ol className="space-y-2">
-                            {recipe.instructions.map((instruction, i) => (
-                              <li key={i} className="flex items-start gap-3">
-                                <span className="text-sm font-medium text-primary/60">{i + 1}.</span>
-                                <span className="text-sm text-gray-600">{instruction}</span>
-                              </li>
-                            ))}
-                          </ol>
-                        </div>
-
-                        {/* Nutritional Info Section */}
-                        <div className="bg-gray-50 p-4">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Dumbbell className="w-5 h-5 text-primary" />
-                            <h4 className="font-medium text-gray-900">Nutritional Value</h4>
-                          </div>
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                            <div className="bg-white p-2 rounded shadow-sm">
-                              <div className="text-gray-500 text-xs">Calories</div>
-                              <div className="font-medium text-gray-900">{recipe.nutritionalValue.calories}</div>
-                            </div>
-                            <div className="bg-white p-2 rounded shadow-sm">
-                              <div className="text-gray-500 text-xs">Protein</div>
-                              <div className="font-medium text-gray-900">{recipe.nutritionalValue.protein}g</div>
-                            </div>
-                            <div className="bg-white p-2 rounded shadow-sm">
-                              <div className="text-gray-500 text-xs">Carbs</div>
-                              <div className="font-medium text-gray-900">{recipe.nutritionalValue.carbs}g</div>
-                            </div>
-                            <div className="bg-white p-2 rounded shadow-sm">
-                              <div className="text-gray-500 text-xs">Fat</div>
-                              <div className="font-medium text-gray-900">{recipe.nutritionalValue.fat}g</div>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                className="flex-1 group-hover:bg-primary group-hover:text-white transition-all duration-300"
+                                onClick={() => handleRecipeClick(recipe)}
+                              >
+                                <span className="flex items-center gap-2">
+                                  View Full Recipe
+                                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                </span>
+                              </Button>
+                              {/* <Button
+                                variant={savedRecipeIds.has(recipe.id ?? '') ? "secondary" : "outline"}
+                                className={`${
+                                  savedRecipeIds.has(recipe.id ?? '') 
+                                    ? "bg-primary/10 text-primary hover:bg-primary/20" 
+                                    : ""
+                                }`}
+                                onClick={() => handleSaveRecipe(recipe)}
+                                disabled={savedRecipeIds.has(recipe.id ?? '')}
+                              >
+                                <Star className={`w-4 h-4 ${savedRecipeIds.has(recipe.id ?? '') ? "fill-current" : ""}`} />
+                              </Button> */}
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </div>
                 </div>
               )}
 
