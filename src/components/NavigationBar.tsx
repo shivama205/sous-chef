@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
-import { Leaf, ChefHat, Apple, Sparkles, Menu, X, Utensils, Brain, User as UserIcon, CreditCard, LogOut, Heart, Calendar, Star } from "lucide-react";
+import { Leaf, ChefHat, Apple, Sparkles, Menu, X, Utensils, Brain, User as UserIcon, CreditCard, LogOut, Heart, Calendar, Star, Newspaper } from "lucide-react";
 import GoogleSignInButton from "./GoogleSignInButton";
 
 const NavigationBar = () => {
@@ -48,7 +48,7 @@ const NavigationBar = () => {
       { path: "/healthy-alternative", label: "Healthy Swaps", icon: <Apple className="w-4 h-4" />, description: "Find healthier alternatives" },
     ],
     more: [
-      { path: "/blog", label: "Blog", icon: <Leaf className="w-4 h-4" /> },
+      { path: "/blog", label: "Blog", icon: <Newspaper className="w-4 h-4" />, description: "Tips & Guides" },
       { path: "/pricing", label: "Support Us", icon: <Heart className="w-4 h-4" />, badge: "❤️" }
     ]
   };
@@ -203,7 +203,7 @@ const NavigationBar = () => {
             className="lg:hidden py-4 space-y-4 max-h-[calc(100vh-4rem)] overflow-y-auto"
           >
             <div className="space-y-2">
-              <div className="px-2 py-1 text-sm font-semibold text-muted-foreground">Services</div>
+              <div className="px-2 py-1 text-sm font-semibold text-muted-foreground">Features</div>
               {menuItems.features.map((item) => (
                 <Link
                   key={item.path}
@@ -228,6 +228,36 @@ const NavigationBar = () => {
 
             <div className="space-y-2">
               <div className="px-2 py-1 text-sm font-semibold text-muted-foreground">More</div>
+              {user ? (
+                <>
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/5 transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <div className="p-2 rounded-md bg-primary/10">
+                      <UserIcon className="w-4 h-4 text-primary" />
+                    </div>
+                    <span>Profile</span>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/5 transition-colors w-full text-left text-red-600"
+                  >
+                    <div className="p-2 rounded-md bg-red-100">
+                      <LogOut className="w-4 h-4" />
+                    </div>
+                    <span>Log out</span>
+                  </button>
+                </>
+              ) : (
+                <div className="px-3">
+                  <GoogleSignInButton />
+                </div>
+              )}
               {menuItems.more.map((item) => (
                 <Link
                   key={item.path}

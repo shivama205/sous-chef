@@ -1,128 +1,76 @@
 import * as React from "react"
 import { motion } from "framer-motion"
 import { Card } from "@/components/ui/card"
-import { Star, Quote, Users, Trophy, Heart, ChefHat } from "lucide-react"
+import { Brain, ChefHat, Clock, Heart, Sparkles, Utensils } from "lucide-react"
 
-const testimonials = [
+const valueProps = [
   {
-    content: "MySideChef has completely transformed how I plan my meals. The AI suggestions are spot-on!",
-    author: "Sarah M.",
-    role: "Busy Parent",
-    rating: 5
+    icon: Brain,
+    title: "Smart Meal Planning",
+    description: "Our AI analyzes your nutritional needs and preferences to create perfectly balanced meal plans. No more guesswork in planning healthy meals."
   },
   {
-    content: "As a fitness enthusiast, I love how it helps me maintain my nutrition goals while discovering new recipes.",
-    author: "Michael R.",
-    role: "Fitness Coach",
-    rating: 5
-  },
-  {
-    content: "The recipe recommendations are amazing. It's like having a personal chef who knows my taste perfectly.",
-    author: "Emily L.",
-    role: "Food Enthusiast",
-    rating: 5
-  }
-]
-
-const stats = [
-  {
-    icon: Users,
-    label: "Happy Users",
-    value: "10k+",
-    description: "Growing community"
-  },
-  {
-    icon: Trophy,
-    label: "Recipes Available",
-    value: "50k+",
-    description: "Curated collection"
+    icon: Clock,
+    title: "Save Time & Effort",
+    description: "Get instant meal suggestions and alternatives based on what you have. Turn your available ingredients into healthy, delicious meals."
   },
   {
     icon: Heart,
-    label: "Saved Recipes",
-    value: "100k+",
-    description: "User favorites"
+    title: "Health Made Simple",
+    description: "We break down complex nutritional goals into simple, actionable meal plans. Making healthy choices has never been easier."
+  },
+  {
+    icon: Utensils,
+    title: "Personalized Experience",
+    description: "Your dietary preferences, restrictions, and health goals are used to tailor every recipe and meal plan recommendation."
   },
   {
     icon: ChefHat,
-    label: "AI-Powered Plans",
-    value: "25k+",
-    description: "Weekly generated"
+    title: "Healthy Cooking Made Easy",
+    description: "Discover healthier versions of your favorite meals with our smart recipe alternatives and cooking suggestions."
+  },
+  {
+    icon: Sparkles,
+    title: "Continuous Improvement",
+    description: "Our AI learns from your preferences and feedback to provide increasingly personalized and effective meal recommendations."
   }
 ]
 
 export function SocialProof() {
   return (
-    <section className="relative py-24 overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-secondary/5 to-transparent -z-10" />
-      
-      <div className="container mx-auto px-4">
-        {/* Testimonials */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="space-y-4"
-          >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/10 text-secondary text-sm border border-secondary/20">
-              <Quote className="w-4 h-4" />
-              What Our Users Say
+    <section className="py-16 bg-gradient-to-b from-white to-primary/5">
+      <div className="container px-4 mx-auto">
+        <div className="max-w-2xl mx-auto text-center mb-16">
+          <h2 className="text-3xl font-bold mb-4">
+            Making Healthy Eating{" "}
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Simple & Enjoyable
             </span>
-            <h2 className="text-3xl lg:text-4xl font-bold">
-              Loved by Home Chefs
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Join thousands of satisfied users who have transformed their cooking experience
-            </p>
-          </motion.div>
+          </h2>
+          <p className="text-lg text-muted-foreground">
+            See how MySideChef helps you achieve your health goals without the complexity
+          </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-24">
-          {testimonials.map((testimonial, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {valueProps.map((prop, index) => (
             <motion.div
-              key={testimonial.author}
+              key={index}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               viewport={{ once: true }}
             >
-              <Card variant="glass" className="p-6 h-full">
-                <div className="flex items-center gap-1 mb-4">
-                  {Array.from({ length: testimonial.rating }).map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-primary text-primary" />
-                  ))}
+              <Card className="p-6 bg-white border hover:shadow-md transition-shadow h-full">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <prop.icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">{prop.title}</h3>
+                    <p className="text-muted-foreground">{prop.description}</p>
+                  </div>
                 </div>
-                <blockquote className="text-lg mb-6">
-                  "{testimonial.content}"
-                </blockquote>
-                <div className="mt-auto">
-                  <div className="font-semibold">{testimonial.author}</div>
-                  <div className="text-sm text-muted-foreground">{testimonial.role}</div>
-                </div>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Stats */}
-        <div className="grid md:grid-cols-4 gap-8">
-          {stats.map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              viewport={{ once: true }}
-            >
-              <Card variant="glass" className="p-6 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <stat.icon className="w-6 h-6 text-primary" />
-                </div>
-                <div className="text-3xl font-bold mb-2">{stat.value}</div>
-                <div className="font-medium mb-1">{stat.label}</div>
-                <div className="text-sm text-muted-foreground">{stat.description}</div>
               </Card>
             </motion.div>
           ))}

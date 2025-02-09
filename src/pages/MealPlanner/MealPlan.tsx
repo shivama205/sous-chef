@@ -59,7 +59,7 @@ const MacroInput = ({
   name: string;
 }) => (
   <div className="space-y-2">
-    <label htmlFor={name} className="text-base font-medium text-foreground flex items-center gap-2">
+    <label htmlFor={name} className="text-sm font-medium text-foreground flex items-center gap-2">
       <Brain className="w-4 h-4 text-primary" />
       {label}
     </label>
@@ -82,7 +82,7 @@ const DietaryRestrictions = ({
   onChange: (value: string) => void;
 }) => (
   <div className="space-y-2">
-    <label htmlFor="dietaryRestrictions" className="text-base font-medium text-foreground flex items-center gap-2">
+    <label htmlFor="dietaryRestrictions" className="text-sm font-medium text-foreground flex items-center gap-2">
       <Salad className="w-4 h-4 text-primary" />
       Dietary Restrictions
     </label>
@@ -105,7 +105,7 @@ const DurationSelector = ({
   onChange: (value: number) => void;
 }) => (
   <div className="space-y-4">
-    <label className="text-base font-medium text-foreground flex items-center gap-2">
+    <label className="text-sm font-medium text-foreground flex items-center gap-2">
       <Calendar className="w-4 h-4 text-primary" />
       Plan Duration
     </label>
@@ -119,7 +119,7 @@ const DurationSelector = ({
           className={`w-full hover:bg-primary/5 ${value === days ? 'bg-primary text-white hover:bg-primary/90' : 'bg-white'}`}
           size="sm"
         >
-          {days} {days === 1 ? 'Day' : 'Days'}
+          {days} {days === 1 ? 'D' : 'D'}
         </Button>
       ))}
     </div>
@@ -141,18 +141,19 @@ const CuisineSelector = ({
 
   return (
     <div className="space-y-4">
-      <label className="text-base font-medium text-foreground flex items-center gap-2">
+      <label className="text-sm font-medium text-foreground flex items-center gap-2">
         <ChefHat className="w-4 h-4 text-primary" />
         Cuisine Preferences
       </label>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
         {cuisines.map((cuisine) => (
           <Button
             key={cuisine}
             type="button"
             variant={selected.includes(cuisine) ? "default" : "outline"}
             onClick={() => onToggle(cuisine)}
-            className={`w-full hover:bg-primary/5 ${selected.includes(cuisine) ? 'bg-primary text-white hover:bg-primary/90' : 'bg-white'}`}
+            className={`w-full hover:bg-primary/5 text-xs sm:text-sm ${selected.includes(cuisine) ? 'bg-primary text-white hover:bg-primary/90' : 'bg-white'}`}
+            size="sm"
           >
             {cuisine.charAt(0).toUpperCase() + cuisine.slice(1)}
           </Button>
@@ -245,17 +246,16 @@ export function MealPlan() {
           canonical="https://mysidechef.com/meal-plan"
         />
         <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background">
-          <div className="container mx-auto px-4 py-12 text-center space-y-6">
+          <div className="container mx-auto px-4 py-8 text-center space-y-6">
             <div className="max-w-3xl mx-auto">
               <ChefHat className="w-16 h-16 mx-auto text-primary mb-6" />
-              <h1 className="text-4xl font-bold mb-4">Your Personal Meal Planning Assistant</h1>
-              <p className="text-lg text-muted-foreground mb-8">
+              <h1 className="text-2xl sm:text-4xl font-bold mb-4">Your Personal Meal Planning Assistant</h1>
+              <p className="text-base sm:text-lg text-muted-foreground mb-8">
                 Take the stress out of meal planning! Our AI creates personalized weekly meal plans 
-                that match your nutritional goals, dietary preferences, and schedule. Save time, eat better, 
-                and enjoy delicious meals every day.
+                that match your nutritional goals, dietary preferences, and schedule.
               </p>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {features.slice(0, 3).map((feature, index) => (
                   <FeatureCard
                     key={index}
@@ -267,7 +267,7 @@ export function MealPlan() {
                 ))}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 {features.slice(3, 5).map((feature, index) => (
                   <FeatureCard
                     key={index + 3}
@@ -310,43 +310,43 @@ export function MealPlan() {
           <PageHeader
             icon={Calendar}
             title="Your Meal Planner"
-            description="Create personalized meal plans that match your nutritional goals and dietary preferences"
+            description="Create personalized meal plans that match your nutritional goals"
           />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <Card className="bg-white border shadow-sm">
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <h2 className="text-lg font-semibold mb-4">Create Your Meal Plan</h2>
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <DurationSelector value={preferences.days} onChange={(value) => updatePreference('days', value)} />
                     
                     <div className="space-y-4">
-                      <label className="text-base font-medium text-foreground flex items-center gap-2">
+                      <label className="text-sm font-medium text-foreground flex items-center gap-2">
                         <Brain className="w-4 h-4 text-primary" />
                         Nutritional Goals
                       </label>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-3">
                         <MacroInput
-                          label="Target Calories"
+                          label="Calories"
                           value={preferences.targetCalories}
                           onChange={(value) => updatePreference('targetCalories', value)}
                           name="calories"
                         />
                         <MacroInput
-                          label="Target Protein (g)"
+                          label="Protein (g)"
                           value={preferences.targetProtein}
                           onChange={(value) => updatePreference('targetProtein', value)}
                           name="protein"
                         />
                         <MacroInput
-                          label="Target Carbs (g)"
+                          label="Carbs (g)"
                           value={preferences.targetCarbs}
                           onChange={(value) => updatePreference('targetCarbs', value)}
                           name="carbs"
                         />
                         <MacroInput
-                          label="Target Fat (g)"
+                          label="Fat (g)"
                           value={preferences.targetFat}
                           onChange={(value) => updatePreference('targetFat', value)}
                           name="fat"
@@ -387,7 +387,8 @@ export function MealPlan() {
               </Card>
             </div>
 
-            <div className="space-y-6">
+            {/* Features Card - Hide on Mobile */}
+            <div className="hidden lg:block space-y-6">
               <Card className="bg-white border shadow-sm">
                 <div className="p-6">
                   <h3 className="text-lg font-semibold mb-4">Features</h3>
