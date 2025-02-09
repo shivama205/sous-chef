@@ -1,17 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { Brain, ChefHat, ArrowRight, Sparkles, Clock, Star, Utensils, Apple, Heart, Users, Trophy, Check, Calendar, Loader2 } from "lucide-react";
+import { Brain, ChefHat, Utensils, Apple, Calendar, Loader2 } from "lucide-react";
 import { useAuth } from "@/providers/AuthProvider";
 import { SEO } from "@/components/SEO";
 import { Hero } from "@/components/sections/hero";
 import { Features } from "@/components/sections/features";
 import { SocialProof } from "@/components/sections/social-proof";
-import { getUserRecipes } from "@/services/recipeFinder";
-import { getUserMealPlans } from "@/services/mealPlan";
 import { supabase } from "@/lib/supabase";
 import type { Recipe } from "@/types/recipeFinder";
 import type { MealPlan } from "@/types/mealPlan";

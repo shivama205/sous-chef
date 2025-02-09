@@ -228,6 +228,32 @@ const NavigationBar = () => {
 
             <div className="space-y-2">
               <div className="px-2 py-1 text-sm font-semibold text-muted-foreground">More</div>
+              {/* Blog and Support Us Links */}
+              {menuItems.more.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+                    isActive(item.path) 
+                      ? "bg-primary/5" 
+                      : "hover:bg-primary/5"
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <div className="p-2 rounded-md bg-primary/10">
+                    {item.icon}
+                  </div>
+                  <span>{item.label}</span>
+                  {item.badge && (
+                    <span className="ml-1 inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-primary/10 text-primary">
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              ))}
+
+              <div className="my-2 border-t border-border" />
+
               {user ? (
                 <>
                   <Link
@@ -258,28 +284,6 @@ const NavigationBar = () => {
                   <GoogleSignInButton />
                 </div>
               )}
-              {menuItems.more.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
-                    isActive(item.path) 
-                      ? "bg-primary/5" 
-                      : "hover:bg-primary/5"
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <div className="p-2 rounded-md bg-primary/10">
-                    {item.icon}
-                  </div>
-                  <span>{item.label}</span>
-                  {item.badge && (
-                    <span className="ml-1 inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-primary/10 text-primary">
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              ))}
             </div>
           </motion.div>
         )}
