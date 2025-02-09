@@ -1,13 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Recipe } from "@/types/recipeFinder";
-import { getUserRecipes } from "@/services/recipeFinder";
-import { useAuth } from "@/providers/AuthProvider";
-import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import { ChefHat, Timer, Search } from "lucide-react";
+import { ChefHat, Timer, Search, Clock, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/lib/supabase";
 import {
   Select,
   SelectContent,
@@ -16,46 +15,27 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export function SavedRecipes() {
-  const { user } = useAuth();
-  const { toast } = useToast();
+interface SavedRecipesProps {
+  initialRecipes: Recipe[];
+}
+
+export function SavedRecipes({ initialRecipes }: SavedRecipesProps) {
   const navigate = useNavigate();
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+  const [recipes, setRecipes] = useState(initialRecipes);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"date" | "name" | "time">("date");
 
-  useEffect(() => {
-    const loadRecipes = async () => {
-      if (!user) return;
-      try {
-        const savedRecipes = await getUserRecipes(user.id);
-        setRecipes(savedRecipes);
-      } catch (error) {
-        console.error("Error loading recipes:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load your saved recipes.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadRecipes();
-  }, [user, toast]);
-
   const filteredAndSortedRecipes = recipes
     .filter((recipe) =>
-      recipe.meal_name.toLowerCase().includes(searchQuery.toLowerCase())
+      recipe.name.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .sort((a, b) => {
       switch (sortBy) {
         case "name":
-          return a.meal_name.localeCompare(b.meal_name);
+          return a.name.localeCompare(b.name);
         case "time":
-          return a.cooking_time - b.cooking_time;
+          return a.cookingTime - b.cookingTime;
         case "date":
         default:
           return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
@@ -68,8 +48,36 @@ export function SavedRecipes() {
     }
   };
 
+  const handleDelete = async (e: React.MouseEvent, recipeId: string) => {
+    e.stopPropagation(); // Prevent card click when clicking delete
+    
+    try {
+      const { error } = await supabase
+        .from("saved_recipes")
+        .delete()
+        .eq('id', recipeId);
+
+      if (error) throw error;
+
+      // Update local state
+      setRecipes(recipes.filter(recipe => recipe.id !== recipeId));
+      
+      toast({
+        title: "Recipe deleted",
+        description: "Recipe has been removed from your collection.",
+      });
+    } catch (error) {
+      console.error('Error deleting recipe:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete recipe. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -77,11 +85,11 @@ export function SavedRecipes() {
             placeholder="Search recipes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
+            className="pl-9 bg-white border-input hover:bg-gray-50/50"
           />
         </div>
         <Select value={sortBy} onValueChange={(value: "date" | "name" | "time") => setSortBy(value)}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px] bg-white border-input hover:bg-gray-50/50">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
@@ -92,74 +100,63 @@ export function SavedRecipes() {
         </Select>
       </div>
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="p-4 space-y-4 animate-pulse">
-              <div className="h-6 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-            </Card>
-          ))}
-        </div>
-      ) : filteredAndSortedRecipes.length > 0 ? (
+      {filteredAndSortedRecipes.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredAndSortedRecipes.map((recipe) => (
             <Card
               key={recipe.id}
-              className="p-4 cursor-pointer hover:shadow-md transition-shadow"
+              className="group hover:shadow-md transition-all duration-300 overflow-hidden bg-white border cursor-pointer"
               onClick={() => handleRecipeClick(recipe)}
             >
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <ChefHat className="w-5 h-5 text-primary" />
+              <div className="p-4 space-y-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold group-hover:text-primary transition-colors line-clamp-1">
+                      {recipe.name}
+                    </h3>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{recipe.cookingTime}m</span>
+                      </div>
+                      <span>•</span>
+                      <span>{recipe.nutritionalValue?.calories || 0} cal</span>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50 -mr-2 -mt-2"
+                    onClick={(e) => recipe.id && handleDelete(e, recipe.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 </div>
-                <div className="space-y-1 flex-1">
-                  <h3 className="font-medium line-clamp-1">{recipe.meal_name}</h3>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Timer className="w-4 h-4" />
-                    <span>{recipe.cooking_time} mins</span>
-                  </div>
-                  {recipe.created_at && (
-                    <p className="text-xs text-muted-foreground">
-                      Saved on {new Date(recipe.created_at).toLocaleString('en-US', {
-                        weekday: 'long',
-                        year: 'numeric', 
-                        month: 'short',
-                        day: 'numeric'
-                      })}
-                    </p>
-                  )}
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {recipe.ingredients.slice(0, 3).map((ingredient, i) => (
-                      <span
-                        key={i}
-                        className="text-xs bg-primary/5 text-primary px-2 py-1 rounded-full"
-                      >
-                        {ingredient}
-                      </span>
-                    ))}
-                    {recipe.ingredients.length > 3 && (
-                      <span className="text-xs text-muted-foreground px-2 py-1">
-                        +{recipe.ingredients.length - 3} more
-                      </span>
-                    )}
-                  </div>
+
+                <div className="text-xs text-muted-foreground">
+                  Saved on {new Date(recipe.created_at || '').toLocaleDateString('en-US', {
+                    year: 'numeric', 
+                    month: 'short',
+                    day: 'numeric'
+                  })}
                 </div>
               </div>
             </Card>
           ))}
         </div>
       ) : (
-        <Card className="p-6 text-center">
-          <ChefHat className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+        <Card className="p-6 text-center bg-white border">
+          <ChefHat className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-semibold mb-2">No Recipes Found</h3>
-          <p className="text-gray-600 mb-4">
+          <p className="text-muted-foreground mb-4">
             {searchQuery
               ? "No recipes match your search. Try different keywords."
               : "You haven't saved any recipes yet."}
           </p>
-          <Button onClick={() => navigate("/recipe-finder")}>
+          <Button 
+            onClick={() => navigate("/recipe-finder")}
+            className="bg-primary hover:bg-primary/90"
+          >
             Find New Recipes
           </Button>
         </Card>
