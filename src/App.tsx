@@ -9,19 +9,18 @@ import { MealPlan } from "./pages/MealPlanner/MealPlan";
 import HealthyAlternative from "./pages/HealthyAlternatives/HealthyAlternative";
 import Profile from "./pages/Profile";
 import { Pricing } from "./pages/Pricing";
-import Billing from "./pages/Billing";
+import { SharedMealPlan } from "./pages/MealPlanner/SharedMealPlan";
 import MealPlanDetails from "./pages/MealPlanner/MealPlanDetails";
-import SharedMealPlan from "./pages/MealPlanner/SharedMealPlan";
 import Blog from "./pages/blogs/Blogs";
 import BlogPost from "./pages/blogs/BlogDetails";
 import RecipeFinder from "./pages/recipes/RecipeFinder";
 import Privacy from "./pages/compliance/Privacy";
 import Terms from "./pages/compliance/Terms";
 import About from "./pages/compliance/About";
-import RecipeDetail from "@/pages/recipes/RecipeDetail";
+import RecipeDetail from "./pages/recipes/RecipeDetail";
 import SharedRecipe from "./pages/recipes/SharedRecipe";
 import { PaymentStatus } from "./pages/payment/status";
-import { MealSuggestions } from "@/pages/MealSuggestions";
+import { MealSuggestions } from "./pages/MealSuggestions";
 import AuthCallback from "./pages/auth/callback";
 
 const queryClient = new QueryClient();
@@ -46,7 +45,6 @@ const App = () => (
             <Route path="/healthy-alternative" element={<HealthyAlternative />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/pricing" element={<Pricing />} />
-            <Route path="/billing" element={<Billing />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/privacy" element={<Privacy />} />

@@ -151,14 +151,6 @@ const NavigationBar = () => {
                         Profile
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/billing" className="flex items-center gap-2 w-full cursor-pointer">
-                        <div className="p-1 rounded bg-primary/10">
-                          <CreditCard className="w-4 h-4" />
-                        </div>
-                        Billing
-                      </Link>
-                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
                       onClick={handleLogout}
