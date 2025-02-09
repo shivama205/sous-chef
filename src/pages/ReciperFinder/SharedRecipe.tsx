@@ -110,14 +110,25 @@ export default function SharedRecipe() {
           return;
         }
 
+        // Transform database record to match Recipe interface
         setRecipe({
           id: recipeData.id,
-          meal_name: recipeData.meal_name,
-          cooking_time: recipeData.cooking_time,
-          ingredients: recipeData.ingredients,
-          instructions: recipeData.instructions,
-          nutritional_value: recipeData.nutritional_value,
+          name: recipeData.name,
+          description: recipeData.description || `A delicious ${recipeData.name} recipe`,
+          cookingTime: recipeData.cooking_time,
+          ingredients: recipeData.ingredients || [],
+          instructions: recipeData.instructions || [],
+          nutritionalValue: recipeData.nutritional_value || {
+            calories: 0,
+            protein: 0,
+            carbs: 0,
+            fat: 0
+          },
+          difficulty: (recipeData.difficulty || 'medium').toLowerCase() as 'easy' | 'medium' | 'hard',
+          cuisineType: recipeData.cuisine_type || 'Mixed',
+          imageUrl: recipeData.image_url || null,
           created_at: recipeData.created_at,
+          updated_at: recipeData.updated_at
         });
 
         // Increment the view count in the background
@@ -152,7 +163,7 @@ export default function SharedRecipe() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: recipe?.meal_name || "Shared Recipe",
+          title: recipe?.name || "Shared Recipe",
           text: "Check out this delicious recipe I found on MySideChef!",
           url: shareUrl,
         });
@@ -193,8 +204,8 @@ export default function SharedRecipe() {
   return (
     <BaseLayout>
       <SEO 
-        title={`${recipe?.meal_name || 'Recipe'} - SideChef`}
-        description={`Discover this delicious ${recipe?.meal_name} recipe shared from SideChef`}
+        title={`${recipe?.name || 'Recipe'} - SideChef`}
+        description={`Discover this delicious ${recipe?.name} recipe shared from SideChef`}
         keywords="shared recipe, cooking instructions, ingredients list, nutritional information, healthy cooking"
         type="article"
         canonical={`https://mysidechef.com/shared/recipe/${id}`}
@@ -204,7 +215,7 @@ export default function SharedRecipe() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ChefHat className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-bold">{recipe.meal_name}</h1>
+            <h1 className="text-2xl font-bold">{recipe.name}</h1>
           </div>
           <Button
             variant="outline"
@@ -221,7 +232,7 @@ export default function SharedRecipe() {
         <div className="space-y-6 bg-white p-6 rounded-lg">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Timer className="w-4 h-4" />
-            <span>Cooking Time: {recipe.cooking_time} minutes</span>
+            <span>Cooking Time: {recipe.cookingTime} minutes</span>
           </div>
 
           {/* Recipe Details */}
@@ -275,25 +286,25 @@ export default function SharedRecipe() {
               <div className="bg-primary/5 rounded-lg p-3">
                 <p className="text-sm text-gray-600">Calories</p>
                 <p className="text-lg font-semibold text-primary">
-                  {recipe.nutritional_value.calories}
+                  {recipe.nutritionalValue.calories}
                 </p>
               </div>
               <div className="bg-primary/5 rounded-lg p-3">
                 <p className="text-sm text-gray-600">Protein</p>
                 <p className="text-lg font-semibold text-primary">
-                  {recipe.nutritional_value.protein}g
+                  {recipe.nutritionalValue.protein}g
                 </p>
               </div>
               <div className="bg-primary/5 rounded-lg p-3">
                 <p className="text-sm text-gray-600">Carbs</p>
                 <p className="text-lg font-semibold text-primary">
-                  {recipe.nutritional_value.carbs}g
+                  {recipe.nutritionalValue.carbs}g
                 </p>
               </div>
               <div className="bg-primary/5 rounded-lg p-3">
                 <p className="text-sm text-gray-600">Fat</p>
                 <p className="text-lg font-semibold text-primary">
-                  {recipe.nutritional_value.fat}g
+                  {recipe.nutritionalValue.fat}g
                 </p>
               </div>
             </div>

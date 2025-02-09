@@ -84,9 +84,15 @@ export default function RecipeDetail() {
       return;
     }
 
-    // Handle existing recipe
+    // Handle existing recipe - only fetch if we don't already have it
     if (!id) {
       navigate("/recipe-finder");
+      return;
+    }
+
+    // If we already have the recipe loaded, don't fetch again
+    if (recipe?.id === id) {
+      setIsLoading(false);
       return;
     }
 
@@ -116,7 +122,7 @@ export default function RecipeDetail() {
       }
 
       // Transform database record to match Recipe interface
-      setRecipe({
+      const transformedRecipe = {
         id: data.id,
         name: data.name,
         description: data.description || `A delicious ${data.name} recipe`,
@@ -134,9 +140,11 @@ export default function RecipeDetail() {
         imageUrl: data.image_url || null,
         created_at: data.created_at,
         updated_at: data.updated_at
-      });
+      };
 
-      // Track recipe view
+      setRecipe(transformedRecipe);
+
+      // Track recipe view - only track once when initially loading
       if (user) {
         dataLayer.trackRecipeView({
           recipe_id: data.id,
@@ -159,8 +167,11 @@ export default function RecipeDetail() {
   };
 
   useEffect(() => {
-    loadRecipe();
-  }, [id, user, location.state]);
+    // Only load recipe if we don't have it yet or if it's a new recipe
+    if (isLoading) {
+      loadRecipe();
+    }
+  }, [id, isNewRecipe]); // Only depend on id and isNewRecipe changes
 
   const handleLoginDialogChange = (open: boolean) => {
     setLoginDialogOpen(open);
