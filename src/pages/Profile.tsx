@@ -4,7 +4,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
-import { ChefHat, Calendar, Target, Brain, Sparkles, Dumbbell, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChefHat, Calendar, Target, Brain, Sparkles, Dumbbell, Loader2, ChevronLeft, ChevronRight, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,15 +27,28 @@ const LoadingSpinner = () => (
   </div>
 );
 
-const MacroInput = ({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) => (
+const MacroInput = ({ label, value, onChange, icon: Icon }: { 
+  label: string; 
+  value: number; 
+  onChange: (value: number) => void;
+  icon: any;
+}) => (
   <div className="space-y-2">
-    <Label className="text-sm font-medium">{label}</Label>
-    <Input
-      type="number"
-      value={value}
-      onChange={(e) => onChange(parseInt(e.target.value) || 0)}
-      className="bg-white"
-    />
+    <Label className="flex items-center gap-2 text-sm font-medium">
+      <Icon className="w-4 h-4 text-primary" />
+      {label}
+    </Label>
+    <div className="relative">
+      <Input
+        type="number"
+        value={value}
+        onChange={(e) => onChange(parseInt(e.target.value) || 0)}
+        className="h-12 bg-white pl-4 pr-12 border-input hover:bg-gray-50/50"
+      />
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+        {label.includes("Calories") ? "kcal" : "g"}
+      </div>
+    </div>
   </div>
 );
 
@@ -97,12 +110,40 @@ export default function Profile() {
 
     setIsSavingMacros(true);
     try {
-      const { error } = await supabase
+      // First check if a record exists
+      const { data: existingData } = await supabase
         .from("user_macros")
-        .upsert({
-          user_id: user.id,
-          ...macros
-        });
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      let error;
+      if (existingData) {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from("user_macros")
+          .update({
+            calories: macros.calories,
+            protein: macros.protein,
+            carbs: macros.carbs,
+            fat: macros.fat,
+            updated_at: new Date().toISOString()
+          })
+          .eq("user_id", user.id);
+        error = updateError;
+      } else {
+        // Insert new record
+        const { error: insertError } = await supabase
+          .from("user_macros")
+          .insert({
+            user_id: user.id,
+            calories: macros.calories,
+            protein: macros.protein,
+            carbs: macros.carbs,
+            fat: macros.fat
+          });
+        error = insertError;
+      }
 
       if (error) throw error;
 
@@ -141,6 +182,7 @@ export default function Profile() {
             label="Daily Calories"
             value={macros.calories}
             onChange={(value) => setMacros(prev => ({ ...prev, calories: value }))}
+            icon={Target}
           />
         </div>
       )
@@ -162,6 +204,7 @@ export default function Profile() {
             label="Daily Protein (g)"
             value={macros.protein}
             onChange={(value) => setMacros(prev => ({ ...prev, protein: value }))}
+            icon={Dumbbell}
           />
         </div>
       )
@@ -184,11 +227,13 @@ export default function Profile() {
               label="Daily Carbs (g)"
               value={macros.carbs}
               onChange={(value) => setMacros(prev => ({ ...prev, carbs: value }))}
+              icon={Brain}
             />
             <MacroInput
               label="Daily Fat (g)"
               value={macros.fat}
               onChange={(value) => setMacros(prev => ({ ...prev, fat: value }))}
+              icon={Scale}
             />
           </div>
         </div>
@@ -315,53 +360,76 @@ export default function Profile() {
           </div>
         </main>
 
-        {/* Goals Dialog */}
+        {/* Nutritional Goals Dialog */}
         <Dialog open={showGoalsDialog} onOpenChange={setShowGoalsDialog}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary" />
                 Nutrition Goals
               </DialogTitle>
               <DialogDescription>
-                Set your nutritional goals for personalized recommendations
+                Set your daily nutritional targets for personalized recommendations
               </DialogDescription>
             </DialogHeader>
 
-            <div className="py-4">
-              <div className="mb-8">
-                <Progress value={((currentStep + 1) / steps.length) * 100} className="h-2" />
+            <div className="py-6 space-y-6">
+              {/* Daily Calories */}
+              <div className="space-y-4">
+                <MacroInput
+                  label="Daily Calories"
+                  value={macros.calories}
+                  onChange={(value) => setMacros(prev => ({ ...prev, calories: value }))}
+                  icon={Target}
+                />
+                <div className="text-xs text-muted-foreground">
+                  Recommended: 1800-2500 calories for most adults
+                </div>
               </div>
 
-              {steps[currentStep].content}
+              {/* Macronutrients */}
+              <div className="space-y-4">
+                <h3 className="font-medium text-base">Macronutrients</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <MacroInput
+                    label="Protein"
+                    value={macros.protein}
+                    onChange={(value) => setMacros(prev => ({ ...prev, protein: value }))}
+                    icon={Dumbbell}
+                  />
+                  <MacroInput
+                    label="Carbs"
+                    value={macros.carbs}
+                    onChange={(value) => setMacros(prev => ({ ...prev, carbs: value }))}
+                    icon={Brain}
+                  />
+                  <MacroInput
+                    label="Fat"
+                    value={macros.fat}
+                    onChange={(value) => setMacros(prev => ({ ...prev, fat: value }))}
+                    icon={Scale}
+                  />
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Recommended ratios: 10-35% protein, 45-65% carbs, 20-35% fat
+                </div>
+              </div>
 
-              <div className="flex justify-between mt-8">
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentStep(prev => prev - 1)}
-                  disabled={currentStep === 0}
-                  className="gap-2"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Back
-                </Button>
-                <Button
-                  onClick={() => {
-                    if (currentStep === steps.length - 1) {
-                      handleSaveMacros();
-                    } else {
-                      setCurrentStep(prev => prev + 1);
-                    }
-                  }}
+              <div className="pt-4 border-t">
+                <Button 
+                  onClick={handleSaveMacros}
                   disabled={isSavingMacros}
-                  className="gap-2 bg-primary hover:bg-primary/90"
+                  className="w-full bg-primary hover:bg-primary/90"
                 >
-                  {currentStep === steps.length - 1 ? (
-                    isSavingMacros ? "Saving..." : "Save Goals"
+                  {isSavingMacros ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
                   ) : (
                     <>
-                      Next
-                      <ChevronRight className="w-4 h-4" />
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Save Goals
                     </>
                   )}
                 </Button>

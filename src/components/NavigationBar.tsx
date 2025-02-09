@@ -34,8 +34,32 @@ const NavigationBar = () => {
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/');
+    try {
+      // Clear all Supabase storage
+      await supabase.auth.signOut({ scope: 'global' });
+      
+      // Clear all local storage except theme
+      const themePreference = localStorage.getItem('theme-preference');
+      localStorage.clear();
+      if (themePreference) {
+        localStorage.setItem('theme-preference', themePreference);
+      }
+      
+      // Clear all session storage
+      sessionStorage.clear();
+      
+      // Clear any cookies
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c
+          .replace(/^ +/, "")
+          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+      
+      // Force reload the page to clear all states
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   const isActive = (path: string) => location.pathname === path;
@@ -154,7 +178,7 @@ const NavigationBar = () => {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
                       onClick={handleLogout}
-                      className="text-red-600 focus:text-red-600 cursor-pointer"
+                      className="text-red-600 hover:text-red-700 focus:text-red-700 hover:bg-red-50 focus:bg-red-50 cursor-pointer transition-colors"
                     >
                       <div className="p-1 rounded bg-red-100">
                         <LogOut className="w-4 h-4" />
@@ -259,11 +283,11 @@ const NavigationBar = () => {
                     <span>Profile</span>
                   </Link>
                   <button
-                    onClick={() => {
-                      handleLogout();
+                    onClick={async () => {
+                      await handleLogout();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/5 transition-colors w-full text-left text-red-600"
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors w-full text-left text-red-600"
                   >
                     <div className="p-2 rounded-md bg-red-100">
                       <LogOut className="w-4 h-4" />

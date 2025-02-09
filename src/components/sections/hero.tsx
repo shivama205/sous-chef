@@ -1,48 +1,7 @@
-import * as React from "react"
 import { motion } from "framer-motion"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Brain, Apple, Users, Trophy, Heart, ArrowRight } from "lucide-react"
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-}
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-}
-
-interface MoodOption {
-  emoji: string
-  title: string
-  description: string
-}
-
-const moodOptions: MoodOption[] = [
-  {
-    emoji: "😴",
-    title: "Tired after work",
-    description: "Quick & easy dinner ideas"
-  },
-  {
-    emoji: "💪",
-    title: "Energetic & motivated",
-    description: "Try something new today"
-  },
-  {
-    emoji: "🤔",
-    title: "Need inspiration",
-    description: "Discover trending recipes"
-  }
-]
+import { ArrowRight } from "lucide-react"
 
 export function Hero() {
   return (

@@ -175,7 +175,7 @@ const LoggedInView = () => {
           className="space-y-8"
         >
           {/* Quick Actions - Desktop */}
-          <motion.div variants={item} className="hidden lg:grid grid-cols-4 gap-4">
+          <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {quickActions.map((action, index) => (
               <QuickActionCard key={index} {...action} />
             ))}
@@ -230,20 +230,6 @@ const LoggedInView = () => {
           </div>
         </motion.div>
       </div>
-
-      {/* Mobile Bottom Tray */}
-      <div className="fixed bottom-0 left-0 right-0 lg:hidden">
-        <div className="bg-white border-t px-4 py-2">
-          <div className="flex justify-between items-center">
-            {quickActions.map((action, index) => (
-              <MobileQuickAction key={index} {...action} />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Add bottom padding to prevent content from being hidden behind mobile tray */}
-      <div className="h-20 lg:hidden" />
     </div>
   );
 };
