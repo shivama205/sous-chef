@@ -18,6 +18,7 @@ import { usePageTracking } from "@/hooks/usePageTracking";
 import { dataLayer } from "@/services/dataLayer";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { FeatureCard } from "@/components/ui/FeatureCard";
+import { Recipe } from "@/types/recipeFinder";
 
 const features = [
   {
@@ -130,19 +131,24 @@ export function MealSuggestions() {
     }
     
     // Transform meal to match Recipe interface
-    const recipeData = {
+    const recipe: Recipe = {
       name: meal.name,
-      description: meal.description,
+      description: meal.description || `A delicious ${meal.name} recipe`,
       cookingTime: meal.cookingTime,
-      ingredients: meal.ingredients,
-      instructions: meal.instructions,
-      nutritionalValue: meal.nutritionalValue,
-      difficulty: meal.difficulty?.toLowerCase() as 'easy' | 'medium' | 'hard',
-      cuisineType: 'Mixed',
+      ingredients: meal.ingredients || [],
+      instructions: meal.instructions || [],
+      nutritionalValue: meal.nutritionalValue || {
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0
+      },
+      difficulty: (meal.difficulty || 'medium').toLowerCase() as 'easy' | 'medium' | 'hard',
+      cuisineType: meal.type || 'Mixed',
       imageUrl: null
     };
     
-    navigate('/recipe/new', { state: { meal: recipeData } });
+    navigate('/recipe/new', { state: { recipe } });
   };
 
   // Track form field changes

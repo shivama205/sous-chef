@@ -31,7 +31,6 @@ import {
 } from "@/components/ui/dialog";
 import { LoginDialog } from "@/components/LoginDialog";
 import { saveRecipe } from "@/services/recipeFinder";
-import type { SuggestedMeal } from "@/services/mealSuggestions";
 
 export default function RecipeDetail() {
   const { id } = useParams();
@@ -40,7 +39,6 @@ export default function RecipeDetail() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
-  const [suggestedMeal, setSuggestedMeal] = useState<SuggestedMeal | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
@@ -52,15 +50,15 @@ export default function RecipeDetail() {
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
 
   // Check if it's a new recipe based on URL or state
-  const isNewRecipe = id === 'new' || Boolean(location.state?.meal);
+  const isNewRecipe = id === 'new' || Boolean(location.state?.recipe);
 
   const loadRecipe = async () => {
     // For new recipes
     if (isNewRecipe) {
       // Handle new recipe from state
-      const stateMeal = location.state?.meal;
-      if (stateMeal) {
-        setSuggestedMeal(stateMeal);
+      const stateRecipe = location.state?.recipe;
+      if (stateRecipe) {
+        setRecipe(stateRecipe);
         setIsLoading(false);
         return;
       }
@@ -68,7 +66,7 @@ export default function RecipeDetail() {
       // Try to get recipe from sessionStorage
       const storedRecipe = sessionStorage.getItem('pendingRecipe');
       if (storedRecipe) {
-        setSuggestedMeal(JSON.parse(storedRecipe));
+        setRecipe(JSON.parse(storedRecipe));
         sessionStorage.removeItem('pendingRecipe');
         setIsLoading(false);
         return;
@@ -183,7 +181,7 @@ export default function RecipeDetail() {
       return;
     }
 
-    if (!suggestedMeal) {
+    if (!recipe) {
       toast({
         title: "Error",
         description: "No recipe data found to save.",
@@ -194,16 +192,19 @@ export default function RecipeDetail() {
     
     setIsSaving(true);
     try {
-      const { recipe: savedRecipe } = await saveRecipe(user.id, {
-        name: suggestedMeal.name,
-        description: suggestedMeal.description,
-        cookingTime: suggestedMeal.cookingTime,
-        ingredients: suggestedMeal.ingredients,
-        instructions: suggestedMeal.instructions,
-        nutritionalValue: suggestedMeal.nutritionalValue,
-        difficulty: suggestedMeal.difficulty,
-        cuisineType: suggestedMeal.cuisineType,
-        imageUrl: suggestedMeal.imageUrl
+      const result = await saveRecipe(user.id, recipe);
+      
+      if (!result.success || !result.recipe) {
+        throw new Error('Failed to save recipe');
+      }
+
+      // Track recipe save
+      dataLayer.trackRecipeSave({
+        recipe_id: result.recipe.id,
+        recipe_name: result.recipe.name,
+        recipe_category: result.recipe.cuisine_type,
+        cooking_time: result.recipe.cooking_time,
+        user_id: user.id
       });
       
       toast({
@@ -212,12 +213,12 @@ export default function RecipeDetail() {
       });
 
       // Navigate to the saved recipe
-      navigate(`/recipe/${savedRecipe.id}`, { replace: true });
+      navigate(`/recipe/${result.recipe.id}`, { replace: true });
     } catch (error) {
       console.error("Error saving recipe:", error);
       toast({
         title: "Error",
-        description: "Failed to save recipe. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to save recipe. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -226,11 +227,9 @@ export default function RecipeDetail() {
   };
 
   const handleBack = () => {
-    if (!isNewRecipe) {
-      navigate('/');
-    } else {
-      navigate('/recipe-finder');
-    }
+    // Get the previous path from localStorage
+    const previousPath = localStorage.getItem('previousPath') || '/recipe-finder';
+    navigate(previousPath);
   };
 
   const handleShare = async () => {
@@ -388,7 +387,10 @@ export default function RecipeDetail() {
         title: "Recipe deleted",
         description: "Your recipe has been deleted successfully.",
       });
-      navigate('/profile');
+
+      // Get the previous path from localStorage
+      const previousPath = localStorage.getItem('previousPath') || '/recipe-finder';
+      navigate(previousPath);
     } catch (error) {
       console.error('Error deleting recipe:', error);
       toast({
@@ -406,12 +408,21 @@ export default function RecipeDetail() {
     return <MealPlanLoadingOverlay isLoading={true} />;
   }
 
-  if (!recipe && !suggestedMeal) {
-    return null;
+  if (!recipe) {
+    return (
+      <BaseLayout>
+        <div className="container mx-auto px-4 py-8 text-center">
+          <h1 className="text-2xl font-bold mb-4">No Recipe Data</h1>
+          <p className="text-muted-foreground mb-4">
+            Please select a recipe from meal suggestions.
+          </p>
+          <Button onClick={() => navigate("/meal-suggestions")}>
+            Go to Meal Suggestions
+          </Button>
+        </div>
+      </BaseLayout>
+    );
   }
-
-  const recipeData = isNewRecipe ? suggestedMeal : recipe;
-  if (!recipeData) return null;
 
   return (
     <BaseLayout>
@@ -477,13 +488,13 @@ export default function RecipeDetail() {
           <Card className="p-6 bg-gradient-to-r from-primary to-primary/80 text-white">
             <div className="space-y-4">
               <h1 className="text-3xl font-bold">
-                {isNewRecipe ? suggestedMeal?.name : recipe?.name}
+                {isNewRecipe ? recipe?.name : recipe?.name}
               </h1>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <Timer className="w-4 h-4" />
                   <span>
-                    {isNewRecipe ? suggestedMeal?.cookingTime : recipe?.cookingTime} mins
+                    {isNewRecipe ? recipe?.cookingTime : recipe?.cookingTime} mins
                   </span>
                 </div>
                 {!isNewRecipe && recipe?.created_at && (
@@ -504,7 +515,7 @@ export default function RecipeDetail() {
                 <h2 className="text-lg font-semibold">Ingredients</h2>
               </div>
               <ul className="space-y-2">
-                {(isNewRecipe ? suggestedMeal?.ingredients : recipe?.ingredients)?.map((ingredient, i) => (
+                {(isNewRecipe ? recipe?.ingredients : recipe?.ingredients)?.map((ingredient, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary/60 flex-shrink-0 mt-2" />
                     <span className="text-gray-600">{ingredient}</span>
@@ -520,7 +531,7 @@ export default function RecipeDetail() {
                 <h2 className="text-lg font-semibold">Instructions</h2>
               </div>
               <ol className="space-y-4">
-                {(isNewRecipe ? suggestedMeal?.instructions : recipe?.instructions)?.map((instruction, i) => (
+                {(isNewRecipe ? recipe?.instructions : recipe?.instructions)?.map((instruction, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <span className="font-medium text-primary/60 flex-shrink-0">
                       {i + 1}.
@@ -542,25 +553,25 @@ export default function RecipeDetail() {
               <div className="text-center p-4 bg-primary/5 rounded-lg">
                 <div className="text-sm font-medium text-primary">Calories</div>
                 <div className="text-2xl font-bold">
-                  {isNewRecipe ? suggestedMeal?.nutritionalValue.calories : recipe?.nutritionalValue.calories}
+                  {isNewRecipe ? recipe?.nutritionalValue.calories : recipe?.nutritionalValue.calories}
                 </div>
               </div>
               <div className="text-center p-4 bg-primary/5 rounded-lg">
                 <div className="text-sm font-medium text-primary">Protein</div>
                 <div className="text-2xl font-bold">
-                  {isNewRecipe ? suggestedMeal?.nutritionalValue.protein : recipe?.nutritionalValue.protein}g
+                  {isNewRecipe ? recipe?.nutritionalValue.protein : recipe?.nutritionalValue.protein}g
                 </div>
               </div>
               <div className="text-center p-4 bg-primary/5 rounded-lg">
                 <div className="text-sm font-medium text-primary">Carbs</div>
                 <div className="text-2xl font-bold">
-                  {isNewRecipe ? suggestedMeal?.nutritionalValue.carbs : recipe?.nutritionalValue.carbs}g
+                  {isNewRecipe ? recipe?.nutritionalValue.carbs : recipe?.nutritionalValue.carbs}g
                 </div>
               </div>
               <div className="text-center p-4 bg-primary/5 rounded-lg">
                 <div className="text-sm font-medium text-primary">Fat</div>
                 <div className="text-2xl font-bold">
-                  {isNewRecipe ? suggestedMeal?.nutritionalValue.fat : recipe?.nutritionalValue.fat}g
+                  {isNewRecipe ? recipe?.nutritionalValue.fat : recipe?.nutritionalValue.fat}g
                 </div>
               </div>
             </div>
