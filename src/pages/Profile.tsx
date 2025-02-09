@@ -4,7 +4,6 @@ import { useAuth } from "@/providers/AuthProvider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import NavigationBar from "@/components/NavigationBar";
 import { format } from "date-fns";
 import { Settings, ChefHat, History, Star, Clock, Calendar, Utensils } from "lucide-react";
 import { SavedRecipes } from "@/components/profile/SavedRecipes";
@@ -86,8 +85,6 @@ export default function Profile() {
   return (
     <BaseLayout>
       <div className="min-h-screen bg-gray-50">
-        <NavigationBar />
-        
         {/* Hero Section */}
         <div className="bg-gradient-to-b from-primary/10 to-background border-b">
           <div className="container mx-auto px-4 py-6 sm:py-12">
