@@ -446,22 +446,13 @@ export default function RecipeDetail() {
     <BaseLayout>
       <div className="container max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Header Section */}
-        <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBack}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
+        <div className="flex items-center justify-end">
           <div className="flex items-center gap-2">
             {isNewRecipe ? (
               <Button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="gap-2"
+                className="gap-2 bg-primary hover:bg-primary/90 text-white"
               >
                 <Save className="w-4 h-4" />
                 {isSaving ? "Saving..." : "Save Recipe"}
@@ -472,7 +463,7 @@ export default function RecipeDetail() {
                   variant="outline"
                   size="sm"
                   onClick={handleShare}
-                  className="gap-2"
+                  className="gap-2 hover:bg-primary/5"
                 >
                   <Share2 className="w-4 h-4" />
                   Share
@@ -481,7 +472,7 @@ export default function RecipeDetail() {
                   variant="outline"
                   size="sm"
                   onClick={handleDownload}
-                  className="gap-2"
+                  className="gap-2 hover:bg-primary/5"
                 >
                   <Download className="w-4 h-4" />
                   Download
@@ -527,7 +518,7 @@ export default function RecipeDetail() {
           {/* Recipe Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Ingredients Card */}
-            <Card className="p-6">
+            <Card className="p-6 bg-white border">
               <div className="flex items-center gap-2 mb-4">
                 <UtensilsCrossed className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold">Ingredients</h2>
@@ -536,14 +527,14 @@ export default function RecipeDetail() {
                 {(isNewRecipe ? recipe?.ingredients : recipe?.ingredients)?.map((ingredient, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary/60 flex-shrink-0 mt-2" />
-                    <span className="text-gray-600">{ingredient}</span>
+                    <span className="text-muted-foreground">{ingredient}</span>
                   </li>
                 ))}
               </ul>
             </Card>
 
             {/* Instructions Card */}
-            <Card className="p-6">
+            <Card className="p-6 bg-white border">
               <div className="flex items-center gap-2 mb-4">
                 <ListChecks className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold">Instructions</h2>
@@ -554,7 +545,7 @@ export default function RecipeDetail() {
                     <span className="font-medium text-primary/60 flex-shrink-0">
                       {i + 1}.
                     </span>
-                    <span className="text-gray-600">{instruction}</span>
+                    <span className="text-muted-foreground">{instruction}</span>
                   </li>
                 ))}
               </ol>
@@ -562,7 +553,7 @@ export default function RecipeDetail() {
           </div>
 
           {/* Nutritional Info */}
-          <Card className="p-6">
+          <Card className="p-6 bg-white border">
             <div className="flex items-center gap-2 mb-4">
               <Dumbbell className="w-5 h-5 text-primary" />
               <h2 className="text-lg font-semibold">Nutritional Information</h2>
@@ -570,25 +561,25 @@ export default function RecipeDetail() {
             <div className="grid grid-cols-4 gap-4">
               <div className="text-center p-4 bg-primary/5 rounded-lg">
                 <div className="text-sm font-medium text-primary">Calories</div>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-bold text-primary">
                   {isNewRecipe ? recipe?.nutritionalValue.calories : recipe?.nutritionalValue.calories}
                 </div>
               </div>
               <div className="text-center p-4 bg-primary/5 rounded-lg">
                 <div className="text-sm font-medium text-primary">Protein</div>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-bold text-primary">
                   {isNewRecipe ? recipe?.nutritionalValue.protein : recipe?.nutritionalValue.protein}g
                 </div>
               </div>
               <div className="text-center p-4 bg-primary/5 rounded-lg">
                 <div className="text-sm font-medium text-primary">Carbs</div>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-bold text-primary">
                   {isNewRecipe ? recipe?.nutritionalValue.carbs : recipe?.nutritionalValue.carbs}g
                 </div>
               </div>
               <div className="text-center p-4 bg-primary/5 rounded-lg">
                 <div className="text-sm font-medium text-primary">Fat</div>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-bold text-primary">
                   {isNewRecipe ? recipe?.nutritionalValue.fat : recipe?.nutritionalValue.fat}g
                 </div>
               </div>

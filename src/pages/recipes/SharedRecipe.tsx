@@ -223,16 +223,12 @@ export default function SharedRecipe() {
       />
       <div className="container max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Header Section */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <ChefHat className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-bold">{recipe.name}</h1>
-          </div>
+        <div className="flex items-center justify-end">
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center gap-2"
             onClick={handleShare}
+            className="gap-2 hover:bg-primary/5"
           >
             <Share2 className="w-4 h-4" />
             Share
@@ -241,15 +237,28 @@ export default function SharedRecipe() {
 
         {/* Recipe Content */}
         <div className="space-y-6 bg-white p-6 rounded-lg">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Timer className="w-4 h-4" />
-            <span>Cooking Time: {recipe.cookingTime} minutes</span>
-          </div>
+          {/* Recipe Header */}
+          <Card className="p-6 bg-gradient-to-r from-primary to-primary/80 text-white">
+            <div className="space-y-4">
+              <h1 className="text-3xl font-bold">{recipe.name}</h1>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Timer className="w-4 h-4" />
+                  <span>{recipe.cookingTime} mins</span>
+                </div>
+                {recipe?.created_at && (
+                  <div className="text-sm text-white/80">
+                    Shared on {new Date(recipe.created_at).toLocaleDateString()}
+                  </div>
+                )}
+              </div>
+            </div>
+          </Card>
 
           {/* Recipe Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Ingredients Card */}
-            <Card className="p-4 sm:p-6">
+            <Card className="p-6 bg-white border">
               <div className="flex items-center gap-2 mb-4">
                 <UtensilsCrossed className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold">Ingredients</h2>
@@ -259,7 +268,7 @@ export default function SharedRecipe() {
                   {recipe.ingredients.map((ingredient, i) => (
                     <li key={i} className="flex items-start gap-3">
                       <span className="w-1.5 h-1.5 rounded-full bg-primary/60 flex-shrink-0 mt-2" />
-                      <span className="text-gray-600">{ingredient}</span>
+                      <span className="text-muted-foreground">{ingredient}</span>
                     </li>
                   ))}
                 </ul>
@@ -267,7 +276,7 @@ export default function SharedRecipe() {
             </Card>
 
             {/* Instructions Card */}
-            <Card className="p-4 sm:p-6">
+            <Card className="p-6 bg-white border">
               <div className="flex items-center gap-2 mb-4">
                 <ListChecks className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold">Instructions</h2>
@@ -276,10 +285,10 @@ export default function SharedRecipe() {
                 <ol className="space-y-4">
                   {recipe.instructions.map((instruction, i) => (
                     <li key={i} className="flex items-start gap-3">
-                      <span className="font-medium text-primary/60 flex-shrink-0 min-w-[1.5rem]">
+                      <span className="font-medium text-primary/60 flex-shrink-0">
                         {i + 1}.
                       </span>
-                      <span className="text-gray-600 whitespace-pre-wrap">{instruction}</span>
+                      <span className="text-muted-foreground whitespace-pre-wrap">{instruction}</span>
                     </li>
                   ))}
                 </ol>
@@ -287,36 +296,36 @@ export default function SharedRecipe() {
             </Card>
           </div>
 
-          {/* Nutritional Info Card */}
-          <Card className="p-4 sm:p-6">
+          {/* Nutritional Info */}
+          <Card className="p-6 bg-white border">
             <div className="flex items-center gap-2 mb-4">
               <Dumbbell className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold">Nutritional Value</h2>
+              <h2 className="text-lg font-semibold">Nutritional Information</h2>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="bg-primary/5 rounded-lg p-3">
-                <p className="text-sm text-gray-600">Calories</p>
-                <p className="text-lg font-semibold text-primary">
+            <div className="grid grid-cols-4 gap-4">
+              <div className="text-center p-4 bg-primary/5 rounded-lg">
+                <div className="text-sm font-medium text-primary">Calories</div>
+                <div className="text-2xl font-bold text-primary">
                   {recipe.nutritionalValue.calories}
-                </p>
+                </div>
               </div>
-              <div className="bg-primary/5 rounded-lg p-3">
-                <p className="text-sm text-gray-600">Protein</p>
-                <p className="text-lg font-semibold text-primary">
+              <div className="text-center p-4 bg-primary/5 rounded-lg">
+                <div className="text-sm font-medium text-primary">Protein</div>
+                <div className="text-2xl font-bold text-primary">
                   {recipe.nutritionalValue.protein}g
-                </p>
+                </div>
               </div>
-              <div className="bg-primary/5 rounded-lg p-3">
-                <p className="text-sm text-gray-600">Carbs</p>
-                <p className="text-lg font-semibold text-primary">
+              <div className="text-center p-4 bg-primary/5 rounded-lg">
+                <div className="text-sm font-medium text-primary">Carbs</div>
+                <div className="text-2xl font-bold text-primary">
                   {recipe.nutritionalValue.carbs}g
-                </p>
+                </div>
               </div>
-              <div className="bg-primary/5 rounded-lg p-3">
-                <p className="text-sm text-gray-600">Fat</p>
-                <p className="text-lg font-semibold text-primary">
+              <div className="text-center p-4 bg-primary/5 rounded-lg">
+                <div className="text-sm font-medium text-primary">Fat</div>
+                <div className="text-2xl font-bold text-primary">
                   {recipe.nutritionalValue.fat}g
-                </p>
+                </div>
               </div>
             </div>
           </Card>

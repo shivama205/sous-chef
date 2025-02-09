@@ -2,7 +2,7 @@ import * as React from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Utensils, ChefHat, Sparkles, Apple, Search, ArrowRight, Check } from "lucide-react"
+import { Utensils, Sparkles, Apple, Search, ArrowRight, Check, Calendar } from "lucide-react"
 import { Link } from "react-router-dom"
 
 const features = [
@@ -33,7 +33,7 @@ const features = [
       "Nutritional balance tracking",
       "Flexible and customizable plans"
     ],
-    icon: ChefHat,
+    icon: Calendar,
     color: "taupe",
     action: {
       label: "Start Planning",

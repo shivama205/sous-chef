@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
-import { ChefHat, Clock, Utensils, ArrowRight, Loader2, Brain, Coffee, Sparkles, UtensilsCrossed, Scale } from "lucide-react";
+import { ChefHat, Clock, Utensils, ArrowRight, Loader2, Brain, Coffee, Sparkles, UtensilsCrossed, Scale, Star } from "lucide-react";
 import { suggestMeals, type SuggestedMeal, type MealSuggestionRequest } from "@/services/mealSuggestions";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
@@ -198,7 +198,7 @@ export function MealSuggestions() {
       />
       
       {user ? (
-        <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background">
+        <div className="min-h-screen">
           <div className="container mx-auto px-4 py-8 space-y-8">
             <PageHeader
               icon={Sparkles}
@@ -209,103 +209,107 @@ export function MealSuggestions() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Main Form */}
               <div className="lg:col-span-2">
-                <Card className="backdrop-blur-sm border-0 shadow-sm">
-                  <div className="p-6 space-y-6">
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                      <div className="grid gap-6">
-                        <div className="space-y-2">
-                          <Label className="flex items-center gap-2 text-base">
-                            <Coffee className="w-4 h-4 text-primary" />
-                            Which meal are you planning?
-                          </Label>
-                          <Select
-                            value={request.mealType}
-                            onValueChange={(value) => handleFieldChange('mealType', value)}
-                          >
-                            <SelectTrigger className="h-12">
-                              <SelectValue placeholder="I need ideas for..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Breakfast">🌅 Breakfast - Rise and Shine!</SelectItem>
-                              <SelectItem value="Lunch">🥪 Lunch - Midday Fuel</SelectItem>
-                              <SelectItem value="Dinner">🍝 Dinner - Evening Yums</SelectItem>
-                              <SelectItem value="Snack">🍿 Just a Snack - Little Nibbles</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                <Card className="bg-white border shadow-sm">
+                  <div className="p-6">
+                    <h2 className="text-lg font-semibold mb-4">Get Meal Suggestions</h2>
+                    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2 text-base font-medium text-foreground">
+                          <Coffee className="w-4 h-4 text-primary" />
+                          Which meal are you planning? *
+                        </Label>
+                        <Select
+                          value={request.mealType}
+                          onValueChange={(value) => handleFieldChange('mealType', value)}
+                          required
+                        >
+                          <SelectTrigger className="h-12 bg-white border-input hover:bg-gray-50/50">
+                            <SelectValue placeholder="I need ideas for..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Breakfast">🌅 Breakfast - Rise and Shine!</SelectItem>
+                            <SelectItem value="Lunch">🥪 Lunch - Midday Fuel</SelectItem>
+                            <SelectItem value="Dinner">🍝 Dinner - Evening Yums</SelectItem>
+                            <SelectItem value="Snack">🍿 Just a Snack - Little Nibbles</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                        <div className="space-y-2">
-                          <Label className="flex items-center gap-2 text-base">
-                            <Brain className="w-4 h-4 text-primary" />
-                            How's your energy level?
-                          </Label>
-                          <Select
-                            value={request.cookingTime}
-                            onValueChange={(value) => handleFieldChange('cookingTime', value)}
-                          >
-                            <SelectTrigger className="h-12">
-                              <SelectValue placeholder="Be honest..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Quick">😫 Too tired to function</SelectItem>
-                              <SelectItem value="Medium">🤔 Could do some cooking</SelectItem>
-                              <SelectItem value="Long">👨‍🍳 Ready to channel my inner chef!</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2 text-base font-medium text-foreground">
+                          <Brain className="w-4 h-4 text-primary" />
+                          How's your energy level? *
+                        </Label>
+                        <Select
+                          value={request.cookingTime}
+                          onValueChange={(value) => handleFieldChange('cookingTime', value)}
+                          required
+                        >
+                          <SelectTrigger className="h-12 bg-white border-input hover:bg-gray-50/50">
+                            <SelectValue placeholder="Be honest..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Quick">😫 Too tired to function</SelectItem>
+                            <SelectItem value="Medium">🤔 Could do some cooking</SelectItem>
+                            <SelectItem value="Long">👨‍🍳 Ready to channel my inner chef!</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                        <div className="space-y-2">
-                          <Label className="flex items-center gap-2 text-base">
-                            <ChefHat className="w-4 h-4 text-primary" />
-                            Cooking mood?
-                          </Label>
-                          <Select
-                            value={request.difficulty}
-                            onValueChange={(value) => handleFieldChange('difficulty', value)}
-                          >
-                            <SelectTrigger className="h-12">
-                              <SelectValue placeholder="How adventurous are you?" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Easy">🥪 Keep it super simple</SelectItem>
-                              <SelectItem value="Medium">🥘 Something interesting</SelectItem>
-                              <SelectItem value="Hard">🎩 Let's get fancy!</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2 text-base font-medium text-foreground">
+                          <ChefHat className="w-4 h-4 text-primary" />
+                          Cooking mood? *
+                        </Label>
+                        <Select
+                          value={request.difficulty}
+                          onValueChange={(value) => handleFieldChange('difficulty', value)}
+                          required
+                        >
+                          <SelectTrigger className="h-12 bg-white border-input hover:bg-gray-50/50">
+                            <SelectValue placeholder="How adventurous are you?" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Easy">🥪 Keep it super simple</SelectItem>
+                            <SelectItem value="Medium">🥘 Something interesting</SelectItem>
+                            <SelectItem value="Hard">🎩 Let's get fancy!</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                        <div className="space-y-2">
-                          <Label className="flex items-center gap-2 text-base">
-                            <Utensils className="w-4 h-4 text-primary" />
-                            Any dietary restrictions?
-                          </Label>
-                          <Textarea
-                            placeholder="Tell us about your dietary needs... (e.g., vegetarian, no nuts, low-carb, etc.)"
-                            value={request.dietaryRestrictions}
-                            onChange={(e) => handleFieldChange('dietaryRestrictions', e.target.value)}
-                            className="min-h-[80px] resize-none"
-                          />
-                        </div>
+                      <div className="border-t border-border my-4" />
 
-                        <div className="space-y-2">
-                          <Label className="flex items-center gap-2 text-base">
-                            <Brain className="w-4 h-4 text-primary" />
-                            Any specific cravings?
-                          </Label>
-                          <Textarea
-                            placeholder="Anything specific you're in the mood for? Or things you definitely don't want?"
-                            value={request.instructions}
-                            onChange={(e) => handleFieldChange('instructions', e.target.value)}
-                            className="min-h-[80px] resize-none"
-                          />
-                        </div>
+                      <div className="space-y-2">
+                        <Label className="text-base font-medium text-foreground flex items-center gap-2">
+                          <Utensils className="w-4 h-4 text-primary" />
+                          Dietary Preferences (Optional)
+                        </Label>
+                        <Textarea
+                          value={request.dietaryRestrictions}
+                          onChange={(e) => handleFieldChange('dietaryRestrictions', e.target.value)}
+                          placeholder="Enter any dietary preferences or restrictions (e.g., vegetarian, gluten-free)"
+                          className="min-h-[100px] resize-none bg-white border-input hover:bg-gray-50/50"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-base font-medium text-foreground flex items-center gap-2">
+                          <Brain className="w-4 h-4 text-primary" />
+                          Additional Instructions (Optional)
+                        </Label>
+                        <Textarea
+                          value={request.instructions}
+                          onChange={(e) => handleFieldChange('instructions', e.target.value)}
+                          placeholder="Any specific instructions or preferences (e.g., quick meals, budget-friendly)"
+                          className="min-h-[100px] resize-none bg-white border-input hover:bg-gray-50/50"
+                        />
                       </div>
 
                       <Button 
                         type="submit" 
                         size="lg"
-                        className="w-full bg-primary hover:bg-primary/90"
-                        disabled={isLoading}
+                        className="w-full"
+                        disabled={isLoading || !request.mealType || !request.cookingTime || !request.difficulty}
                       >
                         {isLoading ? (
                           <>
@@ -326,9 +330,9 @@ export function MealSuggestions() {
 
               {/* Sidebar */}
               <div className="space-y-6">
-                <Card className="backdrop-blur-sm border-0 shadow-sm">
+                <Card className="bg-white border shadow-sm">
                   <div className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">How It Works</h3>
+                    <h3 className="text-lg font-semibold mb-4">Features</h3>
                     <div className="space-y-4">
                       {features.map((feature, index) => (
                         <div key={index} className="flex items-start gap-3">
@@ -345,23 +349,32 @@ export function MealSuggestions() {
                   </div>
                 </Card>
 
-                <Card className="backdrop-blur-sm border-0 shadow-sm">
+                <Card className="bg-white border shadow-sm">
                   <div className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">Quick Tips</h3>
-                    <ul className="space-y-3">
-                      <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <span className="text-primary mt-1">•</span>
-                        Be honest about your energy level for better suggestions
-                      </li>
-                      <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <span className="text-primary mt-1">•</span>
-                        Specify any dietary restrictions clearly
-                      </li>
-                      <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <span className="text-primary mt-1">•</span>
-                        Include any specific cravings or preferences
-                      </li>
-                    </ul>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold">Quick Tips</h3>
+                      <Star className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <Brain className="w-4 h-4 text-primary" />
+                        </div>
+                        <p className="text-sm text-muted-foreground">Be honest about your energy level for better suggestions</p>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <Utensils className="w-4 h-4 text-primary" />
+                        </div>
+                        <p className="text-sm text-muted-foreground">Specify any dietary restrictions clearly</p>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <ChefHat className="w-4 h-4 text-primary" />
+                        </div>
+                        <p className="text-sm text-muted-foreground">Include any specific cravings or preferences</p>
+                      </div>
+                    </div>
                   </div>
                 </Card>
               </div>
@@ -393,7 +406,7 @@ export function MealSuggestions() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.1 }}
                         >
-                          <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
+                          <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden bg-white border">
                             <div className="p-6 space-y-4">
                               <div className="flex items-start justify-between gap-4">
                                 <div className="flex-1">
@@ -448,14 +461,21 @@ export function MealSuggestions() {
                 </div>
 
                 {/* Quick Options Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Eat Out Section */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
-                        <span className="text-lg">🍽️</span>
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-4">
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-primary/10" />
+                      <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-full">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-lg">🍽️</span>
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-lg">Eat Out Options</h3>
+                          <p className="text-xs text-muted-foreground">Local restaurants & cafes</p>
+                        </div>
                       </div>
-                      <h3 className="font-medium text-lg">Eat Out Options</h3>
+                      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-primary/10" />
                     </div>
                     <div className="grid gap-4">
                       {suggestions
@@ -467,27 +487,66 @@ export function MealSuggestions() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.1 }}
                           >
-                            <Card className="group hover:shadow-md transition-all duration-300">
-                              <div className="p-4">
-                                <h3 className="font-medium text-lg group-hover:text-primary transition-colors">
-                                  {meal.name}
-                                </h3>
-                                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                                  {meal.description}
-                                </p>
-                                <div className="grid grid-cols-2 gap-2 mt-4">
-                                  <div className="bg-orange-50 p-2 rounded-lg text-center">
-                                    <div className="text-xs text-orange-600/60 font-medium">Calories</div>
-                                    <div className="font-medium text-orange-600">
-                                      {meal.nutritionalValue.calories}
+                            <Card className="group hover:shadow-md transition-all duration-300 bg-white border overflow-hidden">
+                              <div className="p-5">
+                                <div className="flex items-start justify-between gap-4 mb-4">
+                                  <div className="flex-1">
+                                    <h3 className="font-medium text-lg group-hover:text-primary transition-colors">
+                                      {meal.name}
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                      {meal.description}
+                                    </p>
+                                  </div>
+                                  <div className="flex flex-col items-end gap-1">
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                      <Clock className="w-3 h-3" />
+                                      <span>{meal.cookingTime || '30-45'} mins</span>
                                     </div>
                                   </div>
-                                  <div className="bg-orange-50 p-2 rounded-lg text-center">
-                                    <div className="text-xs text-orange-600/60 font-medium">Protein</div>
-                                    <div className="font-medium text-orange-600">
-                                      {meal.nutritionalValue.protein}g
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div className="bg-primary/5 p-3 rounded-lg">
+                                    <div className="flex items-center justify-between">
+                                      <div>
+                                        <div className="text-xs text-primary/60 font-medium">Calories</div>
+                                        <div className="font-medium text-primary">
+                                          {meal.nutritionalValue.calories}
+                                        </div>
+                                      </div>
+                                      <Scale className="w-4 h-4 text-primary/60" />
                                     </div>
                                   </div>
+                                  <div className="bg-primary/5 p-3 rounded-lg">
+                                    <div className="flex items-center justify-between">
+                                      <div>
+                                        <div className="text-xs text-primary/60 font-medium">Protein</div>
+                                        <div className="font-medium text-primary">
+                                          {meal.nutritionalValue.protein}g
+                                        </div>
+                                      </div>
+                                      <ChefHat className="w-4 h-4 text-primary/60" />
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="mt-4 flex items-center justify-between">
+                                  <div className="flex gap-2">
+                                    {meal.tags?.map((tag, i) => (
+                                      <span key={i} className="px-2 py-1 rounded-full bg-primary/5 text-xs text-primary">
+                                        {tag}
+                                      </span>
+                                    ))}
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-primary hover:text-primary hover:bg-primary/5"
+                                  >
+                                    View Details
+                                    <ArrowRight className="w-4 h-4 ml-1" />
+                                  </Button>
                                 </div>
                               </div>
                             </Card>
@@ -497,12 +556,19 @@ export function MealSuggestions() {
                   </div>
 
                   {/* Order In Section */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                        <span className="text-lg">🛵</span>
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-4">
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-primary/10" />
+                      <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-full">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-lg">🛵</span>
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-lg">Order In Options</h3>
+                          <p className="text-xs text-muted-foreground">Delivery services available</p>
+                        </div>
                       </div>
-                      <h3 className="font-medium text-lg">Order In Options</h3>
+                      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-primary/10" />
                     </div>
                     <div className="grid gap-4">
                       {suggestions
@@ -514,27 +580,66 @@ export function MealSuggestions() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.1 }}
                           >
-                            <Card className="group hover:shadow-md transition-all duration-300">
-                              <div className="p-4">
-                                <h3 className="font-medium text-lg group-hover:text-primary transition-colors">
-                                  {meal.name}
-                                </h3>
-                                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                                  {meal.description}
-                                </p>
-                                <div className="grid grid-cols-2 gap-2 mt-4">
-                                  <div className="bg-blue-50 p-2 rounded-lg text-center">
-                                    <div className="text-xs text-blue-600/60 font-medium">Calories</div>
-                                    <div className="font-medium text-blue-600">
-                                      {meal.nutritionalValue.calories}
+                            <Card className="group hover:shadow-md transition-all duration-300 bg-white border overflow-hidden">
+                              <div className="p-5">
+                                <div className="flex items-start justify-between gap-4 mb-4">
+                                  <div className="flex-1">
+                                    <h3 className="font-medium text-lg group-hover:text-primary transition-colors">
+                                      {meal.name}
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                      {meal.description}
+                                    </p>
+                                  </div>
+                                  <div className="flex flex-col items-end gap-1">
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                      <Clock className="w-3 h-3" />
+                                      <span>{meal.cookingTime || '45-60'} mins</span>
                                     </div>
                                   </div>
-                                  <div className="bg-blue-50 p-2 rounded-lg text-center">
-                                    <div className="text-xs text-blue-600/60 font-medium">Protein</div>
-                                    <div className="font-medium text-blue-600">
-                                      {meal.nutritionalValue.protein}g
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div className="bg-primary/5 p-3 rounded-lg">
+                                    <div className="flex items-center justify-between">
+                                      <div>
+                                        <div className="text-xs text-primary/60 font-medium">Calories</div>
+                                        <div className="font-medium text-primary">
+                                          {meal.nutritionalValue.calories}
+                                        </div>
+                                      </div>
+                                      <Scale className="w-4 h-4 text-primary/60" />
                                     </div>
                                   </div>
+                                  <div className="bg-primary/5 p-3 rounded-lg">
+                                    <div className="flex items-center justify-between">
+                                      <div>
+                                        <div className="text-xs text-primary/60 font-medium">Protein</div>
+                                        <div className="font-medium text-primary">
+                                          {meal.nutritionalValue.protein}g
+                                        </div>
+                                      </div>
+                                      <ChefHat className="w-4 h-4 text-primary/60" />
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="mt-4 flex items-center justify-between">
+                                  <div className="flex gap-2">
+                                    {meal.tags?.map((tag, i) => (
+                                      <span key={i} className="px-2 py-1 rounded-full bg-primary/5 text-xs text-primary">
+                                        {tag}
+                                      </span>
+                                    ))}
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-primary hover:text-primary hover:bg-primary/5"
+                                  >
+                                    View Details
+                                    <ArrowRight className="w-4 h-4 ml-1" />
+                                  </Button>
                                 </div>
                               </div>
                             </Card>
@@ -548,48 +653,50 @@ export function MealSuggestions() {
           </div>
         </div>
       ) : (
-        <div className="container mx-auto px-4 py-12 text-center space-y-6">
-          <div className="max-w-3xl mx-auto">
-            <UtensilsCrossed className="w-16 h-16 mx-auto text-primary mb-6" />
-            <h1 className="text-4xl font-bold mb-4">Can't Decide What to Eat?</h1>
-            <p className="text-lg text-muted-foreground mb-8">
-              Let our AI-powered meal suggestion system help you decide! Get personalized recommendations 
-              based on your mood, energy level, and preferences. Whether you want to cook, order in, 
-              or eat out, we've got you covered.
-            </p>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {features.slice(0, 3).map((feature, index) => (
-                <FeatureCard
-                  key={index}
-                  icon={feature.icon}
-                  title={feature.title}
-                  description={feature.description}
-                  className="h-full"
-                />
-              ))}
-            </div>
+        <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background">
+          <div className="container mx-auto px-4 py-12 text-center space-y-6">
+            <div className="max-w-3xl mx-auto">
+              <UtensilsCrossed className="w-16 h-16 mx-auto text-primary mb-6" />
+              <h1 className="text-4xl font-bold mb-4">Can't Decide What to Eat?</h1>
+              <p className="text-lg text-muted-foreground mb-8">
+                Let our AI-powered meal suggestion system help you decide! Get personalized recommendations 
+                based on your mood, energy level, and preferences. Whether you want to cook, order in, 
+                or eat out, we've got you covered.
+              </p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {features.slice(0, 3).map((feature, index) => (
+                  <FeatureCard
+                    key={index}
+                    icon={feature.icon}
+                    title={feature.title}
+                    description={feature.description}
+                    className="h-full"
+                  />
+                ))}
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
-              {features.slice(3, 5).map((feature, index) => (
-                <FeatureCard
-                  key={index + 3}
-                  icon={feature.icon}
-                  title={feature.title}
-                  description={feature.description}
-                  className="h-full"
-                />
-              ))}
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+                {features.slice(3, 5).map((feature, index) => (
+                  <FeatureCard
+                    key={index + 3}
+                    icon={feature.icon}
+                    title={feature.title}
+                    description={feature.description}
+                    className="h-full"
+                  />
+                ))}
+              </div>
 
-            <Button 
-              size="lg" 
-              className="mt-8 bg-primary hover:bg-primary/90"
-              onClick={() => setShowSignIn(true)}
-            >
-              Get Meal Suggestions
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
+              <Button 
+                size="lg" 
+                className="mt-8 bg-primary hover:bg-primary/90"
+                onClick={() => setShowSignIn(true)}
+              >
+                Get Meal Suggestions
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </div>
           </div>
         </div>
       )}

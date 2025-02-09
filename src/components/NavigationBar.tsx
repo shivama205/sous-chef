@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
-import { Leaf, ChefHat, Apple, Sparkles, Menu, X, Utensils, Brain, User as UserIcon, CreditCard, LogOut, Heart } from "lucide-react";
+import { Leaf, ChefHat, Apple, Sparkles, Menu, X, Utensils, Brain, User as UserIcon, CreditCard, LogOut, Heart, Calendar, Star } from "lucide-react";
 import GoogleSignInButton from "./GoogleSignInButton";
 
 const NavigationBar = () => {
@@ -42,8 +42,8 @@ const NavigationBar = () => {
 
   const menuItems = {
     features: [
-      { path: "/meal-plan", label: "Meal Plan", icon: <ChefHat className="w-4 h-4" />, description: "Plan your meals for the week" },
-      { path: "/meal-suggestions", label: "Quick Meal Ideas", icon: <Brain className="w-4 h-4" />, description: "Instant meal suggestions when you're stuck" },
+      { path: "/meal-plan", label: "Meal Plan", icon: <Calendar className="w-4 h-4" />, description: "Plan your meals for the week" },
+      { path: "/meal-suggestions", label: "Quick Meal Ideas", icon: <Star className="w-4 h-4" />, description: "Instant meal suggestions when you're stuck" },
       { path: "/recipe-finder", label: "Find Recipes", icon: <Utensils className="w-4 h-4" />, description: "Search our recipe collection" },
       { path: "/healthy-alternative", label: "Healthy Swaps", icon: <Apple className="w-4 h-4" />, description: "Find healthier alternatives" },
     ],
@@ -54,7 +54,7 @@ const NavigationBar = () => {
   };
 
   return (
-    <nav className="sticky top-0 bg-white/80 backdrop-blur-sm border-b border-gray-200/50 z-50">
+    <nav className="sticky top-0 bg-white border-b border-border z-50">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
@@ -85,7 +85,7 @@ const NavigationBar = () => {
                       to={item.path}
                       className={`
                         flex flex-col gap-2 p-3 rounded-lg transition-all duration-200
-                        ${isActive(item.path) ? "bg-primary/5" : "hover:bg-primary/5"}
+                        ${isActive(item.path) ? "bg-primary/5 text-primary" : "hover:bg-primary/5 hover:text-primary"}
                       `}
                     >
                       <div className="flex items-center gap-2">
@@ -106,7 +106,7 @@ const NavigationBar = () => {
                 key={item.path}
                 variant="ghost"
                 asChild
-                className={`group hover:bg-primary/5 ${isActive(item.path) ? "bg-primary/5" : ""}`}
+                className={`group hover:bg-primary/5 ${isActive(item.path) ? "bg-primary/5 text-primary" : ""}`}
               >
                 <Link to={item.path} className="flex items-center gap-2">
                   <span className="group-hover:text-primary transition-colors">{item.icon}</span>
@@ -124,7 +124,7 @@ const NavigationBar = () => {
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full ring-2 ring-primary/10 hover:ring-primary/20">
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full hover:ring-2 hover:ring-primary/20">
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name} />
                         <AvatarFallback>{user.user_metadata.full_name?.charAt(0)}</AvatarFallback>

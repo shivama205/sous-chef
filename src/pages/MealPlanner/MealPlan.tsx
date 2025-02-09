@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { LoginDialog } from "@/components/LoginDialog";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Sparkles, ChefHat, Loader2, Calendar, Brain, UtensilsCrossed, ArrowRight, Salad, Clock } from "lucide-react";
+import { Sparkles, ChefHat, Loader2, Calendar, Brain, UtensilsCrossed, ArrowRight, Salad } from "lucide-react";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { generateMealPlan } from "@/services/mealPlan";
 import { mealPlanLoadingMessages } from "@/lib/loadingMessages";
@@ -40,7 +40,7 @@ const features = [
     description: "Access a vast collection of curated recipes for your meal plan"
   },
   {
-    icon: Clock,
+    icon: Calendar,
     title: "Time Saver",
     description: "Save hours of planning with automated meal scheduling"
   }
@@ -59,14 +59,17 @@ const MacroInput = ({
   name: string;
 }) => (
   <div className="space-y-2">
-    <label htmlFor={name} className="text-sm font-medium">{label}</label>
+    <label htmlFor={name} className="text-base font-medium text-foreground flex items-center gap-2">
+      <Brain className="w-4 h-4 text-primary" />
+      {label}
+    </label>
     <input
       id={name}
       name={name}
       type="number"
       value={value}
       onChange={(e) => onChange(parseInt(e.target.value) || 0)}
-      className="w-full p-2 rounded-md border border-input bg-background"
+      className="flex h-12 w-full rounded-md border border-input bg-white px-3 py-2 text-base ring-offset-background hover:bg-gray-50/50 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
     />
   </div>
 );
@@ -79,7 +82,8 @@ const DietaryRestrictions = ({
   onChange: (value: string) => void;
 }) => (
   <div className="space-y-2">
-    <label htmlFor="dietaryRestrictions" className="text-sm font-medium">
+    <label htmlFor="dietaryRestrictions" className="text-base font-medium text-foreground flex items-center gap-2">
+      <Salad className="w-4 h-4 text-primary" />
       Dietary Restrictions
     </label>
     <textarea
@@ -88,7 +92,7 @@ const DietaryRestrictions = ({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder="Enter any dietary restrictions or allergies..."
-      className="w-full min-h-[100px] p-3 rounded-md border border-input bg-background"
+      className="min-h-[80px] w-full rounded-md border border-input bg-white px-3 py-2 text-base ring-offset-background hover:bg-gray-50/50 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none transition-colors"
     />
   </div>
 );
@@ -100,19 +104,25 @@ const DurationSelector = ({
   value: number; 
   onChange: (value: number) => void;
 }) => (
-  <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
-    {[1, 2, 3, 4, 5, 6, 7].map((days) => (
-      <Button
-        key={days}
-        type="button"
-        variant={value === days ? "default" : "outline"}
-        onClick={() => onChange(days)}
-        className="w-full"
-        size="sm"
-      >
-        {days} {days === 1 ? 'Day' : 'Days'}
-      </Button>
-    ))}
+  <div className="space-y-4">
+    <label className="text-base font-medium text-foreground flex items-center gap-2">
+      <Calendar className="w-4 h-4 text-primary" />
+      Plan Duration
+    </label>
+    <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+      {[1, 2, 3, 4, 5, 6, 7].map((days) => (
+        <Button
+          key={days}
+          type="button"
+          variant={value === days ? "default" : "outline"}
+          onClick={() => onChange(days)}
+          className={`w-full hover:bg-primary/5 ${value === days ? 'bg-primary text-white hover:bg-primary/90' : 'bg-white'}`}
+          size="sm"
+        >
+          {days} {days === 1 ? 'Day' : 'Days'}
+        </Button>
+      ))}
+    </div>
   </div>
 );
 
@@ -130,18 +140,24 @@ const CuisineSelector = ({
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-      {cuisines.map((cuisine) => (
-        <Button
-          key={cuisine}
-          type="button"
-          variant={selected.includes(cuisine) ? "default" : "outline"}
-          onClick={() => onToggle(cuisine)}
-          className="w-full"
-        >
-          {cuisine.charAt(0).toUpperCase() + cuisine.slice(1)}
-        </Button>
-      ))}
+    <div className="space-y-4">
+      <label className="text-base font-medium text-foreground flex items-center gap-2">
+        <ChefHat className="w-4 h-4 text-primary" />
+        Cuisine Preferences
+      </label>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {cuisines.map((cuisine) => (
+          <Button
+            key={cuisine}
+            type="button"
+            variant={selected.includes(cuisine) ? "default" : "outline"}
+            onClick={() => onToggle(cuisine)}
+            className={`w-full hover:bg-primary/5 ${selected.includes(cuisine) ? 'bg-primary text-white hover:bg-primary/90' : 'bg-white'}`}
+          >
+            {cuisine.charAt(0).toUpperCase() + cuisine.slice(1)}
+          </Button>
+        ))}
+      </div>
     </div>
   );
 };
@@ -283,122 +299,123 @@ export function MealPlan() {
   return (
     <BaseLayout>
       <SEO 
-        title="Create Your Meal Plan - MySideChef"
-        description="Create your personalized weekly meal plan. Set your nutritional goals, dietary preferences, and let our AI do the rest."
-        keywords="create meal plan, weekly meal planning, nutrition goals, dietary preferences, meal prep"
+        title="Weekly Meal Planner - MySideChef"
+        description="Plan your weekly meals with our AI-powered meal planner. Get personalized meal combinations that match your nutritional goals and dietary preferences."
+        keywords="meal planning, weekly meals, meal prep, nutrition planning, healthy eating, AI meal planner"
         type="website"
         canonical="https://mysidechef.com/meal-plan"
       />
-      <div className="relative">
-        <LoadingOverlay isLoading={isGenerating} messages={mealPlanLoadingMessages} />
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8 space-y-8">
           <PageHeader
-            icon={Sparkles}
+            icon={Calendar}
             title="Your Meal Planner"
             description="Create personalized meal plans that match your nutritional goals and dietary preferences"
           />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <Card className="p-6">
-                <form onSubmit={handleSubmit} className="space-y-8">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Plan Duration</h3>
-                    <DurationSelector
-                      value={preferences.days}
-                      onChange={(value) => updatePreference('days', value)}
-                    />
-                  </div>
+              <Card className="bg-white border shadow-sm">
+                <div className="p-6">
+                  <h2 className="text-lg font-semibold mb-4">Create Your Meal Plan</h2>
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <DurationSelector value={preferences.days} onChange={(value) => updatePreference('days', value)} />
+                    
+                    <div className="space-y-4">
+                      <label className="text-base font-medium text-foreground flex items-center gap-2">
+                        <Brain className="w-4 h-4 text-primary" />
+                        Nutritional Goals
+                      </label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <MacroInput
+                          label="Target Calories"
+                          value={preferences.targetCalories}
+                          onChange={(value) => updatePreference('targetCalories', value)}
+                          name="calories"
+                        />
+                        <MacroInput
+                          label="Target Protein (g)"
+                          value={preferences.targetProtein}
+                          onChange={(value) => updatePreference('targetProtein', value)}
+                          name="protein"
+                        />
+                        <MacroInput
+                          label="Target Carbs (g)"
+                          value={preferences.targetCarbs}
+                          onChange={(value) => updatePreference('targetCarbs', value)}
+                          name="carbs"
+                        />
+                        <MacroInput
+                          label="Target Fat (g)"
+                          value={preferences.targetFat}
+                          onChange={(value) => updatePreference('targetFat', value)}
+                          name="fat"
+                        />
+                      </div>
+                    </div>
 
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Dietary Restrictions</h3>
                     <DietaryRestrictions
                       value={preferences.dietaryRestrictions}
                       onChange={(value) => updatePreference('dietaryRestrictions', value)}
                     />
-                  </div>
 
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Cuisine Preferences</h3>
                     <CuisineSelector
                       selected={preferences.cuisinePreferences || []}
                       onToggle={toggleCuisine}
                     />
-                  </div>
 
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Nutritional Targets</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <MacroInput
-                        label="Calories (kcal)"
-                        name="targetCalories"
-                        value={preferences.targetCalories}
-                        onChange={(value) => updatePreference('targetCalories', value)}
-                      />
-                      <MacroInput
-                        label="Protein (g)"
-                        name="targetProtein"
-                        value={preferences.targetProtein}
-                        onChange={(value) => updatePreference('targetProtein', value)}
-                      />
-                      <MacroInput
-                        label="Carbs (g)"
-                        name="targetCarbs"
-                        value={preferences.targetCarbs}
-                        onChange={(value) => updatePreference('targetCarbs', value)}
-                      />
-                      <MacroInput
-                        label="Fat (g)"
-                        name="targetFat"
-                        value={preferences.targetFat}
-                        onChange={(value) => updatePreference('targetFat', value)}
-                      />
-                    </div>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    disabled={isGenerating}
-                    className="w-full"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating your meal plan...
-                      </>
-                    ) : (
-                      <>
-                        <ChefHat className="mr-2 h-4 w-4" />
-                        Generate Meal Plan
-                      </>
-                    )}
-                  </Button>
-                </form>
+                    <Button 
+                      type="submit"
+                      size="lg"
+                      className="w-full"
+                      disabled={isGenerating}
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          Creating your meal plan...
+                        </>
+                      ) : (
+                        <>
+                          Generate Meal Plan
+                          <Sparkles className="w-5 h-5 ml-2" />
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </div>
               </Card>
             </div>
 
             <div className="space-y-6">
-              <Card className="p-6">
-                <h2 className="text-lg font-semibold mb-4">Quick Tips</h2>
-                <ul className="space-y-3 text-sm text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1">•</span>
-                    Enter your daily calorie and macro targets
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1">•</span>
-                    Be specific with your dietary restrictions
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1">•</span>
-                    Choose cuisines you enjoy for better adherence
-                  </li>
-                </ul>
+              <Card className="bg-white border shadow-sm">
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">Features</h3>
+                  <div className="space-y-4">
+                    {features.map((feature, index) => (
+                      <div key={index} className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <feature.icon className="w-4 h-4 text-primary" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">{feature.title}</h4>
+                          <p className="text-sm text-muted-foreground">{feature.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </Card>
             </div>
           </div>
         </div>
       </div>
+
+      <LoginDialog 
+        open={loginDialogOpen} 
+        onOpenChange={setLoginDialogOpen}
+      />
+      {isGenerating && <LoadingOverlay isLoading={isGenerating} messages={mealPlanLoadingMessages} />}
     </BaseLayout>
   );
 }

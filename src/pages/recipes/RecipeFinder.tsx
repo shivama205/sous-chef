@@ -10,7 +10,7 @@ import { LoginDialog } from "@/components/LoginDialog";
 import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { FeatureCard } from "@/components/ui/FeatureCard";
-import { Camera, ChefHat, Sparkles, History, Star, Utensils, Scale, Upload, Timer, UtensilsCrossed, ListChecks, Dumbbell, Clock, ArrowRight } from "lucide-react";
+import { Camera, ChefHat, Sparkles, History, Star, Utensils, Scale, Upload, Timer, UtensilsCrossed, ListChecks, Dumbbell, Clock, ArrowRight, Apple, Brain } from "lucide-react";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { useAuth } from "@/providers/AuthProvider";
 import { useDropzone } from "react-dropzone";
@@ -23,6 +23,7 @@ import { SEO } from "@/components/SEO";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import { dataLayer } from "@/services/dataLayer";
 import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
 
 const suggestionList = [
   "Ensure ingredients are spelled correctly",
@@ -299,243 +300,264 @@ export default function RecipeFinder() {
         canonical="https://mysidechef.com/recipe-finder"
       />
       {user ? (
-        <div className="container mx-auto px-4 py-8 space-y-12">
-          <PageHeader
-            icon={Sparkles}
-            title="Recipe Finder"
-            description="Discover delicious recipes using ingredients you already have"
-          />
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Form */}
-            <div className="lg:col-span-2">
-              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-sm p-6">
-                <h2 className="text-lg font-semibold mb-4">Find Recipes</h2>
-                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="ingredients">Your Ingredients *</Label>
-                    <Textarea
-                      id="ingredients"
-                      value={ingredientsText}
-                      onChange={(e) => setIngredientsText(e.target.value)}
-                      placeholder="Enter ingredients separated by commas (e.g., chicken, rice, tomatoes)"
-                      className="min-h-[100px] resize-none"
-                    />
-                  </div>
+        <div className="min-h-screen">
+          <div className="container mx-auto px-4 py-8 space-y-8">
+            <PageHeader
+              icon={Sparkles}
+              title="Recipe Finder"
+              description="Discover delicious recipes using ingredients you already have"
+            />
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Main Form */}
+              <div className="lg:col-span-2">
+                <Card className="bg-white border shadow-sm">
+                  <div className="p-6">
+                    <h2 className="text-lg font-semibold mb-4">Find Recipes</h2>
+                    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                      <div className="space-y-2">
+                        <Label className="text-base font-medium text-foreground flex items-center gap-2">
+                          <Utensils className="w-4 h-4 text-primary" />
+                          Your Ingredients
+                        </Label>
+                        <Textarea
+                          id="ingredients"
+                          value={ingredientsText}
+                          onChange={(e) => setIngredientsText(e.target.value)}
+                          placeholder="Enter ingredients separated by commas (e.g., chicken, rice, tomatoes)"
+                          className="min-h-[100px] resize-none bg-white border-input hover:bg-gray-50/50"
+                        />
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="dietaryRestrictions">Dietary Restrictions</Label>
-                    <Textarea
-                      id="dietaryRestrictions"
-                      value={dietaryRestrictions}
-                      onChange={(e) => setDietaryRestrictions(e.target.value)}
-                      placeholder="Enter any dietary restrictions (e.g., vegetarian, gluten-free, dairy-free)"
-                      className="min-h-[60px] resize-none"
-                    />
-                  </div>
+                      <div className="space-y-2">
+                        <Label className="text-base font-medium text-foreground flex items-center gap-2">
+                          <Apple className="w-4 h-4 text-primary" />
+                          Dietary Restrictions
+                        </Label>
+                        <Textarea
+                          id="dietaryRestrictions"
+                          value={dietaryRestrictions}
+                          onChange={(e) => setDietaryRestrictions(e.target.value)}
+                          placeholder="Enter any dietary restrictions (e.g., vegetarian, gluten-free, dairy-free)"
+                          className="min-h-[80px] resize-none bg-white border-input hover:bg-gray-50/50"
+                        />
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="additionalInstructions">Additional Instructions</Label>
-                    <Textarea
-                      id="additionalInstructions"
-                      value={additionalInstructions}
-                      onChange={(e) => setAdditionalInstructions(e.target.value)}
-                      placeholder="Any specific instructions or preferences (e.g., quick meals, low-carb, high-protein)"
-                      className="min-h-[60px] resize-none"
-                    />
-                  </div>
+                      <div className="space-y-2">
+                        <Label className="text-base font-medium text-foreground flex items-center gap-2">
+                          <Brain className="w-4 h-4 text-primary" />
+                          Additional Instructions
+                        </Label>
+                        <Textarea
+                          id="additionalInstructions"
+                          value={additionalInstructions}
+                          onChange={(e) => setAdditionalInstructions(e.target.value)}
+                          placeholder="Any specific instructions or preferences (e.g., quick meals, low-carb, high-protein)"
+                          className="min-h-[80px] resize-none bg-white border-input hover:bg-gray-50/50"
+                        />
+                      </div>
 
-                  <div 
-                    {...getRootProps()} 
-                    className={`
-                      border-2 border-dashed rounded-lg p-6 text-center cursor-pointer
-                      transition-colors duration-200
-                      ${isDragActive ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary/50'}
-                    `}
-                  >
-                    <input {...getInputProps()} />
-                    <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                    <p className="text-sm text-gray-600">
-                      {isDragActive ? 
-                        "Drop your image here..." : 
-                        "Drag & drop an image of your ingredients, or click to select"
-                      }
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">Coming soon!</p>
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    className="w-full"
-                    disabled={isLoading || !ingredientsText.trim()}
-                  >
-                    {isLoading ? "Finding Recipes..." : "Find Recipes"}
-                  </Button>
-                </form>
-              </Card>
-
-              {/* Results Section */}
-              {recipes.length > 0 && (
-                <div ref={resultsRef} className="space-y-8 pt-8">
-                  <h2 className="text-2xl font-semibold text-center">Found Recipes</h2>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {recipes.map((recipe, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
+                      <div 
+                        {...getRootProps()} 
+                        className={`
+                          border-2 border-dashed rounded-lg p-6 text-center cursor-pointer
+                          transition-colors duration-200 bg-white
+                          ${isDragActive ? 'border-primary bg-primary/5' : 'border-input hover:border-primary/50'}
+                        `}
                       >
-                        <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
-                          <div className="p-6 space-y-4">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex-1">
-                                <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
-                                  {recipe.name}
-                                </h3>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  {recipe.description}
-                                </p>
-                              </div>
-                              <div className="flex-shrink-0 flex flex-col items-center gap-1 bg-primary/5 px-3 py-2 rounded-lg">
-                                <Clock className="w-4 h-4 text-primary" />
-                                <span className="text-sm font-medium">{recipe.cookingTime}</span>
-                                <span className="text-xs text-muted-foreground">mins</span>
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-4 gap-2">
-                              <div className="bg-primary/5 p-3 rounded-lg text-center">
-                                <div className="text-xs text-primary/60 font-medium">Calories</div>
-                                <div className="font-semibold">{getNutritionalValue(recipe).calories}</div>
-                              </div>
-                              <div className="bg-primary/5 p-3 rounded-lg text-center">
-                                <div className="text-xs text-primary/60 font-medium">Protein</div>
-                                <div className="font-semibold">{getNutritionalValue(recipe).protein}g</div>
-                              </div>
-                              <div className="bg-primary/5 p-3 rounded-lg text-center">
-                                <div className="text-xs text-primary/60 font-medium">Carbs</div>
-                                <div className="font-semibold">{getNutritionalValue(recipe).carbs}g</div>
-                              </div>
-                              <div className="bg-primary/5 p-3 rounded-lg text-center">
-                                <div className="text-xs text-primary/60 font-medium">Fat</div>
-                                <div className="font-semibold">{getNutritionalValue(recipe).fat}g</div>
-                              </div>
-                            </div>
-
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                className="flex-1 group-hover:bg-primary group-hover:text-white transition-all duration-300"
-                                onClick={() => handleRecipeClick(recipe)}
-                              >
-                                <span className="flex items-center gap-2">
-                                  View Full Recipe
-                                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                </span>
-                              </Button>
-                              {/* <Button
-                                variant={savedRecipeIds.has(recipe.id ?? '') ? "secondary" : "outline"}
-                                className={`${
-                                  savedRecipeIds.has(recipe.id ?? '') 
-                                    ? "bg-primary/10 text-primary hover:bg-primary/20" 
-                                    : ""
-                                }`}
-                                onClick={() => handleSaveRecipe(recipe)}
-                                disabled={savedRecipeIds.has(recipe.id ?? '')}
-                              >
-                                <Star className={`w-4 h-4 ${savedRecipeIds.has(recipe.id ?? '') ? "fill-current" : ""}`} />
-                              </Button> */}
-                            </div>
-                          </div>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {suggestions.length > 0 && <NoRecipesFound suggestions={suggestions} />}
-            </div>
-
-            {/* Sidebar */}
-            <div className="space-y-4 lg:space-y-6">
-              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-sm p-6">
-                <h3 className="text-lg font-semibold mb-4">Features</h3>
-                <div className="space-y-4">
-                  {features.map((feature, index) => (
-                    <div key={index} className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <feature.icon className="w-4 h-4 text-primary" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium">{feature.title}</h4>
-                        <p className="text-sm text-gray-600">{feature.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-
-              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-sm p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">Recent Recipes</h3>
-                  <History className="w-4 h-4 text-gray-400" />
-                </div>
-                <div className="space-y-4">
-                  {recentRecipes.map((recipe, index) => (
-                    <div 
-                      key={index} 
-                      className="flex items-start gap-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -mx-2 transition-colors"
-                      onClick={() => handleRecipeClick(recipe)}
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-                        <ChefHat className="w-4 h-4 text-gray-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium">{recipe.name}</h4>
-                        <p className="text-sm text-gray-500">
-                          {new Date(recipe.created_at).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                          })}
+                        <input {...getInputProps()} />
+                        <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">
+                          {isDragActive ? 
+                            "Drop your image here..." : 
+                            "Drag & drop an image of your ingredients, or click to select"
+                          }
                         </p>
+                        <p className="text-xs text-muted-foreground mt-1">Coming soon!</p>
                       </div>
+
+                      <Button 
+                        type="submit" 
+                        size="lg"
+                        className="w-full"
+                        disabled={isLoading || !ingredientsText.trim()}
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                            Finding Recipes...
+                          </>
+                        ) : (
+                          <>
+                            Find Recipes
+                            <Sparkles className="w-5 h-5 ml-2" />
+                          </>
+                        )}
+                      </Button>
+                    </form>
+                  </div>
+                </Card>
+
+                {/* Results Section */}
+                {recipes.length > 0 && (
+                  <div ref={resultsRef} className="space-y-8 pt-8">
+                    <h2 className="text-2xl font-semibold text-center">Found Recipes</h2>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {recipes.map((recipe, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                        >
+                          <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden bg-white border">
+                            <div className="p-6 space-y-4">
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1">
+                                  <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
+                                    {recipe.name}
+                                  </h3>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    {recipe.description}
+                                  </p>
+                                </div>
+                                <div className="flex-shrink-0 flex flex-col items-center gap-1 bg-primary/5 px-3 py-2 rounded-lg">
+                                  <Clock className="w-4 h-4 text-primary" />
+                                  <span className="text-sm font-medium">{recipe.cookingTime}</span>
+                                  <span className="text-xs text-muted-foreground">mins</span>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-4 gap-2">
+                                <div className="bg-primary/5 p-3 rounded-lg text-center">
+                                  <div className="text-xs text-primary/60 font-medium">Calories</div>
+                                  <div className="font-semibold">{getNutritionalValue(recipe).calories}</div>
+                                </div>
+                                <div className="bg-primary/5 p-3 rounded-lg text-center">
+                                  <div className="text-xs text-primary/60 font-medium">Protein</div>
+                                  <div className="font-semibold">{getNutritionalValue(recipe).protein}g</div>
+                                </div>
+                                <div className="bg-primary/5 p-3 rounded-lg text-center">
+                                  <div className="text-xs text-primary/60 font-medium">Carbs</div>
+                                  <div className="font-semibold">{getNutritionalValue(recipe).carbs}g</div>
+                                </div>
+                                <div className="bg-primary/5 p-3 rounded-lg text-center">
+                                  <div className="text-xs text-primary/60 font-medium">Fat</div>
+                                  <div className="font-semibold">{getNutritionalValue(recipe).fat}g</div>
+                                </div>
+                              </div>
+
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  className="flex-1 group-hover:bg-primary group-hover:text-white transition-all duration-300"
+                                  onClick={() => handleRecipeClick(recipe)}
+                                >
+                                  <span className="flex items-center gap-2">
+                                    View Full Recipe
+                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                  </span>
+                                </Button>
+                              </div>
+                            </div>
+                          </Card>
+                        </motion.div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </Card>
+                  </div>
+                )}
+
+                {suggestions.length > 0 && <NoRecipesFound suggestions={suggestions} />}
+              </div>
+
+              {/* Sidebar */}
+              <div className="space-y-6">
+                <Card className="bg-white border shadow-sm">
+                  <div className="p-6">
+                    <h3 className="text-lg font-semibold mb-4">Features</h3>
+                    <div className="space-y-4">
+                      {features.map((feature, index) => (
+                        <div key={index} className="flex items-start gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <feature.icon className="w-4 h-4 text-primary" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium">{feature.title}</h4>
+                            <p className="text-sm text-muted-foreground">{feature.description}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="bg-white border shadow-sm">
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold">Recent Recipes</h3>
+                      <History className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                    <div className="space-y-4">
+                      {recentRecipes.map((recipe, index) => (
+                        <div 
+                          key={index} 
+                          className="flex items-start gap-3 cursor-pointer hover:bg-gray-50/50 rounded-lg p-2 -mx-2 transition-colors"
+                          onClick={() => handleRecipeClick(recipe)}
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <ChefHat className="w-4 h-4 text-primary" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium">{recipe.name}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {new Date(recipe.created_at).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </Card>
+              </div>
             </div>
           </div>
         </div>
       ) : (
-        <div className="container mx-auto px-4 py-12 text-center space-y-6">
-          <div className="max-w-2xl mx-auto">
-            <UtensilsCrossed className="w-16 h-16 mx-auto text-primary mb-6" />
-            <h1 className="text-4xl font-bold mb-4">Find Recipes with Your Ingredients</h1>
-            <p className="text-lg text-gray-600 mb-8">
-              Turn your available ingredients into delicious meals. Sign in to access our AI-powered recipe finder and get personalized recipe suggestions.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {features.map((feature, index) => (
-                <FeatureCard
-                  key={index}
-                  icon={feature.icon}
-                  title={feature.title}
-                  description={feature.description}
-                  className="h-full"
-                />
-              ))}
+        <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background">
+          <div className="container mx-auto px-4 py-12 text-center space-y-6">
+            <div className="max-w-3xl mx-auto">
+              <UtensilsCrossed className="w-16 h-16 mx-auto text-primary mb-6" />
+              <h1 className="text-4xl font-bold mb-4">Find Recipes with Your Ingredients</h1>
+              <p className="text-lg text-muted-foreground mb-8">
+                Turn your available ingredients into delicious meals. Sign in to access our AI-powered recipe finder and get personalized recipe suggestions.
+              </p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {features.map((feature, index) => (
+                  <FeatureCard
+                    key={index}
+                    icon={feature.icon}
+                    title={feature.title}
+                    description={feature.description}
+                    className="h-full"
+                  />
+                ))}
+              </div>
+
+              <Button 
+                size="lg" 
+                className="mt-8 bg-primary hover:bg-primary/90"
+                onClick={() => setLoginDialogOpen(true)}
+              >
+                Start Finding Recipes
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
             </div>
-            <Button 
-              size="lg" 
-              className="mt-8"
-              onClick={() => setLoginDialogOpen(true)}
-            >
-              Sign In to Get Started
-            </Button>
           </div>
         </div>
       )}
