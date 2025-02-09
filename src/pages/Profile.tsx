@@ -5,22 +5,23 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
-import { Settings, ChefHat, History, Star, Clock, Calendar, Utensils, Loader2 } from "lucide-react";
+import { ChefHat, Star, Clock, Calendar, Utensils, Loader2, Dumbbell, Target, ChevronRight, ChevronLeft, Brain, Sparkles } from "lucide-react";
 import { SavedRecipes } from "@/components/profile/SavedRecipes";
 import { SavedMealPlans } from "@/components/profile/SavedMealPlans";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase";
-import { Activity } from "@/types/activity";
-import { RecentActivity } from "@/components/dashboard/RecentActivity";
-import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { useToast } from "@/components/ui/use-toast";
+import { BaseLayout } from "@/components/layouts/BaseLayout";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 import type { Recipe } from "@/types/recipeFinder";
 import type { MealPlan } from "@/types/mealPlan";
 
 interface UserStats {
   recipesCount: number;
   plansCount: number;
-  recentActivities: Activity[];
 }
 
 interface SavedMealPlan {
@@ -28,6 +29,13 @@ interface SavedMealPlan {
   name: string;
   plan: MealPlan;
   created_at: string;
+}
+
+interface UserMacros {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
 }
 
 const LoadingSpinner = () => (
@@ -43,6 +51,18 @@ const StatItem = ({ icon: Icon, label, value }: { icon: any; label: string; valu
   </div>
 );
 
+const MacroInput = ({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) => (
+  <div className="space-y-2">
+    <Label className="text-sm font-medium">{label}</Label>
+    <Input
+      type="number"
+      value={value}
+      onChange={(e) => onChange(parseInt(e.target.value) || 0)}
+      className="bg-white"
+    />
+  </div>
+);
+
 export default function Profile() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -50,8 +70,13 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState("recipes");
   const [stats, setStats] = useState<UserStats>({
     recipesCount: 0,
-    plansCount: 0,
-    recentActivities: []
+    plansCount: 0
+  });
+  const [macros, setMacros] = useState<UserMacros>({
+    calories: 2000,
+    protein: 150,
+    carbs: 200,
+    fat: 65
   });
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [mealPlans, setMealPlans] = useState<SavedMealPlan[]>([]);
@@ -59,17 +84,20 @@ export default function Profile() {
   const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [isLoadingRecipes, setIsLoadingRecipes] = useState(false);
   const [isLoadingMealPlans, setIsLoadingMealPlans] = useState(false);
+  const [isSavingMacros, setIsSavingMacros] = useState(false);
+  const [showGoalsDialog, setShowGoalsDialog] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
 
-  // Load basic stats only once on mount
+  // Load basic stats and user macros
   useEffect(() => {
     let isMounted = true;
 
-    const fetchStats = async () => {
+    const fetchData = async () => {
       if (!user) return;
       
       try {
         setIsLoadingStats(true);
-        const [recipesCount, plansCount, activities] = await Promise.all([
+        const [recipesCount, plansCount, macrosData] = await Promise.all([
           supabase
             .from("saved_recipes")
             .select("id", { count: "exact" })
@@ -79,26 +107,33 @@ export default function Profile() {
             .select("id", { count: "exact" })
             .eq("user_id", user.id),
           supabase
-            .from("user_activity")
+            .from("user_macros")
             .select("*")
             .eq("user_id", user.id)
-            .order("created_at", { ascending: false })
-            .limit(3)
+            .maybeSingle()
         ]);
 
         if (isMounted) {
           setStats({
             recipesCount: recipesCount.count || 0,
-            plansCount: plansCount.count || 0,
-            recentActivities: (activities.data as Activity[]) || []
+            plansCount: plansCount.count || 0
           });
+
+          if (macrosData.data) {
+            setMacros({
+              calories: macrosData.data.calories || 2000,
+              protein: macrosData.data.protein || 150,
+              carbs: macrosData.data.carbs || 200,
+              fat: macrosData.data.fat || 65
+            });
+          }
         }
       } catch (error) {
-        console.error("Error fetching stats:", error);
+        console.error("Error fetching data:", error);
         if (isMounted) {
           toast({
             title: "Error loading profile",
-            description: "Failed to load profile stats. Please try refreshing the page.",
+            description: "Failed to load profile data. Please try refreshing the page.",
             variant: "destructive"
           });
         }
@@ -109,11 +144,11 @@ export default function Profile() {
       }
     };
 
-    fetchStats();
+    fetchData();
     return () => {
       isMounted = false;
     };
-  }, [user?.id]); // Only depend on user.id, not the entire user object
+  }, [user?.id]);
 
   // Handle tab changes and data loading
   useEffect(() => {
@@ -195,6 +230,110 @@ export default function Profile() {
     };
   }, [activeTab, user?.id, loadedTabs]);
 
+  const handleSaveMacros = async () => {
+    if (!user) return;
+
+    setIsSavingMacros(true);
+    try {
+      const { error } = await supabase
+        .from("user_macros")
+        .upsert({
+          user_id: user.id,
+          ...macros
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Your nutritional goals have been updated.",
+      });
+      setShowGoalsDialog(false);
+    } catch (error) {
+      console.error("Error saving macros:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save nutritional goals. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSavingMacros(false);
+    }
+  };
+
+  const steps = [
+    {
+      title: "Daily Calories",
+      description: "Set your target daily calorie intake",
+      icon: Target,
+      content: (
+        <div className="space-y-4">
+          <div className="text-center space-y-2">
+            <Target className="w-8 h-8 mx-auto text-primary" />
+            <h3 className="text-lg font-semibold">Set Your Daily Calorie Goal</h3>
+            <p className="text-sm text-muted-foreground">
+              This helps us tailor recipes and meal plans to your energy needs
+            </p>
+          </div>
+          <MacroInput
+            label="Daily Calories"
+            value={macros.calories}
+            onChange={(value) => setMacros(prev => ({ ...prev, calories: value }))}
+          />
+        </div>
+      )
+    },
+    {
+      title: "Protein Goal",
+      description: "Set your daily protein target",
+      icon: Dumbbell,
+      content: (
+        <div className="space-y-4">
+          <div className="text-center space-y-2">
+            <Dumbbell className="w-8 h-8 mx-auto text-primary" />
+            <h3 className="text-lg font-semibold">Protein Target</h3>
+            <p className="text-sm text-muted-foreground">
+              Protein is essential for muscle maintenance and recovery
+            </p>
+          </div>
+          <MacroInput
+            label="Daily Protein (g)"
+            value={macros.protein}
+            onChange={(value) => setMacros(prev => ({ ...prev, protein: value }))}
+          />
+        </div>
+      )
+    },
+    {
+      title: "Carbs & Fat",
+      description: "Set your carbs and fat targets",
+      icon: Brain,
+      content: (
+        <div className="space-y-4">
+          <div className="text-center space-y-2">
+            <Brain className="w-8 h-8 mx-auto text-primary" />
+            <h3 className="text-lg font-semibold">Carbs & Fat Balance</h3>
+            <p className="text-sm text-muted-foreground">
+              Balance your energy sources for optimal performance
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <MacroInput
+              label="Daily Carbs (g)"
+              value={macros.carbs}
+              onChange={(value) => setMacros(prev => ({ ...prev, carbs: value }))}
+            />
+            <MacroInput
+              label="Daily Fat (g)"
+              value={macros.fat}
+              onChange={(value) => setMacros(prev => ({ ...prev, fat: value }))}
+            />
+          </div>
+        </div>
+      )
+    }
+  ];
+
   if (!user) {
     navigate("/");
     return null;
@@ -207,7 +346,7 @@ export default function Profile() {
           return isLoadingRecipes;
         case "meal-plans":
           return isLoadingMealPlans;
-        case "activity":
+        case "details":
           return isLoadingStats;
         default:
           return false;
@@ -290,13 +429,6 @@ export default function Profile() {
                   <Utensils className="w-4 h-4 mr-2" />
                   Meal Plans
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="activity" 
-                  className="data-[state=active]:bg-primary/5"
-                >
-                  <History className="w-4 h-4 mr-2" />
-                  Activity
-                </TabsTrigger>
               </TabsList>
             </div>
 
@@ -321,45 +453,72 @@ export default function Profile() {
                   )}
                 </Card>
               </TabsContent>
-
-              <TabsContent value="activity" className="focus-visible:outline-none mt-0">
-                <Card className="border bg-white p-6">
-                  {isLoading("activity") ? (
-                    <LoadingSpinner />
-                  ) : stats.recentActivities.length > 0 ? (
-                    <RecentActivity activities={stats.recentActivities} />
-                  ) : (
-                    <div className="text-center py-6">
-                      <History className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">No Recent Activity</h3>
-                      <p className="text-muted-foreground mb-6">
-                        Start exploring our features to see your activity here!
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto">
-                        <Button 
-                          variant="outline" 
-                          className="w-full hover:bg-primary/5"
-                          onClick={() => navigate("/recipe-finder")}
-                        >
-                          <ChefHat className="w-4 h-4 mr-2" />
-                          Find Recipes
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          className="w-full hover:bg-primary/5"
-                          onClick={() => navigate("/meal-plan")}
-                        >
-                          <Utensils className="w-4 h-4 mr-2" />
-                          Plan Meals
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </Card>
-              </TabsContent>
             </div>
           </Tabs>
         </main>
+
+        {/* Floating Action Button */}
+        <Button
+          className="fixed bottom-6 right-6 rounded-full w-12 h-12 shadow-lg bg-primary hover:bg-primary/90 p-0"
+          onClick={() => setShowGoalsDialog(true)}
+        >
+          <Target className="w-6 h-6" />
+        </Button>
+
+        {/* Goals Dialog */}
+        <Dialog open={showGoalsDialog} onOpenChange={setShowGoalsDialog}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                Nutrition Goals
+              </DialogTitle>
+              <DialogDescription>
+                Set your nutritional goals for personalized recommendations
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="py-4">
+              <div className="mb-8">
+                <Progress value={((currentStep + 1) / steps.length) * 100} className="h-2" />
+              </div>
+
+              {steps[currentStep].content}
+
+              <div className="flex justify-between mt-8">
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentStep(prev => prev - 1)}
+                  disabled={currentStep === 0}
+                  className="gap-2"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Back
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (currentStep === steps.length - 1) {
+                      handleSaveMacros();
+                    } else {
+                      setCurrentStep(prev => prev + 1);
+                    }
+                  }}
+                  disabled={isSavingMacros}
+                  className="gap-2 bg-primary hover:bg-primary/90"
+                >
+                  {currentStep === steps.length - 1 ? (
+                    isSavingMacros ? "Saving..." : "Save Goals"
+                  ) : (
+                    <>
+                      Next
+                      <ChevronRight className="w-4 h-4" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </BaseLayout>
   );
