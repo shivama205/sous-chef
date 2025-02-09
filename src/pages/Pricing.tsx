@@ -70,13 +70,14 @@ export function Pricing() {
       });
 
       const data = await response.json();
+      console.log(data);
 
       if (!response.ok) throw new Error(data.error?.message || 'Payment initiation failed');
 
-      if (data.success && data.data.instrumentResponse.redirectInfo.url) {
-        window.location.href = data.data.instrumentResponse.redirectInfo.url;
+      if (data.data.paymentUrl) {
+        window.location.href = data.data.paymentUrl;
       } else {
-        throw new Error('Invalid payment response');
+        throw new Error('Invalid payment response: Missing payment URL');
       }
       
     } catch (error) {

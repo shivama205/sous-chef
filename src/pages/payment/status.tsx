@@ -169,12 +169,12 @@ export function PaymentStatus() {
     <BaseLayout>
       {showConfetti && <Confetti recycle={false} numberOfPieces={500} />}
       <div className="container mx-auto px-4 py-16">
-        <Card className="max-w-lg mx-auto p-8">
+        <Card className="max-w-lg mx-auto p-8 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="text-center space-y-4"
+            className="text-center space-y-6"
           >
             {isSuccess ? (
               <>
@@ -182,82 +182,111 @@ export function PaymentStatus() {
                   initial={{ rotate: 0 }}
                   animate={{ rotate: 360 }}
                   transition={{ duration: 0.5 }}
+                  className="relative"
                 >
-                  <CheckCircle2 className="w-16 h-16 mx-auto text-green-500" />
+                  <div className="absolute inset-0 bg-green-500/20 blur-xl rounded-full" />
+                  <CheckCircle2 className="w-20 h-20 mx-auto text-green-500 relative" />
                 </motion.div>
-                <motion.h1
+                <motion.div
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.2 }}
-                  className="text-2xl font-bold text-green-500"
+                  className="space-y-2"
                 >
-                  Payment Successful!
-                </motion.h1>
-                <motion.p
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-gray-600"
-                >
-                  Thank you for your payment. Your subscription has been activated.
-                </motion.p>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-green-500 to-green-600 bg-clip-text text-transparent">
+                    Payment Successful!
+                  </h1>
+                  <p className="text-muted-foreground">
+                    Thank you for supporting MySideChef. Your contribution helps us grow! 🙏
+                  </p>
+                </motion.div>
                 {transactionDetails && (
                   <motion.div
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.4 }}
-                    className="mt-6 space-y-2 text-left"
+                    className="bg-accent/5 rounded-lg p-4 space-y-3"
                   >
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Transaction ID:</span>{" "}
-                      {transactionDetails.transactionId}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Amount:</span> ₹
-                      {parseInt(transactionDetails.amount) / 100}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Reference ID:</span>{" "}
-                      {transactionDetails.providerReferenceId}
-                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="text-left space-y-1">
+                        <p className="text-xs text-muted-foreground">Amount Paid</p>
+                        <p className="font-semibold">₹{parseInt(transactionDetails.amount) / 100}</p>
+                      </div>
+                      <div className="text-left space-y-1">
+                        <p className="text-xs text-muted-foreground">Transaction ID</p>
+                        <p className="font-semibold">{transactionDetails.transactionId}</p>
+                      </div>
+                      <div className="text-left space-y-1">
+                        <p className="text-xs text-muted-foreground">Reference ID</p>
+                        <p className="font-semibold">{transactionDetails.providerReferenceId}</p>
+                      </div>
+                      <div className="text-left space-y-1">
+                        <p className="text-xs text-muted-foreground">Status</p>
+                        <p className="font-semibold text-green-500">Completed</p>
+                      </div>
+                    </div>
                   </motion.div>
                 )}
               </>
             ) : (
               <>
-                <XCircle className="w-16 h-16 mx-auto text-red-500" />
-                <h1 className="text-2xl font-bold text-red-500">Payment Failed</h1>
-                <p className="text-gray-600">
-                  We couldn't process your payment. This could be due to:
-                </p>
-                <ul className="text-left text-gray-600 list-disc list-inside space-y-2">
-                  <li>Payment was declined by your bank</li>
-                  <li>Network connectivity issues</li>
-                  <li>Transaction timeout</li>
-                </ul>
-                <p className="text-gray-600 mt-4">
-                  Don't worry, no money has been deducted from your account.
-                </p>
+                <motion.div
+                  initial={{ scale: 1 }}
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 0.5 }}
+                  className="relative"
+                >
+                  <div className="absolute inset-0 bg-red-500/20 blur-xl rounded-full" />
+                  <XCircle className="w-20 h-20 mx-auto text-red-500 relative" />
+                </motion.div>
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className="space-y-4"
+                >
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">
+                    Payment Failed
+                  </h1>
+                  <div className="space-y-4">
+                    <p className="text-muted-foreground">
+                      We couldn't process your payment. This could be due to:
+                    </p>
+                    <ul className="text-sm space-y-2">
+                      <li className="flex items-center gap-2 text-muted-foreground">
+                        <div className="w-1.5 h-1.5 rounded-full bg-red-500/50" />
+                        Payment was declined by your bank
+                      </li>
+                      <li className="flex items-center gap-2 text-muted-foreground">
+                        <div className="w-1.5 h-1.5 rounded-full bg-red-500/50" />
+                        Network connectivity issues
+                      </li>
+                      <li className="flex items-center gap-2 text-muted-foreground">
+                        <div className="w-1.5 h-1.5 rounded-full bg-red-500/50" />
+                        Transaction timeout
+                      </li>
+                    </ul>
+                    <p className="text-sm text-muted-foreground bg-accent/5 p-3 rounded-lg">
+                      Don't worry, no money has been deducted from your account.
+                    </p>
+                  </div>
+                </motion.div>
               </>
             )}
-            <div className="mt-8 space-y-4">
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="pt-4"
+            >
               <Button
-                onClick={() => window.location.href = "/billing"}
-                className="w-full flex items-center justify-center gap-2"
-                variant={isSuccess ? "default" : "outline"}
+                onClick={() => navigate("/")}
+                className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white"
               >
-                <Receipt className="w-4 h-4" />
-                View Transaction History
+                <Home className="w-4 h-4 mr-2" />
+                Return to Home
               </Button>
-              <Button
-                onClick={() => window.location.href = "/"}
-                variant="outline"
-                className="w-full flex items-center justify-center gap-2"
-              >
-                <Home className="w-4 h-4" />
-                Go to Homepage
-              </Button>
-            </div>
+            </motion.div>
           </motion.div>
         </Card>
       </div>
