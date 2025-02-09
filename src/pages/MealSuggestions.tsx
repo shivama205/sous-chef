@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
-import { ChefHat, Clock, Utensils, ArrowRight, Loader2, Brain, Coffee, Sparkles, UtensilsCrossed } from "lucide-react";
+import { ChefHat, Clock, Utensils, ArrowRight, Loader2, Brain, Coffee, Sparkles, UtensilsCrossed, Scale } from "lucide-react";
 import { suggestMeals, type SuggestedMeal, type MealSuggestionRequest } from "@/services/mealSuggestions";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
@@ -23,8 +23,8 @@ import { Recipe } from "@/types/recipeFinder";
 const features = [
   {
     icon: Brain,
-    title: "AI-Powered Suggestions",
-    description: "Get personalized meal ideas based on your mood and energy level"
+    title: "Smart Suggestions",
+    description: "Get instant meal ideas based on your mood and energy level"
   },
   {
     icon: ChefHat,
@@ -35,6 +35,16 @@ const features = [
     icon: Clock,
     title: "Quick Decisions",
     description: "Save time deciding what to eat with instant suggestions"
+  },
+  {
+    icon: Utensils,
+    title: "Personalized Choices",
+    description: "Recommendations tailored to your preferences and restrictions"
+  },
+  {
+    icon: Scale,
+    title: "Nutrition Focused",
+    description: "Stay on track with your health goals while enjoying great food"
   }
 ];
 
@@ -187,15 +197,15 @@ export function MealSuggestions() {
         canonical="https://mysidechef.com/meal-suggestions"
       />
       
-      <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background">
-        <div className="container mx-auto px-4 py-8 space-y-8">
-          <PageHeader
-            icon={Sparkles}
-            title="What Should I Eat?"
-            description="Let AI help you decide your next meal based on your mood and energy level"
-          />
+      {user ? (
+        <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background">
+          <div className="container mx-auto px-4 py-8 space-y-8">
+            <PageHeader
+              icon={Sparkles}
+              title="What Should I Eat?"
+              description="Let AI help you decide your next meal based on your mood and energy level"
+            />
 
-          {user ? (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Main Form */}
               <div className="lg:col-span-2">
@@ -356,218 +366,233 @@ export function MealSuggestions() {
                 </Card>
               </div>
             </div>
-          ) : (
-            <div className="max-w-2xl mx-auto text-center space-y-8">
-              <UtensilsCrossed className="w-16 h-16 mx-auto text-primary" />
-              <div className="space-y-4">
-                <h2 className="text-3xl font-bold">Can't Decide What to Eat?</h2>
-                <p className="text-lg text-muted-foreground">
-                  Let our AI-powered meal suggestion system help you decide! Get personalized recommendations based on your mood, energy level, and preferences.
-                </p>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                {features.map((feature, index) => (
-                  <FeatureCard
-                    key={index}
-                    icon={feature.icon}
-                    title={feature.title}
-                    description={feature.description}
-                  />
-                ))}
-              </div>
 
-              <Button 
-                size="lg"
-                onClick={() => setShowSignIn(true)}
-                className="bg-primary hover:bg-primary/90"
-              >
-                Get Started
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </div>
-          )}
-
-          {/* Results Section */}
-          {suggestions.length > 0 && (
-            <div ref={suggestionsRef} className="space-y-8 pt-8">
-              <h2 className="text-2xl font-semibold text-center">Your Personalized Meal Suggestions</h2>
-              
-              {/* Cook at Home Section */}
-              <div id="cook-at-home-section" className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent to-primary/10" />
-                  <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-full">
-                    <ChefHat className="w-5 h-5 text-primary" />
-                    <span className="font-medium text-primary">Cook at Home</span>
+            {/* Results Section */}
+            {suggestions.length > 0 && (
+              <div ref={suggestionsRef} className="space-y-8 pt-8">
+                <h2 className="text-2xl font-semibold text-center">Your Personalized Meal Suggestions</h2>
+                
+                {/* Cook at Home Section */}
+                <div id="cook-at-home-section" className="space-y-6">
+                  <div className="flex items-center gap-4">
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent to-primary/10" />
+                    <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-full">
+                      <ChefHat className="w-5 h-5 text-primary" />
+                      <span className="font-medium text-primary">Cook at Home</span>
+                    </div>
+                    <div className="h-px flex-1 bg-gradient-to-l from-transparent to-primary/10" />
                   </div>
-                  <div className="h-px flex-1 bg-gradient-to-l from-transparent to-primary/10" />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {suggestions
+                      .filter(meal => meal.type === "cook-at-home")
+                      .map((meal, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                        >
+                          <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
+                            <div className="p-6 space-y-4">
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1">
+                                  <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
+                                    {meal.name}
+                                  </h3>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    {meal.description}
+                                  </p>
+                                </div>
+                                <div className="flex-shrink-0 flex flex-col items-center gap-1 bg-primary/5 px-3 py-2 rounded-lg">
+                                  <Clock className="w-4 h-4 text-primary" />
+                                  <span className="text-sm font-medium">{meal.cookingTime}</span>
+                                  <span className="text-xs text-muted-foreground">mins</span>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-4 gap-2">
+                                <div className="bg-primary/5 p-3 rounded-lg text-center">
+                                  <div className="text-xs text-primary/60 font-medium">Calories</div>
+                                  <div className="font-semibold">{meal.nutritionalValue.calories}</div>
+                                </div>
+                                <div className="bg-primary/5 p-3 rounded-lg text-center">
+                                  <div className="text-xs text-primary/60 font-medium">Protein</div>
+                                  <div className="font-semibold">{meal.nutritionalValue.protein}g</div>
+                                </div>
+                                <div className="bg-primary/5 p-3 rounded-lg text-center">
+                                  <div className="text-xs text-primary/60 font-medium">Carbs</div>
+                                  <div className="font-semibold">{meal.nutritionalValue.carbs}g</div>
+                                </div>
+                                <div className="bg-primary/5 p-3 rounded-lg text-center">
+                                  <div className="text-xs text-primary/60 font-medium">Fat</div>
+                                  <div className="font-semibold">{meal.nutritionalValue.fat}g</div>
+                                </div>
+                              </div>
+
+                              <Button
+                                variant="outline"
+                                className="w-full group-hover:bg-primary group-hover:text-white transition-all duration-300"
+                                onClick={handleRecipeClick(meal)}
+                              >
+                                <span className="flex items-center gap-2">
+                                  View Full Recipe
+                                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                </span>
+                              </Button>
+                            </div>
+                          </Card>
+                        </motion.div>
+                      ))}
+                  </div>
                 </div>
 
+                {/* Quick Options Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {suggestions
-                    .filter(meal => meal.type === "cook-at-home")
-                    .map((meal, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
-                          <div className="p-6 space-y-4">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex-1">
-                                <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
+                  {/* Eat Out Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                        <span className="text-lg">🍽️</span>
+                      </div>
+                      <h3 className="font-medium text-lg">Eat Out Options</h3>
+                    </div>
+                    <div className="grid gap-4">
+                      {suggestions
+                        .filter(meal => meal.type === "eat-out")
+                        .map((meal, index) => (
+                          <motion.div
+                            key={`eat-out-${index}`}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                          >
+                            <Card className="group hover:shadow-md transition-all duration-300">
+                              <div className="p-4">
+                                <h3 className="font-medium text-lg group-hover:text-primary transition-colors">
                                   {meal.name}
                                 </h3>
-                                <p className="text-sm text-muted-foreground mt-1">
+                                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                                   {meal.description}
                                 </p>
+                                <div className="grid grid-cols-2 gap-2 mt-4">
+                                  <div className="bg-orange-50 p-2 rounded-lg text-center">
+                                    <div className="text-xs text-orange-600/60 font-medium">Calories</div>
+                                    <div className="font-medium text-orange-600">
+                                      {meal.nutritionalValue.calories}
+                                    </div>
+                                  </div>
+                                  <div className="bg-orange-50 p-2 rounded-lg text-center">
+                                    <div className="text-xs text-orange-600/60 font-medium">Protein</div>
+                                    <div className="font-medium text-orange-600">
+                                      {meal.nutritionalValue.protein}g
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
-                              <div className="flex-shrink-0 flex flex-col items-center gap-1 bg-primary/5 px-3 py-2 rounded-lg">
-                                <Clock className="w-4 h-4 text-primary" />
-                                <span className="text-sm font-medium">{meal.cookingTime}</span>
-                                <span className="text-xs text-muted-foreground">mins</span>
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-4 gap-2">
-                              <div className="bg-primary/5 p-3 rounded-lg text-center">
-                                <div className="text-xs text-primary/60 font-medium">Calories</div>
-                                <div className="font-semibold">{meal.nutritionalValue.calories}</div>
-                              </div>
-                              <div className="bg-primary/5 p-3 rounded-lg text-center">
-                                <div className="text-xs text-primary/60 font-medium">Protein</div>
-                                <div className="font-semibold">{meal.nutritionalValue.protein}g</div>
-                              </div>
-                              <div className="bg-primary/5 p-3 rounded-lg text-center">
-                                <div className="text-xs text-primary/60 font-medium">Carbs</div>
-                                <div className="font-semibold">{meal.nutritionalValue.carbs}g</div>
-                              </div>
-                              <div className="bg-primary/5 p-3 rounded-lg text-center">
-                                <div className="text-xs text-primary/60 font-medium">Fat</div>
-                                <div className="font-semibold">{meal.nutritionalValue.fat}g</div>
-                              </div>
-                            </div>
-
-                            <Button
-                              variant="outline"
-                              className="w-full group-hover:bg-primary group-hover:text-white transition-all duration-300"
-                              onClick={handleRecipeClick(meal)}
-                            >
-                              <span className="flex items-center gap-2">
-                                View Full Recipe
-                                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                              </span>
-                            </Button>
-                          </div>
-                        </Card>
-                      </motion.div>
-                    ))}
-                </div>
-              </div>
-
-              {/* Quick Options Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Eat Out Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
-                      <span className="text-lg">🍽️</span>
+                            </Card>
+                          </motion.div>
+                        ))}
                     </div>
-                    <h3 className="font-medium text-lg">Eat Out Options</h3>
                   </div>
-                  <div className="grid gap-4">
-                    {suggestions
-                      .filter(meal => meal.type === "eat-out")
-                      .map((meal, index) => (
-                        <motion.div
-                          key={`eat-out-${index}`}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                        >
-                          <Card className="group hover:shadow-md transition-all duration-300">
-                            <div className="p-4">
-                              <h3 className="font-medium text-lg group-hover:text-primary transition-colors">
-                                {meal.name}
-                              </h3>
-                              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                                {meal.description}
-                              </p>
-                              <div className="grid grid-cols-2 gap-2 mt-4">
-                                <div className="bg-orange-50 p-2 rounded-lg text-center">
-                                  <div className="text-xs text-orange-600/60 font-medium">Calories</div>
-                                  <div className="font-medium text-orange-600">
-                                    {meal.nutritionalValue.calories}
-                                  </div>
-                                </div>
-                                <div className="bg-orange-50 p-2 rounded-lg text-center">
-                                  <div className="text-xs text-orange-600/60 font-medium">Protein</div>
-                                  <div className="font-medium text-orange-600">
-                                    {meal.nutritionalValue.protein}g
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </Card>
-                        </motion.div>
-                      ))}
-                  </div>
-                </div>
 
-                {/* Order In Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                      <span className="text-lg">🛵</span>
+                  {/* Order In Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span className="text-lg">🛵</span>
+                      </div>
+                      <h3 className="font-medium text-lg">Order In Options</h3>
                     </div>
-                    <h3 className="font-medium text-lg">Order In Options</h3>
-                  </div>
-                  <div className="grid gap-4">
-                    {suggestions
-                      .filter(meal => meal.type === "order-in")
-                      .map((meal, index) => (
-                        <motion.div
-                          key={`order-in-${index}`}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                        >
-                          <Card className="group hover:shadow-md transition-all duration-300">
-                            <div className="p-4">
-                              <h3 className="font-medium text-lg group-hover:text-primary transition-colors">
-                                {meal.name}
-                              </h3>
-                              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                                {meal.description}
-                              </p>
-                              <div className="grid grid-cols-2 gap-2 mt-4">
-                                <div className="bg-blue-50 p-2 rounded-lg text-center">
-                                  <div className="text-xs text-blue-600/60 font-medium">Calories</div>
-                                  <div className="font-medium text-blue-600">
-                                    {meal.nutritionalValue.calories}
+                    <div className="grid gap-4">
+                      {suggestions
+                        .filter(meal => meal.type === "order-in")
+                        .map((meal, index) => (
+                          <motion.div
+                            key={`order-in-${index}`}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                          >
+                            <Card className="group hover:shadow-md transition-all duration-300">
+                              <div className="p-4">
+                                <h3 className="font-medium text-lg group-hover:text-primary transition-colors">
+                                  {meal.name}
+                                </h3>
+                                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                                  {meal.description}
+                                </p>
+                                <div className="grid grid-cols-2 gap-2 mt-4">
+                                  <div className="bg-blue-50 p-2 rounded-lg text-center">
+                                    <div className="text-xs text-blue-600/60 font-medium">Calories</div>
+                                    <div className="font-medium text-blue-600">
+                                      {meal.nutritionalValue.calories}
+                                    </div>
                                   </div>
-                                </div>
-                                <div className="bg-blue-50 p-2 rounded-lg text-center">
-                                  <div className="text-xs text-blue-600/60 font-medium">Protein</div>
-                                  <div className="font-medium text-blue-600">
-                                    {meal.nutritionalValue.protein}g
+                                  <div className="bg-blue-50 p-2 rounded-lg text-center">
+                                    <div className="text-xs text-blue-600/60 font-medium">Protein</div>
+                                    <div className="font-medium text-blue-600">
+                                      {meal.nutritionalValue.protein}g
+                                    </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          </Card>
-                        </motion.div>
-                      ))}
+                            </Card>
+                          </motion.div>
+                        ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="container mx-auto px-4 py-12 text-center space-y-6">
+          <div className="max-w-3xl mx-auto">
+            <UtensilsCrossed className="w-16 h-16 mx-auto text-primary mb-6" />
+            <h1 className="text-4xl font-bold mb-4">Can't Decide What to Eat?</h1>
+            <p className="text-lg text-muted-foreground mb-8">
+              Let our AI-powered meal suggestion system help you decide! Get personalized recommendations 
+              based on your mood, energy level, and preferences. Whether you want to cook, order in, 
+              or eat out, we've got you covered.
+            </p>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {features.slice(0, 3).map((feature, index) => (
+                <FeatureCard
+                  key={index}
+                  icon={feature.icon}
+                  title={feature.title}
+                  description={feature.description}
+                  className="h-full"
+                />
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+              {features.slice(3, 5).map((feature, index) => (
+                <FeatureCard
+                  key={index + 3}
+                  icon={feature.icon}
+                  title={feature.title}
+                  description={feature.description}
+                  className="h-full"
+                />
+              ))}
+            </div>
+
+            <Button 
+              size="lg" 
+              className="mt-8 bg-primary hover:bg-primary/90"
+              onClick={() => setShowSignIn(true)}
+            >
+              Get Meal Suggestions
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       <LoginDialog 
         open={showSignIn} 

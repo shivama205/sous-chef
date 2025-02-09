@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { LoginDialog } from "@/components/LoginDialog";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Sparkles, ChefHat, Loader2, Calendar, Brain, UtensilsCrossed, ArrowRight, Salad } from "lucide-react";
+import { Sparkles, ChefHat, Loader2, Calendar, Brain, UtensilsCrossed, ArrowRight, Salad, Clock } from "lucide-react";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { generateMealPlan } from "@/services/mealPlan";
 import { mealPlanLoadingMessages } from "@/lib/loadingMessages";
@@ -22,17 +22,27 @@ const features = [
   {
     icon: Calendar,
     title: "Weekly Planning",
-    description: "Plan your meals for up to 7 days in advance"
+    description: "Plan your meals for up to 7 days in advance with smart scheduling"
   },
   {
     icon: Brain,
     title: "AI-Powered",
-    description: "Get personalized meal combinations based on your preferences"
+    description: "Get personalized meal combinations based on your preferences and goals"
   },
   {
     icon: Salad,
     title: "Balanced Nutrition",
-    description: "Meet your macro goals with perfectly balanced meals"
+    description: "Meet your macro goals with perfectly balanced, delicious meals"
+  },
+  {
+    icon: ChefHat,
+    title: "Smart Recipes",
+    description: "Access a vast collection of curated recipes for your meal plan"
+  },
+  {
+    icon: Clock,
+    title: "Time Saver",
+    description: "Save hours of planning with automated meal scheduling"
   }
 ];
 
@@ -219,40 +229,46 @@ export function MealPlan() {
           canonical="https://mysidechef.com/meal-plan"
         />
         <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background">
-          <div className="container mx-auto px-4 py-8 space-y-8">
-            <PageHeader
-              icon={ChefHat}
-              title="Weekly Meal Planner"
-              description="Plan your meals for the week ahead with our AI-powered meal planner"
-            />
-            
-            <div className="max-w-2xl mx-auto text-center space-y-8">
-              <UtensilsCrossed className="w-16 h-16 mx-auto text-primary" />
-              <div className="space-y-4">
-                <h2 className="text-3xl font-bold">Ready to Plan Your Week?</h2>
-                <p className="text-lg text-muted-foreground">
-                  Take the stress out of meal planning! Our AI creates personalized weekly meal plans 
-                  that match your nutritional goals and dietary preferences.
-                </p>
-              </div>
+          <div className="container mx-auto px-4 py-12 text-center space-y-6">
+            <div className="max-w-3xl mx-auto">
+              <ChefHat className="w-16 h-16 mx-auto text-primary mb-6" />
+              <h1 className="text-4xl font-bold mb-4">Your Personal Meal Planning Assistant</h1>
+              <p className="text-lg text-muted-foreground mb-8">
+                Take the stress out of meal planning! Our AI creates personalized weekly meal plans 
+                that match your nutritional goals, dietary preferences, and schedule. Save time, eat better, 
+                and enjoy delicious meals every day.
+              </p>
               
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                {features.map((feature, index) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {features.slice(0, 3).map((feature, index) => (
                   <FeatureCard
                     key={index}
                     icon={feature.icon}
                     title={feature.title}
                     description={feature.description}
+                    className="h-full"
+                  />
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+                {features.slice(3, 5).map((feature, index) => (
+                  <FeatureCard
+                    key={index + 3}
+                    icon={feature.icon}
+                    title={feature.title}
+                    description={feature.description}
+                    className="h-full"
                   />
                 ))}
               </div>
 
               <Button 
-                size="lg"
+                size="lg" 
+                className="mt-8 bg-primary hover:bg-primary/90"
                 onClick={() => setLoginDialogOpen(true)}
-                className="bg-primary hover:bg-primary/90"
               >
-                Get Started
+                Start Planning Your Week
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </div>
