@@ -60,38 +60,81 @@ function generatePrompt(request: RecipeFinderRequest): string {
 }
 
 export async function saveRecipe(userId: string, recipe: Recipe) {
-  const { data, error } = await supabase
-    .from("saved_recipes")
-    .insert([
-      {
-        user_id: userId,
-        meal_name: recipe.meal_name,
-        cooking_time: recipe.cooking_time,
-        ingredients: recipe.ingredients,
-        instructions: recipe.instructions,
-        nutritional_value: recipe.nutritional_value
-      }
-    ])
-    .select("*")
-    .single();
+  try {
+    // Validate recipe data
+    if (!recipe.name || !recipe.cookingTime || !recipe.ingredients) {
+      throw new Error('Invalid recipe data');
+    }
 
-  if (error) throw error;
-  
-  // Return the recipe with the new ID
-  return {
-    ...recipe,
-    id: data.id
-  };
+    // Check if recipe already exists for this user
+    const { data: existingRecipe } = await supabase
+      .from('saved_recipes')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('name', recipe.name)
+      .maybeSingle();
+
+    if (existingRecipe) {
+      throw new Error('Recipe already saved');
+    }
+
+    // Prepare recipe data
+    const recipeData = {
+      user_id: userId,
+      name: recipe.name,
+      description: recipe.description || '',
+      cooking_time: recipe.cookingTime,
+      ingredients: recipe.ingredients,
+      instructions: recipe.instructions || [],
+      nutritional_value: recipe.nutritionalValue || {},
+      image_url: recipe.imageUrl || null,
+      cuisine_type: recipe.cuisineType || null,
+      difficulty: recipe.difficulty || 'medium',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    // Save recipe
+    const { error } = await supabase
+      .from('saved_recipes')
+      .insert([recipeData]);
+
+    if (error) throw error;
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error saving recipe:', error);
+    throw error;
+  }
 }
 
+export async function getUserRecipes(userId: string): Promise<Recipe[]> {
+  try {
+    const { data, error } = await supabase
+      .from('saved_recipes')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
 
-export async function getUserRecipes(userId: string) {
-  const { data: recipes, error } = await supabase
-    .from("saved_recipes")
-    .select("*")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false });
+    if (error) throw error;
 
-  if (error) throw error;
-  return recipes;
+    // Transform database records to Recipe type
+    return (data || []).map(record => ({
+      id: record.id,
+      name: record.name,
+      description: record.description,
+      cookingTime: record.cooking_time,
+      ingredients: record.ingredients,
+      instructions: record.instructions,
+      nutritionalValue: record.nutritional_value,
+      imageUrl: record.image_url,
+      cuisineType: record.cuisine_type,
+      difficulty: record.difficulty,
+      createdAt: record.created_at,
+      updatedAt: record.updated_at
+    }));
+  } catch (error) {
+    console.error('Error getting user recipes:', error);
+    throw error;
+  }
 }

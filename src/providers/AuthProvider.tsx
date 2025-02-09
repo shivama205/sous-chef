@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { User, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { dataLayer } from '@/services/dataLayer';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -14,6 +15,15 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const useAuth = () => useContext(AuthContext);
+
+// Protected routes that require authentication
+const PROTECTED_ROUTES = [
+  '/profile',
+  '/recipe/new',
+  '/meal-plan',
+  '/saved-recipes',
+  '/settings'
+];
 
 // Keys for local storage
 const LOCAL_STORAGE_KEYS = {
@@ -68,6 +78,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isInitialSession, setIsInitialSession] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check if current route is protected
+  const isProtectedRoute = PROTECTED_ROUTES.some(route => 
+    location.pathname.startsWith(route)
+  );
+
+  useEffect(() => {
+    // Redirect from protected routes when not authenticated
+    if (!loading && !user && isProtectedRoute) {
+      navigate('/', { replace: true });
+    }
+  }, [user, loading, isProtectedRoute, navigate]);
 
   useEffect(() => {
     // Get initial session
@@ -129,6 +153,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (previousUser) {
             dataLayer.trackUserLogout(previousUser.id);
           }
+
+          // Redirect to home page if on a protected route
+          if (isProtectedRoute) {
+            navigate('/', { replace: true });
+          }
           break;
       }
     });
@@ -136,7 +165,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [user, isInitialSession]);
+  }, [user, isInitialSession, navigate, isProtectedRoute]);
 
   return (
     <AuthContext.Provider value={{ user, loading }}>
