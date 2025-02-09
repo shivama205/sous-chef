@@ -251,11 +251,12 @@ export default function Index() {
     <BaseLayout>
       <SEO 
         title="MySideChef - Your AI-Powered Kitchen Assistant"
-        description="Get instant, personalized meal ideas based on your energy level and cravings. Plan meals, find recipes, and discover healthy alternatives with your AI kitchen assistant."
-        keywords="meal planning, recipe finder, healthy cooking, AI kitchen assistant, meal suggestions, cooking tips, personalized meals"
+        description="Transform your cooking experience with AI-powered meal planning, instant recipe suggestions, and personalized healthy alternatives. Save time, eat better, and enjoy cooking with MySideChef."
+        keywords="meal planning, recipe finder, healthy cooking, AI kitchen assistant, meal suggestions, cooking tips, personalized meals, diet planning, healthy recipes, smart meal planner"
         type="website"
         canonical="https://mysidechef.com"
-        image="https://mysidechef.com/og-image-compressed.jpg"
+        image="/og-image-compressed.jpg"
+        author="MySideChef Team"
       />
       <main>
         {user ? <LoggedInView /> : <LoggedOutView />}
