@@ -142,13 +142,15 @@ export function Pricing() {
             {/* Payment Method Selection */}
             <div className="grid md:grid-cols-2 gap-4">
               {/* PayPal Card */}
-              <button
+              <Card
                 onClick={() => setSelectedMethod('paypal')}
-                className={`relative p-6 rounded-xl border-2 transition-all duration-200 ${
-                  selectedMethod === 'paypal' 
-                    ? 'border-primary bg-primary/5 shadow-lg' 
-                    : 'border-border hover:border-primary/50 bg-white/80'
-                }`}
+                className={`
+                  relative p-6 transition-all duration-200 cursor-pointer bg-white
+                  ${selectedMethod === 'paypal' 
+                    ? 'ring-2 ring-primary shadow-lg' 
+                    : 'hover:border-primary/50'
+                  }
+                `}
               >
                 <div className="flex items-center gap-3">
                   <div className="p-3 rounded-lg bg-primary/10">
@@ -164,16 +166,18 @@ export function Pricing() {
                     <div className="w-2 h-2 rounded-full bg-primary" />
                   </div>
                 )}
-              </button>
+              </Card>
 
               {/* PhonePe Card */}
-              <button
+              <Card
                 onClick={() => setSelectedMethod('phonepe')}
-                className={`relative p-6 rounded-xl border-2 transition-all duration-200 ${
-                  selectedMethod === 'phonepe' 
-                    ? 'border-primary bg-primary/5 shadow-lg' 
-                    : 'border-border hover:border-primary/50 bg-white/80'
-                }`}
+                className={`
+                  relative p-6 transition-all duration-200 cursor-pointer bg-white
+                  ${selectedMethod === 'phonepe' 
+                    ? 'ring-2 ring-primary shadow-lg' 
+                    : 'hover:border-primary/50'
+                  }
+                `}
               >
                 <div className="flex items-center gap-3">
                   <div className="p-3 rounded-lg bg-primary/10">
@@ -192,133 +196,128 @@ export function Pricing() {
                     <div className="w-2 h-2 rounded-full bg-primary" />
                   </div>
                 )}
-              </button>
+              </Card>
             </div>
 
             {/* Payment Details Card */}
-            <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-              {selectedMethod === 'paypal' ? (
-                <div className="space-y-6">
-                  <div className="text-sm text-center space-y-2">
-                    <p className="font-medium">International Supporters</p>
-                    <p className="text-muted-foreground">Secure payments in USD via PayPal</p>
-                  </div>
-
-                  {/* Common Contribution Patterns */}
-                  <div className="bg-accent/5 rounded-lg p-4 space-y-3">
-                    <h4 className="text-sm font-medium text-center">What others typically contribute:</h4>
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                      <div className="space-y-1">
-                        <div className="text-2xl font-semibold text-primary">$5</div>
-                        <div className="text-xs text-muted-foreground">Most Common</div>
-                      </div>
-                      <div className="space-y-1">
-                        <div className="text-2xl font-semibold text-primary">$15</div>
-                        <div className="text-xs text-muted-foreground">Average</div>
-                      </div>
-                      <div className="space-y-1">
-                        <div className="text-2xl font-semibold text-primary">$50+</div>
-                        <div className="text-xs text-muted-foreground">Power Users</div>
-                      </div>
+            <Card className="bg-white border">
+              <div className="p-6 space-y-6">
+                {selectedMethod === 'paypal' ? (
+                  <div className="space-y-6">
+                    <div className="text-sm text-center space-y-2">
+                      <p className="font-medium">International Supporters</p>
+                      <p className="text-muted-foreground">Secure payments in USD via PayPal</p>
                     </div>
-                    <p className="text-xs text-center text-muted-foreground mt-3">
-                      Choose any amount you're comfortable with
-                    </p>
-                  </div>
 
-                  {/* PayPal Payment Button */}
-                  <Button 
-                    asChild
-                    className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white"
-                  >
-                    <a 
-                      href="https://www.paypal.com/ncp/payment/34TW5MBGYE576" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2"
+                    {/* Common Contribution Patterns */}
+                    <Card className="p-4 bg-white border">
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-medium text-center">What others typically contribute:</h4>
+                        <div className="grid grid-cols-3 gap-4 text-center">
+                          {paypalAmounts.map((amount) => (
+                            <div key={amount.value} className="p-3 rounded-lg bg-primary/5">
+                              <div className="text-2xl font-semibold text-primary">{amount.label}</div>
+                              <div className="text-xs text-muted-foreground">{amount.description}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </Card>
+
+                    {/* PayPal Payment Button */}
+                    <Button 
+                      asChild
+                      className="w-full bg-primary hover:bg-primary/90"
                     >
-                      <DollarSign className="w-4 h-4" />
-                      Support Us with PayPal
-                    </a>
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  <div className="text-sm text-center space-y-2">
-                    <p className="font-medium">Indian Supporters</p>
-                    <p className="text-muted-foreground">Quick & easy payments via UPI/Cards in INR</p>
+                      <a 
+                        href="https://www.paypal.com/ncp/payment/34TW5MBGYE576" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2"
+                      >
+                        <DollarSign className="w-4 h-4" />
+                        Support Us with PayPal
+                      </a>
+                    </Button>
                   </div>
-
-                  {/* PhonePe Amount Input */}
-                  <div className="space-y-2">
-                    <Label>Amount (INR)</Label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                        ₹
-                      </span>
-                      <Input
-                        type="number"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        className="pl-8"
-                        placeholder="Enter amount"
-                        min="1"
-                      />
+                ) : (
+                  <div className="space-y-6">
+                    <div className="text-sm text-center space-y-2">
+                      <p className="font-medium">Indian Supporters</p>
+                      <p className="text-muted-foreground">Quick & easy payments via UPI/Cards in INR</p>
                     </div>
-                  </div>
 
-                  {/* PhonePe Suggested Amounts */}
-                  <div className="grid grid-cols-3 gap-3">
-                    {phonepeAmounts.map((suggestion) => {
-                      const Icon = suggestion.icon;
-                      return (
-                        <button
-                          key={suggestion.value}
-                          onClick={() => handleAmountSelect(suggestion.value)}
-                          className={`
-                            p-3 rounded-lg text-center transition-all duration-200
-                            ${amount === suggestion.value 
-                              ? 'bg-primary text-white ring-2 ring-primary/20' 
-                              : 'bg-primary/5 hover:bg-primary/10'
-                            }
-                          `}
-                        >
-                          <Icon className={`w-5 h-5 mx-auto mb-1 ${amount === suggestion.value ? 'text-white' : 'text-primary'}`} />
-                          <div className={`text-sm font-medium ${amount === suggestion.value ? 'text-white' : 'text-primary'}`}>
-                            {suggestion.label}
-                          </div>
-                          <div className={`text-xs ${amount === suggestion.value ? 'text-white/80' : 'text-muted-foreground'}`}>
-                            {suggestion.description}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
+                    {/* PhonePe Amount Input */}
+                    <div className="space-y-2">
+                      <Label>Amount (INR)</Label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                          ₹
+                        </span>
+                        <Input
+                          type="number"
+                          value={amount}
+                          onChange={(e) => setAmount(e.target.value)}
+                          className="pl-8 bg-white border-input hover:bg-gray-50/50"
+                          placeholder="Enter amount"
+                          min="1"
+                        />
+                      </div>
+                    </div>
 
-                  {/* PhonePe Button */}
-                  <Button
-                    onClick={handlePhonePePayment}
-                    className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white"
-                    disabled={isLoading || !amount}
-                  >
-                    {isLoading ? (
-                      <>Processing...</>
-                    ) : (
-                      <>
-                        <Heart className="w-4 h-4 mr-2" />
-                        Support Us with PhonePe
-                      </>
-                    )}
-                  </Button>
+                    {/* PhonePe Suggested Amounts */}
+                    <div className="grid grid-cols-3 gap-3">
+                      {phonepeAmounts.map((suggestion) => {
+                        const Icon = suggestion.icon;
+                        return (
+                          <button
+                            key={suggestion.value}
+                            onClick={() => handleAmountSelect(suggestion.value)}
+                            className={`
+                              p-3 rounded-lg text-center transition-all duration-200 border
+                              ${amount === suggestion.value 
+                                ? 'bg-primary text-white border-primary' 
+                                : 'bg-white hover:border-primary/50'
+                              }
+                            `}
+                          >
+                            <Icon className={`w-5 h-5 mx-auto mb-1 ${amount === suggestion.value ? 'text-white' : 'text-primary'}`} />
+                            <div className={`text-sm font-medium ${amount === suggestion.value ? 'text-white' : ''}`}>
+                              {suggestion.label}
+                            </div>
+                            <div className={`text-xs ${amount === suggestion.value ? 'text-white/80' : 'text-muted-foreground'}`}>
+                              {suggestion.description}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* PhonePe Button */}
+                    <Button
+                      onClick={handlePhonePePayment}
+                      className="w-full bg-primary hover:bg-primary/90"
+                      disabled={isLoading || !amount}
+                    >
+                      {isLoading ? (
+                        <>Processing...</>
+                      ) : (
+                        <>
+                          <Heart className="w-4 h-4 mr-2" />
+                          Support Us with PhonePe
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+
+                <div className="pt-6 border-t">
+                  <p className="text-xs text-center text-muted-foreground">
+                    {selectedMethod === 'paypal' 
+                      ? "International payments are processed securely via PayPal"
+                      : "Recommended for Indian users - Quick UPI/Card payments via PhonePe"}
+                  </p>
                 </div>
-              )}
-
-              <div className="mt-6 pt-6 border-t">
-                <p className="text-xs text-center text-muted-foreground">
-                  {selectedMethod === 'paypal' 
-                    ? "International payments are processed securely via PayPal"
-                    : "Recommended for Indian users - Quick UPI/Card payments via PhonePe"}
-                </p>
               </div>
             </Card>
           </motion.div>
@@ -340,35 +339,33 @@ export function Pricing() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <Card className="p-6 text-center bg-gradient-to-br from-primary/5 to-transparent border-0">
-                <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-4">
-                  <Sparkles className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="font-semibold mb-2">Improve Features</h3>
-                <p className="text-sm text-muted-foreground">
-                  Develop new AI features and enhance existing ones
-                </p>
-              </Card>
-
-              <Card className="p-6 text-center bg-gradient-to-br from-primary/5 to-transparent border-0">
-                <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-4">
-                  <Coffee className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="font-semibold mb-2">Keep it Free</h3>
-                <p className="text-sm text-muted-foreground">
-                  Help us maintain servers and keep MySideChef free for everyone
-                </p>
-              </Card>
-
-              <Card className="p-6 text-center bg-gradient-to-br from-primary/5 to-transparent border-0">
-                <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-4">
-                  <Gift className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="font-semibold mb-2">Add More Recipes</h3>
-                <p className="text-sm text-muted-foreground">
-                  Expand our recipe database with more diverse options
-                </p>
-              </Card>
+              {[
+                {
+                  icon: Sparkles,
+                  title: "Improve Features",
+                  description: "Develop new AI features and enhance existing ones"
+                },
+                {
+                  icon: Coffee,
+                  title: "Keep it Free",
+                  description: "Help us maintain servers and keep MySideChef free for everyone"
+                },
+                {
+                  icon: Gift,
+                  title: "Add More Recipes",
+                  description: "Expand our recipe database with more diverse options"
+                }
+              ].map((benefit, index) => (
+                <Card key={index} className="p-6 text-center bg-white border hover:border-primary/50 transition-colors">
+                  <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-4">
+                    <benefit.icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold mb-2">{benefit.title}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {benefit.description}
+                  </p>
+                </Card>
+              ))}
             </div>
           </motion.div>
         </div>

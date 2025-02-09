@@ -230,15 +230,22 @@ export default function Profile() {
           <div className="bg-gradient-to-b from-primary/5 to-background border-b">
             <div className="container mx-auto px-4 py-6 sm:py-12">
               <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-8">
-                <Avatar className="w-20 h-20 sm:w-32 sm:h-32 border-4 border-white shadow-lg">
-                  <AvatarImage src={user.user_metadata.avatar_url} />
-                  <AvatarFallback className="text-2xl bg-primary/10">
-                    {user.email?.charAt(0).toUpperCase()}
-                  </AvatarFallback>
+                <Avatar className="w-20 h-20 sm:w-32 sm:h-32 border-4 border-white shadow-lg bg-primary/10">
+                  {user.user_metadata?.avatar_url ? (
+                    <AvatarImage 
+                      src={user.user_metadata.avatar_url} 
+                      alt={user.user_metadata?.full_name || user.email}
+                      className="object-cover"
+                    />
+                  ) : (
+                    <AvatarFallback className="text-2xl font-semibold text-primary bg-primary/10">
+                      {(user.user_metadata?.full_name?.[0] || user.email?.[0] || '?').toUpperCase()}
+                    </AvatarFallback>
+                  )}
                 </Avatar>
                 <div className="text-center sm:text-left flex-1 space-y-1 sm:space-y-2 pb-2">
                   <h1 className="text-xl sm:text-3xl font-bold">
-                    {user.user_metadata.full_name || user.email}
+                    {user.user_metadata?.full_name || user.email}
                   </h1>
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-sm text-muted-foreground">
                     <StatItem 
