@@ -74,7 +74,7 @@ const NavigationBar = () => {
                   className="flex items-center gap-2 group hover:bg-primary/5"
                 >
                   <ChefHat className="w-4 h-4 group-hover:text-primary transition-colors" />
-                  <span className="group-hover:text-primary transition-colors">Features</span>
+                  <span className="group-hover:text-primary transition-colors">Services</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-[400px] p-4">
@@ -203,7 +203,7 @@ const NavigationBar = () => {
             className="lg:hidden py-4 space-y-4 max-h-[calc(100vh-4rem)] overflow-y-auto"
           >
             <div className="space-y-2">
-              <div className="px-2 py-1 text-sm font-semibold text-muted-foreground">Features</div>
+              <div className="px-2 py-1 text-sm font-semibold text-muted-foreground">Services</div>
               {menuItems.features.map((item) => (
                 <Link
                   key={item.path}
