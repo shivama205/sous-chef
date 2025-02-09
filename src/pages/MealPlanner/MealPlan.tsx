@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { LoginDialog } from "@/components/LoginDialog";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Sparkles, ChefHat, Loader2 } from "lucide-react";
+import { Sparkles, ChefHat, Loader2, Calendar, Brain, UtensilsCrossed, ArrowRight, Salad } from "lucide-react";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { generateMealPlan } from "@/services/mealPlan";
 import { mealPlanLoadingMessages } from "@/lib/loadingMessages";
@@ -15,6 +15,26 @@ import { MealPlanGenerationRequest } from "@/types/mealPlan";
 import { useAuth } from "@/providers/AuthProvider";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import { dataLayer } from "@/services/dataLayer";
+import { SEO } from "@/components/SEO";
+import { FeatureCard } from "@/components/ui/FeatureCard";
+
+const features = [
+  {
+    icon: Calendar,
+    title: "Weekly Planning",
+    description: "Plan your meals for up to 7 days in advance"
+  },
+  {
+    icon: Brain,
+    title: "AI-Powered",
+    description: "Get personalized meal combinations based on your preferences"
+  },
+  {
+    icon: Salad,
+    title: "Balanced Nutrition",
+    description: "Meet your macro goals with perfectly balanced meals"
+  }
+];
 
 // Form Components
 const MacroInput = ({ 
@@ -191,22 +211,68 @@ export function MealPlan() {
   if (!user) {
     return (
       <BaseLayout>
-        <div className="container mx-auto px-4 py-8">
-          <Card className="p-8 text-center">
-            <h1 className="text-2xl font-bold mb-4">Welcome to Meal Planner</h1>
-            <p className="mb-6">Please sign in to create your personalized meal plan.</p>
-            <Button onClick={() => setLoginDialogOpen(true)}>
-              Sign In to Continue
-            </Button>
-          </Card>
-          <LoginDialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
+        <SEO 
+          title="Weekly Meal Planner - MySideChef"
+          description="Plan your weekly meals with our AI-powered meal planner. Get personalized meal combinations that match your nutritional goals and dietary preferences."
+          keywords="meal planning, weekly meals, meal prep, nutrition planning, healthy eating, AI meal planner"
+          type="website"
+          canonical="https://mysidechef.com/meal-plan"
+        />
+        <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background">
+          <div className="container mx-auto px-4 py-8 space-y-8">
+            <PageHeader
+              icon={ChefHat}
+              title="Weekly Meal Planner"
+              description="Plan your meals for the week ahead with our AI-powered meal planner"
+            />
+            
+            <div className="max-w-2xl mx-auto text-center space-y-8">
+              <UtensilsCrossed className="w-16 h-16 mx-auto text-primary" />
+              <div className="space-y-4">
+                <h2 className="text-3xl font-bold">Ready to Plan Your Week?</h2>
+                <p className="text-lg text-muted-foreground">
+                  Take the stress out of meal planning! Our AI creates personalized weekly meal plans 
+                  that match your nutritional goals and dietary preferences.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                {features.map((feature, index) => (
+                  <FeatureCard
+                    key={index}
+                    icon={feature.icon}
+                    title={feature.title}
+                    description={feature.description}
+                  />
+                ))}
+              </div>
+
+              <Button 
+                size="lg"
+                onClick={() => setLoginDialogOpen(true)}
+                className="bg-primary hover:bg-primary/90"
+              >
+                Get Started
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </div>
+          </div>
         </div>
+
+        <LoginDialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
       </BaseLayout>
     );
   }
 
   return (
     <BaseLayout>
+      <SEO 
+        title="Create Your Meal Plan - MySideChef"
+        description="Create your personalized weekly meal plan. Set your nutritional goals, dietary preferences, and let our AI do the rest."
+        keywords="create meal plan, weekly meal planning, nutrition goals, dietary preferences, meal prep"
+        type="website"
+        canonical="https://mysidechef.com/meal-plan"
+      />
       <div className="relative">
         <LoadingOverlay isLoading={isGenerating} messages={mealPlanLoadingMessages} />
         <div className="container mx-auto px-4 py-8 space-y-8">

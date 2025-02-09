@@ -20,7 +20,7 @@ export const useAuth = () => useContext(AuthContext);
 const PROTECTED_ROUTES = [
   '/profile',
   '/recipe/new',
-  '/meal-plan',
+  '/meal-plan/new',
   '/saved-recipes',
   '/settings'
 ];
