@@ -15,6 +15,55 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
+// Keys for local storage
+const LOCAL_STORAGE_KEYS = {
+  PREFERENCES: 'user-preferences',
+  MEAL_PLAN_DRAFT: 'meal-plan-draft',
+  RECIPE_DRAFTS: 'recipe-drafts',
+  SHOPPING_LIST: 'shopping-list',
+  THEME: 'theme-preference',
+  ANALYTICS_CONSENT: 'analytics-consent'
+} as const;
+
+// Helper functions for local storage management
+const clearUserData = () => {
+  // Clear user-specific data but keep theme and analytics consent
+  const themePreference = localStorage.getItem(LOCAL_STORAGE_KEYS.THEME);
+  const analyticsConsent = localStorage.getItem(LOCAL_STORAGE_KEYS.ANALYTICS_CONSENT);
+  
+  localStorage.clear();
+  
+  // Restore non-user-specific preferences
+  if (themePreference) {
+    localStorage.setItem(LOCAL_STORAGE_KEYS.THEME, themePreference);
+  }
+  if (analyticsConsent) {
+    localStorage.setItem(LOCAL_STORAGE_KEYS.ANALYTICS_CONSENT, analyticsConsent);
+  }
+};
+
+const initializeUserData = (userId: string) => {
+  // Initialize default user preferences if they don't exist
+  if (!localStorage.getItem(LOCAL_STORAGE_KEYS.PREFERENCES)) {
+    localStorage.setItem(LOCAL_STORAGE_KEYS.PREFERENCES, JSON.stringify({
+      userId,
+      dietaryRestrictions: [],
+      cuisinePreferences: [],
+      servingSize: 2,
+      cookingLevel: 'intermediate'
+    }));
+  }
+
+  // Initialize empty shopping list if it doesn't exist
+  if (!localStorage.getItem(LOCAL_STORAGE_KEYS.SHOPPING_LIST)) {
+    localStorage.setItem(LOCAL_STORAGE_KEYS.SHOPPING_LIST, JSON.stringify({
+      userId,
+      items: [],
+      lastUpdated: new Date().toISOString()
+    }));
+  }
+};
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,10 +75,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(session?.user ?? null);
       setLoading(false);
       
-      // Don't track initial session as a new login
+      // Initialize user data if logged in
       if (session?.user) {
         const provider = session.user.app_metadata?.provider || 'email';
         const userId = session.user.id;
+        
+        initializeUserData(userId);
         
         // Only track if this is a new signup (no last_sign_in_at)
         if (!session.user.last_sign_in_at) {
@@ -59,6 +110,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const provider = session.user.app_metadata?.provider || 'email';
             const userId = session.user.id;
             
+            // Initialize user data
+            initializeUserData(userId);
+            
             // If this is the first sign in (no last_sign_in_at), it's a new signup
             if (!session.user.last_sign_in_at) {
               dataLayer.trackUserSignup(provider, userId);
@@ -68,6 +122,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
           break;
         case 'SIGNED_OUT':
+          // Clear user data from local storage
+          clearUserData();
+          
           // Track logout event using the previous user's ID if available
           if (previousUser) {
             dataLayer.trackUserLogout(previousUser.id);
