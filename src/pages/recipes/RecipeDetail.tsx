@@ -198,6 +198,15 @@ export default function RecipeDetail() {
         throw new Error('Failed to save recipe');
       }
 
+      // Update the recipe state with the saved recipe
+      const savedRecipe: Recipe = {
+        ...recipe,
+        id: result.recipe.id,
+        created_at: result.recipe.created_at,
+        updated_at: result.recipe.updated_at
+      };
+      setRecipe(savedRecipe);
+
       // Track recipe save
       dataLayer.trackRecipeSave({
         recipe_id: result.recipe.id,

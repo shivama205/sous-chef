@@ -103,6 +103,18 @@ export function MealSuggestions() {
         title: "Yay! 🎉",
         description: "We've found some tasty meals to make your life easier!",
       });
+
+      // Scroll to results after a short delay to ensure content is rendered
+      setTimeout(() => {
+        const resultsSection = document.getElementById('cook-at-home-section');
+        if (resultsSection) {
+          resultsSection.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      }, 100);
+
     } catch (error) {
       console.error('Error getting meal suggestions:', error);
       toast({
@@ -382,7 +394,7 @@ export function MealSuggestions() {
               <h2 className="text-2xl font-semibold text-center">Your Personalized Meal Suggestions</h2>
               
               {/* Cook at Home Section */}
-              <div className="space-y-6">
+              <div id="cook-at-home-section" className="space-y-6">
                 <div className="flex items-center gap-4">
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent to-primary/10" />
                   <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-full">
