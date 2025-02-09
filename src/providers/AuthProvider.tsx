@@ -18,39 +18,60 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isInitialSession, setIsInitialSession] = useState(true);
 
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      // Don't track initial session as a new login
+      if (session?.user) {
+        const provider = session.user.app_metadata?.provider || 'email';
+        const userId = session.user.id;
+        
+        // Only track if this is a new signup (no last_sign_in_at)
+        if (!session.user.last_sign_in_at) {
+          dataLayer.trackUserSignup(provider, userId);
+        }
+      }
     });
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session) => {
+      const previousUser = user;
       setUser(session?.user ?? null);
       setLoading(false);
 
-      if (!session?.user) return;
-
-      const provider = session.user.app_metadata?.provider || 'email';
-      const userId = session.user.id;
+      // Skip tracking for the initial session
+      if (isInitialSession) {
+        setIsInitialSession(false);
+        return;
+      }
 
       // Track auth events
       switch (event) {
         case 'SIGNED_IN':
-          // If this is the first sign in (no last_sign_in_at), it's a new signup
-          if (!session.user.last_sign_in_at) {
-            dataLayer.trackUserSignup(provider, userId);
+          if (session?.user) {
+            const provider = session.user.app_metadata?.provider || 'email';
+            const userId = session.user.id;
+            
+            // If this is the first sign in (no last_sign_in_at), it's a new signup
+            if (!session.user.last_sign_in_at) {
+              dataLayer.trackUserSignup(provider, userId);
+            }
+            // Track login event
+            dataLayer.trackUserLogin(provider, userId);
           }
-          // Track login event for both initial and subsequent sign-ins
-          dataLayer.trackUserLogin(provider, userId);
           break;
         case 'SIGNED_OUT':
-          // Track logout event
-          dataLayer.trackUserLogout(userId);
+          // Track logout event using the previous user's ID if available
+          if (previousUser) {
+            dataLayer.trackUserLogout(previousUser.id);
+          }
           break;
       }
     });
@@ -58,7 +79,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [user, isInitialSession]);
 
   return (
     <AuthContext.Provider value={{ user, loading }}>
