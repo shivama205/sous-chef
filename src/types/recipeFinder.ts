@@ -7,32 +7,39 @@ export interface RecipeFinderRequest {
   dietaryRestrictions?: string[];
   additionalInstructions?: string;
   macros?: {
-    calories?: number;
-    protein?: number;
-    carbs?: number;
-    fat?: number;
-  };
+    protein: number;
+    carbs: number;
+    fat: number;
+  } | null;
 }
 
 // Recipe is the response object for the RecipeFinder service
 export interface Recipe {
   id?: string;
   name: string;
+  meal_name?: string; // For backward compatibility
   description?: string;
   cookingTime: number;
+  cooking_time?: number; // For backward compatibility
   ingredients: string[];
-  instructions?: string[];
-  nutritionalValue?: {
-    calories?: number;
-    protein?: number;
-    carbs?: number;
-    fat?: number;
+  instructions: string[];
+  nutritionalValue: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
   };
-  imageUrl?: string | null;
-  cuisineType?: string | null;
+  nutritional_value?: { // For backward compatibility
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
   difficulty?: 'easy' | 'medium' | 'hard';
-  createdAt?: string;
-  updatedAt?: string;
+  cuisineType?: string;
+  imageUrl?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface SharedRecipe {

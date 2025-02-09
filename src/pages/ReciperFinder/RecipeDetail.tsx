@@ -5,18 +5,16 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { Recipe } from "@/types/recipeFinder";
+import { dataLayer } from "@/services/dataLayer";
 import { 
-  ChefHat, 
   Timer, 
   UtensilsCrossed, 
   ListChecks, 
   Dumbbell, 
   ArrowLeft,
-  RefreshCw,
   Share2,
   Download,
   Trash2,
-  X,
   Save
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -117,15 +115,39 @@ export default function RecipeDetail() {
         return;
       }
 
+      // Transform database record to match Recipe interface
       setRecipe({
         id: data.id,
-        meal_name: data.meal_name,
-        cooking_time: data.cooking_time,
-        ingredients: data.ingredients,
-        instructions: data.instructions,
-        nutritional_value: data.nutritional_value,
+        name: data.name || data.meal_name, // Handle both name formats
+        description: data.description || `A delicious ${data.name || data.meal_name} recipe`,
+        cookingTime: data.cooking_time,
+        cooking_time: data.cooking_time, // For backward compatibility
+        ingredients: data.ingredients || [],
+        instructions: data.instructions || [],
+        nutritionalValue: data.nutritional_value || {
+          calories: 0,
+          protein: 0,
+          carbs: 0,
+          fat: 0
+        },
+        nutritional_value: data.nutritional_value, // For backward compatibility
+        difficulty: (data.difficulty || 'medium').toLowerCase() as 'easy' | 'medium' | 'hard',
+        cuisineType: data.cuisine_type || 'Mixed',
+        imageUrl: data.image_url || null,
         created_at: data.created_at,
+        updated_at: data.updated_at
       });
+
+      // Track recipe view
+      if (user) {
+        dataLayer.trackRecipeView({
+          recipe_id: data.id,
+          recipe_name: data.name || data.meal_name,
+          recipe_category: data.cuisine_type,
+          cooking_time: data.cooking_time,
+          user_id: user.id
+        });
+      }
     } catch (error) {
       console.error("Error fetching recipe:", error);
       toast({
@@ -163,12 +185,16 @@ export default function RecipeDetail() {
     
     setIsSaving(true);
     try {
-      const savedRecipe = await saveRecipe(user.id, {
-        meal_name: suggestedMeal.name,
-        cooking_time: suggestedMeal.cookingTime,
+      const { recipe: savedRecipe } = await saveRecipe(user.id, {
+        name: suggestedMeal.name,
+        description: suggestedMeal.description,
+        cookingTime: suggestedMeal.cookingTime,
         ingredients: suggestedMeal.ingredients,
         instructions: suggestedMeal.instructions,
-        nutritional_value: suggestedMeal.nutritionalValue
+        nutritionalValue: suggestedMeal.nutritionalValue,
+        difficulty: suggestedMeal.difficulty,
+        cuisineType: suggestedMeal.cuisineType,
+        imageUrl: suggestedMeal.imageUrl
       });
       
       toast({

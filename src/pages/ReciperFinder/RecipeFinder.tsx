@@ -169,7 +169,7 @@ export default function RecipeFinder() {
     try {
       const recipes: Recipe[] = await findRecipes({
         ingredients,
-        dietaryRestrictions,
+        dietaryRestrictions: dietaryRestrictions.split(',').map(r => r.trim()),
         additionalInstructions,
         macros: userMacros
       });
@@ -244,8 +244,8 @@ export default function RecipeFinder() {
       // Track recipe save
       dataLayer.trackRecipeSave({
         recipe_id: recipe.id,
-        recipe_name: recipe.meal_name,
-        cooking_time: recipe.cooking_time,
+        recipe_name: recipe.name,
+        cooking_time: recipe.cookingTime,
         user_id: user.id
       });
 
@@ -267,8 +267,8 @@ export default function RecipeFinder() {
     // Track recipe view
     dataLayer.trackRecipeView({
       recipe_id: recipe.id,
-      recipe_name: recipe.meal_name,
-      cooking_time: recipe.cooking_time,
+      recipe_name: recipe.name,
+      cooking_time: recipe.cookingTime,
       user_id: user?.id
     });
 
@@ -370,7 +370,7 @@ export default function RecipeFinder() {
                     <Card key={index} className="bg-white rounded-lg shadow-sm overflow-hidden">
                       <div className="bg-gradient-to-r from-primary to-primary/80 py-3 px-4">
                         <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-semibold text-white">{recipe.meal_name}</h3>
+                          <h3 className="text-lg font-semibold text-white">{recipe.name}</h3>
                           <Button
                             variant={savedRecipeIds.has(recipe.id ?? '') ? "secondary" : "outline"}
                             size="sm"
@@ -388,7 +388,7 @@ export default function RecipeFinder() {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-white/80 mt-1">
                           <Timer className="w-4 h-4" />
-                          <span>Cooking Time: {recipe.cooking_time} minutes</span>
+                          <span>Cooking Time: {recipe.cookingTime} minutes</span>
                         </div>
                       </div>
 
@@ -434,19 +434,19 @@ export default function RecipeFinder() {
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             <div className="bg-white p-2 rounded shadow-sm">
                               <div className="text-gray-500 text-xs">Calories</div>
-                              <div className="font-medium text-gray-900">{recipe.nutritional_value.calories}</div>
+                              <div className="font-medium text-gray-900">{recipe.nutritionalValue.calories}</div>
                             </div>
                             <div className="bg-white p-2 rounded shadow-sm">
                               <div className="text-gray-500 text-xs">Protein</div>
-                              <div className="font-medium text-gray-900">{recipe.nutritional_value.protein}g</div>
+                              <div className="font-medium text-gray-900">{recipe.nutritionalValue.protein}g</div>
                             </div>
                             <div className="bg-white p-2 rounded shadow-sm">
                               <div className="text-gray-500 text-xs">Carbs</div>
-                              <div className="font-medium text-gray-900">{recipe.nutritional_value.carbs}g</div>
+                              <div className="font-medium text-gray-900">{recipe.nutritionalValue.carbs}g</div>
                             </div>
                             <div className="bg-white p-2 rounded shadow-sm">
                               <div className="text-gray-500 text-xs">Fat</div>
-                              <div className="font-medium text-gray-900">{recipe.nutritional_value.fat}g</div>
+                              <div className="font-medium text-gray-900">{recipe.nutritionalValue.fat}g</div>
                             </div>
                           </div>
                         </div>
@@ -494,7 +494,7 @@ export default function RecipeFinder() {
                         <ChefHat className="w-4 h-4 text-gray-600" />
                       </div>
                       <div>
-                        <h4 className="font-medium">{recipe.meal_name}</h4>
+                        <h4 className="font-medium">{recipe.name}</h4>
                         <p className="text-sm text-gray-500">
                           {new Date(recipe.created_at).toLocaleDateString('en-US', {
                             year: 'numeric',

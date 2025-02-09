@@ -61,19 +61,18 @@ self.addEventListener('fetch', (event) => {
   if (event.request.mode === 'navigate' || event.request.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
       fetch(event.request)
-        .then((response) => {
-          // Cache the latest version
-          const clonedResponse = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, clonedResponse);
-          });
-          return response;
+        .then((networkResponse) => {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME)
+            .then((cache) => {
+              cache.put(event.request, responseToCache);
+            })
+            .catch(console.error);
+          return networkResponse;
         })
         .catch(() => {
-          // Fallback to cache if offline
-          return caches.match(event.request).then((response) => {
-            return response || caches.match('/');
-          });
+          return caches.match(event.request)
+            .then((response) => response || caches.match('/'));
         })
     );
     return;
@@ -81,18 +80,37 @@ self.addEventListener('fetch', (event) => {
 
   // Handle other requests - stale-while-revalidate
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request).then((networkResponse) => {
-        // Update cache with fresh data
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, networkResponse.clone());
-        });
-        return networkResponse;
-      });
+    caches.match(event.request)
+      .then((cachedResponse) => {
+        // Return cached response immediately
+        if (cachedResponse) {
+          // Fetch new version in background
+          fetch(event.request)
+            .then((networkResponse) => {
+              const responseToCache = networkResponse.clone();
+              caches.open(CACHE_NAME)
+                .then((cache) => {
+                  cache.put(event.request, responseToCache);
+                })
+                .catch(console.error);
+            })
+            .catch(console.error);
+          
+          return cachedResponse;
+        }
 
-      // Return cached response immediately, then update cache in background
-      return cachedResponse || fetchPromise;
-    })
+        // If no cache, fetch from network
+        return fetch(event.request)
+          .then((networkResponse) => {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(event.request, responseToCache);
+              })
+              .catch(console.error);
+            return networkResponse;
+          });
+      })
   );
 });
 
