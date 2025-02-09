@@ -111,7 +111,7 @@ export default function SharedRecipe() {
         }
 
         // Transform database record to match Recipe interface
-        setRecipe({
+        const transformedRecipe: Recipe = {
           id: recipeData.id,
           name: recipeData.name,
           description: recipeData.description || `A delicious ${recipeData.name} recipe`,
@@ -129,17 +129,16 @@ export default function SharedRecipe() {
           imageUrl: recipeData.image_url || null,
           created_at: recipeData.created_at,
           updated_at: recipeData.updated_at
-        });
+        };
+
+        setRecipe(transformedRecipe);
 
         // Increment the view count in the background
         // Don't wait for it or handle errors since it's not critical
-        supabase
+        await supabase
           .from("shared_recipes")
           .update({ views: (sharedData.views || 0) + 1 })
-          .eq("id", sharedData.id)
-          .then(() => {
-            console.log("View count updated");
-          })
+          .eq("id", sharedData.id);
 
       } catch (error) {
         console.error("Error fetching shared recipe:", error);
@@ -164,7 +163,7 @@ export default function SharedRecipe() {
       try {
         await navigator.share({
           title: recipe?.name || "Shared Recipe",
-          text: "Check out this delicious recipe I found on MySideChef!",
+          text: `Check out this delicious ${recipe?.name} recipe I found on MySideChef!`,
           url: shareUrl,
         });
       } catch (error) {
@@ -198,7 +197,19 @@ export default function SharedRecipe() {
   }
 
   if (!recipe) {
-    return null;
+    return (
+      <BaseLayout>
+        <div className="container mx-auto px-4 py-8 text-center">
+          <h1 className="text-2xl font-bold mb-4">Recipe Not Found</h1>
+          <p className="text-muted-foreground mb-4">
+            This recipe may have been deleted or the link has expired.
+          </p>
+          <Button onClick={() => navigate("/recipe-finder")}>
+            Find Recipes
+          </Button>
+        </div>
+      </BaseLayout>
+    );
   }
 
   return (

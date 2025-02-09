@@ -120,7 +120,7 @@ export default function RecipeDetail() {
       }
 
       // Transform database record to match Recipe interface
-      const transformedRecipe = {
+      const transformedRecipe: Recipe = {
         id: data.id,
         name: data.name,
         description: data.description || `A delicious ${data.name} recipe`,
@@ -238,7 +238,16 @@ export default function RecipeDetail() {
       return;
     }
 
-    if (!recipe?.id) {
+    if (!recipe) {
+      toast({
+        title: "Error",
+        description: "No recipe data found to share.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!recipe.id) {
       toast({
         title: "Error",
         description: "Cannot share an unsaved recipe. Please save the recipe first.",
