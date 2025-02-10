@@ -32,6 +32,9 @@ export function SEO({
   const fullTitle = title === defaults.title ? title : `${title}`;
   const url = canonical || defaults.url;
   const fullImage = image.startsWith('http') ? image : `${defaults.url}${image}`;
+  const squareImage = image === '/og-image-compressed.jpg' 
+    ? `${defaults.url}/og-image-square.jpg`
+    : fullImage;
 
   return (
     <Helmet>
@@ -43,7 +46,7 @@ export function SEO({
       <meta name="author" content={author} />
       <link rel="canonical" href={canonical || url} />
 
-      {/* Open Graph */}
+      {/* Open Graph - Facebook */}
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:type" content={type} />
@@ -61,6 +64,13 @@ export function SEO({
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={fullImage} />
       <meta name="twitter:image:alt" content={description} />
+
+      {/* LinkedIn */}
+      <meta property="og:image:secure_url" content={fullImage} />
+
+      {/* Square Image for Platforms that prefer it */}
+      <meta property="og:image:square" content={squareImage} />
+      <meta name="twitter:image:square" content={squareImage} />
 
       {/* Additional Meta Tags */}
       <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
