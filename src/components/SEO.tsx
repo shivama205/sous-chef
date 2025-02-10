@@ -46,31 +46,38 @@ export function SEO({
       <meta name="author" content={author} />
       <link rel="canonical" href={canonical || url} />
 
-      {/* Open Graph - Facebook */}
+      {/* Open Graph - Facebook & LinkedIn */}
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:type" content={type} />
       <meta property="og:url" content={url} />
       <meta property="og:image" content={fullImage} />
+      <meta property="og:image:secure_url" content={fullImage} />
       <meta property="og:image:alt" content={description} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
+      <meta property="og:image:type" content="image/jpeg" />
       <meta property="og:site_name" content="MySideChef" />
       <meta property="og:locale" content={language} />
 
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:site" content="@mysidechef" />
+      <meta name="twitter:creator" content="@mysidechef" />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={fullImage} />
       <meta name="twitter:image:alt" content={description} />
 
-      {/* LinkedIn */}
-      <meta property="og:image:secure_url" content={fullImage} />
+      {/* LinkedIn Specific */}
+      <meta property="linkedin:title" content={fullTitle} />
+      <meta property="linkedin:description" content={description} />
+      <meta property="linkedin:image" content={fullImage} />
 
-      {/* Square Image for Platforms that prefer it */}
+      {/* Square Image Variants */}
       <meta property="og:image:square" content={squareImage} />
       <meta name="twitter:image:square" content={squareImage} />
+      <meta property="linkedin:image:square" content={squareImage} />
 
       {/* Additional Meta Tags */}
       <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
