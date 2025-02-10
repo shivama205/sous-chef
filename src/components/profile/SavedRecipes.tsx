@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Recipe } from "@/types/recipeFinder";
 import { useNavigate } from "react-router-dom";
@@ -20,7 +20,7 @@ interface SavedRecipesProps {
   initialRecipes: Recipe[];
   totalItems: number;
   itemsPerPage: number;
-  onPageChange: (page: number, searchQuery: string) => Promise<void>;
+  onPageChange: (page: number, searchQuery: string, sortBy?: string) => Promise<void>;
   onRefresh: () => Promise<void>;
   isLoading: boolean;
   error: string | null;
@@ -28,7 +28,7 @@ interface SavedRecipesProps {
   searchQuery?: string;
 }
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 9;
 
 function SavedRecipesComponent({ 
   initialRecipes,
@@ -39,38 +39,35 @@ function SavedRecipesComponent({
   isLoading,
   error,
   currentPage: propCurrentPage = 1,
-  searchQuery: propSearchQuery = ''
 }: SavedRecipesProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [searchQuery, setSearchQuery] = useState(propSearchQuery);
   const [currentPage, setCurrentPage] = useState(propCurrentPage);
   const [sortBy, setSortBy] = useState<"date" | "name" | "time">("date");
-  const [isSearching, setIsSearching] = useState(false);
 
   // Update local state when props change
   useEffect(() => {
     setCurrentPage(propCurrentPage);
   }, [propCurrentPage]);
 
-  useEffect(() => {
-    setSearchQuery(propSearchQuery);
-  }, [propSearchQuery]);
-
-  // Handle search with debounce using useCallback
-  const debouncedSearch = useCallback(() => {
-    setIsSearching(true);
-    onPageChange(1, searchQuery).finally(() => {
-      setIsSearching(false);
-    });
-  }, [searchQuery, onPageChange]);
-
-  useEffect(() => {
-    const timer = setTimeout(debouncedSearch, 300);
-    return () => clearTimeout(timer);
-  }, [debouncedSearch]);
-
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+
+  // Sort recipes based on selected criteria
+  const sortedRecipes = useMemo(() => {
+    if (!initialRecipes) return [];
+    
+    return [...initialRecipes].sort((a, b) => {
+      switch (sortBy) {
+        case "name":
+          return (a.name || '').localeCompare(b.name || '');
+        case "time":
+          return (a.cookingTime || 0) - (b.cookingTime || 0);
+        case "date":
+        default:
+          return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
+      }
+    });
+  }, [initialRecipes, sortBy]);
 
   const handleRecipeClick = useCallback((recipe: Recipe) => {
     if (recipe.id) {
@@ -90,7 +87,7 @@ function SavedRecipesComponent({
       if (deleteError) throw deleteError;
 
       // Refresh current page data
-      onPageChange(currentPage, searchQuery);
+      onPageChange(currentPage, '');
       
       toast({
         title: "Recipe deleted",
@@ -104,12 +101,12 @@ function SavedRecipesComponent({
         variant: "destructive",
       });
     }
-  }, [onPageChange, currentPage, searchQuery, toast]);
+  }, [onPageChange, currentPage, toast]);
 
   const handlePageChange = useCallback((newPage: number) => {
-    if (newPage < 1 || newPage > totalPages || isLoading || isSearching) return;
-    onPageChange(newPage, searchQuery);
-  }, [onPageChange, searchQuery, totalPages, isLoading, isSearching]);
+    if (newPage < 1 || newPage > totalPages || isLoading) return;
+    onPageChange(newPage, '');
+  }, [onPageChange, totalPages, isLoading]);
 
   // Error state
   if (error) {
@@ -130,15 +127,13 @@ function SavedRecipesComponent({
   }
 
   // Empty state
-  if (!isLoading && !isSearching && (!initialRecipes || initialRecipes.length === 0)) {
+  if (!isLoading && (!initialRecipes || initialRecipes.length === 0)) {
     return (
       <Card className="p-6 text-center bg-white border">
         <ChefHat className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
         <h3 className="text-lg font-semibold mb-2">No Recipes Found</h3>
         <p className="text-muted-foreground mb-4">
-          {searchQuery
-            ? "No recipes match your search. Try different keywords."
-            : "You haven't saved any recipes yet."}
+          You haven't saved any recipes yet.
         </p>
         <Button 
           onClick={() => navigate("/recipe-finder")}
@@ -157,48 +152,17 @@ function SavedRecipesComponent({
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              placeholder="Search recipes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 bg-white border-input hover:bg-gray-50/50"
-              disabled={isLoading || isSearching}
-            />
-          </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={onRefresh}
-            disabled={isLoading || isSearching}
-            className="shrink-0"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className={`w-4 h-4 ${(isLoading || isSearching) ? 'animate-spin' : ''}`}
-            >
-              <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
-              <path d="M21 3v5h-5" />
-            </svg>
-            <span className="sr-only">Refresh</span>
-          </Button>
+        <div className="flex-1">
+          <h2 className="text-lg font-semibold text-gray-700">Your Recipes</h2>
         </div>
         <Select 
           value={sortBy} 
           onValueChange={(value: "date" | "name" | "time") => {
             setSortBy(value);
             setCurrentPage(1);
-            // TODO: Implement server-side sorting
+            onPageChange(1, '', value); // Pass the sort value to the parent
           }}
-          disabled={isLoading || isSearching}
+          disabled={isLoading}
         >
           <SelectTrigger className="w-[180px] bg-white border-input hover:bg-gray-50/50">
             <SelectValue placeholder="Sort by" />
@@ -212,7 +176,7 @@ function SavedRecipesComponent({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {initialRecipes.map((recipe) => (
+        {sortedRecipes.map((recipe) => (
           <Card
             key={recipe.id}
             className="group hover:shadow-md transition-all duration-300 overflow-hidden bg-white border cursor-pointer"
@@ -238,7 +202,7 @@ function SavedRecipesComponent({
                   size="sm"
                   className="text-red-500 hover:text-red-700 hover:bg-red-50 -mr-2 -mt-2"
                   onClick={(e) => recipe.id && handleDelete(e, recipe.id)}
-                  disabled={isLoading || isSearching}
+                  disabled={isLoading}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -271,7 +235,7 @@ function SavedRecipesComponent({
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1 || isLoading || isSearching}
+              disabled={currentPage === 1 || isLoading}
               className="gap-1"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -288,7 +252,7 @@ function SavedRecipesComponent({
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage >= totalPages || isLoading || isSearching}
+              disabled={currentPage >= totalPages || isLoading}
               className="gap-1"
             >
               Next
