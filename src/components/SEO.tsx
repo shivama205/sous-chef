@@ -23,18 +23,17 @@ export function SEO({
   title = defaults.title,
   description = defaults.description,
   keywords = 'meal planning, recipe finder, healthy cooking, AI kitchen assistant, meal suggestions, cooking tips, personalized recipes, diet planning',
-  image = '/og-image-compressed.jpg',
+  image = '/og-image-square-large.jpg',
   type = 'website' as const,
   canonical,
   author = defaults.author,
   language = defaults.language
 }: SEOProps) {
   const fullTitle = title === defaults.title ? title : `${title}`;
+  const shortTitle = fullTitle.replace(' - Your AI-Powered Kitchen Assistant', ' - AI Kitchen Assistant');
+  const shortDescription = description.split('.')[0];
   const url = canonical || defaults.url;
   const fullImage = image.startsWith('http') ? image : `${defaults.url}${image}`;
-  const squareImage = image === '/og-image-compressed.jpg' 
-    ? `${defaults.url}/og-image-square-large.jpg`
-    : fullImage;
 
   return (
     <Helmet>
@@ -46,31 +45,27 @@ export function SEO({
       <meta name="author" content={author} />
       <link rel="canonical" href={url} />
 
-      {/* Open Graph Meta Tags (Facebook, WhatsApp, LinkedIn) */}
+      {/* Essential Open Graph Tags for WhatsApp */}
       <meta property="og:type" content={type} />
-      <meta property="og:site_name" content="MySideChef" />
-      <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={description} />
       <meta property="og:url" content={url} />
+      <meta property="og:title" content={shortTitle} />
+      <meta property="og:description" content={shortDescription} />
       <meta property="og:image" content={fullImage} />
-      <meta property="og:image:secure_url" content={fullImage} />
+      <meta property="og:image:width" content="600" />
+      <meta property="og:image:height" content="600" />
       <meta property="og:image:type" content="image/jpeg" />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="630" />
-      <meta property="og:image:alt" content={fullTitle} />
+      <meta property="og:site_name" content="MySideChef" />
       <meta property="og:locale" content={language} />
 
-      {/* WhatsApp specific */}
-      <meta property="og:image:secure_url" content={squareImage} />
-      <meta property="og:image:type" content="image/jpeg" />
-      <meta property="og:image:width" content="400" />
-      <meta property="og:image:height" content="400" />
+      {/* Additional Social Media Tags */}
+      <meta property="og:image:secure_url" content={fullImage} />
+      <meta property="og:image:alt" content={shortTitle} />
 
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:site" content="@mysidechef" />
-      <meta name="twitter:title" content={fullTitle} />
-      <meta name="twitter:description" content={description} />
+      <meta name="twitter:title" content={shortTitle} />
+      <meta name="twitter:description" content={shortDescription} />
       <meta name="twitter:image" content={fullImage} />
     </Helmet>
   );
