@@ -78,7 +78,7 @@ function SavedMealPlansComponent({
     });
   }, [initialMealPlans, sortBy]);
 
-  const handleMealPlanClick = useCallback((mealPlan: MealPlan) => {
+  const handleMealPlanClick = useCallback((mealPlan: SavedMealPlan) => {
     if (mealPlan.id) {
       navigate(`/meal-plan/${mealPlan.id}`);
     }
@@ -189,7 +189,7 @@ function SavedMealPlansComponent({
           <Card
             key={mealPlan.id}
             className="group hover:shadow-md transition-all duration-300 overflow-hidden bg-white border cursor-pointer"
-            onClick={() => handleMealPlanClick(mealPlan.plan)}
+            onClick={() => handleMealPlanClick(mealPlan)}
           >
             <div className="p-4 space-y-3">
               <div className="flex items-start justify-between">

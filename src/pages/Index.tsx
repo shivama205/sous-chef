@@ -54,139 +54,195 @@ interface SavedMealPlan {
   created_at: string;
 }
 
-const LoggedInView = () => {
-  const { user } = useAuth();
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [mealPlans, setMealPlans] = useState<SavedMealPlan[]>([]);
-  const [isLoadingRecipes, setIsLoadingRecipes] = useState(false);
-  const [isLoadingMealPlans, setIsLoadingMealPlans] = useState(false);
+interface SavedRecipeRecord {
+  id: string;
+  name: string;
+  description: string;
+  cooking_time: number;
+  ingredients: string[];
+  instructions: string[];
+  nutritional_value: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
+  image_url: string | null;
+  cuisine_type: string;
+  difficulty: string;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+}
+
+interface SavedMealPlanRecord {
+  id: string;
+  name: string;
+  plan: MealPlan;
+  created_at: string;
+  user_id: string;
+}
+
+interface UseDataLoaderProps {
+  user: any;
+  type: 'recipes' | 'meal-plans';
+}
+
+type DataLoaderState = {
+  recipes: {
+    data: Recipe[];
+    type: 'recipes';
+  };
+  'meal-plans': {
+    data: SavedMealPlan[];
+    type: 'meal-plans';
+  };
+};
+
+const useDataLoader = <T extends 'recipes' | 'meal-plans'>({ 
+  user, 
+  type,
+}: UseDataLoaderProps) => {
+  const [data, setData] = useState<DataLoaderState[T]['data']>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"recipes" | "meal-plans">("recipes");
-  const [totalMealPlans, setTotalMealPlans] = useState(0);
-  const [totalRecipes, setTotalRecipes] = useState(0);
-  const [hasLoadedInitialRecipes, setHasLoadedInitialRecipes] = useState(false);
-  const [currentRecipePage, setCurrentRecipePage] = useState(1);
-  const [currentRecipeSearch, setCurrentRecipeSearch] = useState('');
-  const [currentMealPlanPage, setCurrentMealPlanPage] = useState(1);
-  const [currentMealPlanSearch, setCurrentMealPlanSearch] = useState('');
+  const [totalItems, setTotalItems] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentSearch, setCurrentSearch] = useState('');
   const ITEMS_PER_PAGE = 6;
 
-  const loadMealPlans = useCallback(async (page: number = 1, searchQuery: string = '') => {
+  const loadData = useCallback(async (page: number = 1, searchQuery: string = '', sortBy: string = 'date') => {
     if (!user) return;
     
     try {
-      setIsLoadingMealPlans(true);
+      setIsLoading(true);
       setError(null);
-      setCurrentMealPlanPage(page);
-      setCurrentMealPlanSearch(searchQuery);
+      setCurrentPage(page);
+      setCurrentSearch(searchQuery);
       
       const start = (page - 1) * ITEMS_PER_PAGE;
       const end = start + ITEMS_PER_PAGE - 1;
 
-      // Get total count for pagination
+      const table = type === 'recipes' ? 'saved_recipes' : 'saved_meal_plans';
+      const orderColumn = sortBy === 'date' ? 'created_at' : 
+                         sortBy === 'name' ? 'name' :
+                         sortBy === 'time' ? 'cooking_time' : 'created_at';
+
+      // Get total count
       const { count } = await supabase
-        .from('saved_meal_plans')
+        .from(table)
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
         .ilike('name', `%${searchQuery}%`);
 
       // Get paginated data
-      const { data: plansData, error: fetchError } = await supabase
-        .from('saved_meal_plans')
-        .select('id, name, created_at, plan')
-        .eq('user_id', user.id)
-        .ilike('name', `%${searchQuery}%`)
-        .order('created_at', { ascending: false })
-        .range(start, end);
+      if (type === 'recipes') {
+        const { data: items, error: fetchError } = await supabase
+          .from('saved_recipes')
+          .select('*')
+          .eq('user_id', user.id)
+          .ilike('name', `%${searchQuery}%`)
+          .order(orderColumn, { ascending: sortBy === 'name' })
+          .range(start, end);
 
-      if (fetchError) throw fetchError;
+        if (fetchError) throw fetchError;
+        setTotalItems(count || 0);
 
-      setTotalMealPlans(count || 0);
+        const transformedRecipes = (items as SavedRecipeRecord[] || []).map(record => ({
+          id: record.id,
+          name: record.name || '',
+          description: record.description || '',
+          cookingTime: record.cooking_time || 0,
+          ingredients: Array.isArray(record.ingredients) ? record.ingredients : [],
+          instructions: Array.isArray(record.instructions) ? record.instructions : [],
+          nutritionalValue: record.nutritional_value || {
+            calories: 0,
+            protein: 0,
+            carbs: 0,
+            fat: 0
+          },
+          imageUrl: record.image_url || null,
+          cuisineType: record.cuisine_type || 'Mixed',
+          difficulty: (record.difficulty || 'medium').toLowerCase() as 'easy' | 'medium' | 'hard',
+          created_at: record.created_at,
+          updated_at: record.updated_at
+        }));
+        setData(transformedRecipes as DataLoaderState[T]['data']);
+      } else {
+        const { data: items, error: fetchError } = await supabase
+          .from('saved_meal_plans')
+          .select('id, name, created_at, plan')
+          .eq('user_id', user.id)
+          .ilike('name', `%${searchQuery}%`)
+          .order(orderColumn, { ascending: sortBy === 'name' })
+          .range(start, end);
 
-      // Transform meal plans data
-      const transformedMealPlans = (plansData || []).map(record => ({
-        id: record.id,
-        name: record.name || '',
-        plan: record.plan || { days: [] },
-        created_at: record.created_at
-      }));
+        if (fetchError) throw fetchError;
+        setTotalItems(count || 0);
 
-      setMealPlans(transformedMealPlans);
+        const transformedMealPlans = (items as SavedMealPlanRecord[] || []).map(record => ({
+          id: record.id,
+          name: record.name || '',
+          plan: record.plan || { days: [] },
+          created_at: record.created_at
+        }));
+        setData(transformedMealPlans as DataLoaderState[T]['data']);
+      }
     } catch (error) {
-      console.error("Error loading meal plans:", error);
-      setError("Failed to load meal plans. Please try again.");
-      setMealPlans([]);
-      setTotalMealPlans(0);
+      console.error(`Error loading ${type}:`, error);
+      setError(`Failed to load ${type}. Please try again.`);
+      setData([] as DataLoaderState[T]['data']);
+      setTotalItems(0);
     } finally {
-      setIsLoadingMealPlans(false);
+      setIsLoading(false);
     }
-  }, [user]);
+  }, [user, type]);
 
-  const loadRecipes = useCallback(async (page: number = 1, searchQuery: string = '') => {
-    if (!user) return;
-    
-    try {
-      setIsLoadingRecipes(true);
-      setError(null);
-      setCurrentRecipePage(page);
-      setCurrentRecipeSearch(searchQuery);
-      
-      const start = (page - 1) * ITEMS_PER_PAGE;
-      const end = start + ITEMS_PER_PAGE - 1;
+  return {
+    data,
+    isLoading,
+    error,
+    totalItems,
+    currentPage,
+    currentSearch,
+    loadData,
+    ITEMS_PER_PAGE
+  };
+};
 
-      // Get total count for pagination
-      const { count } = await supabase
-        .from('saved_recipes')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .ilike('name', `%${searchQuery}%`);
+const LoggedInView = () => {
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<"recipes" | "meal-plans">("recipes");
+  const [hasLoadedInitialRecipes, setHasLoadedInitialRecipes] = useState(false);
 
-      // Get paginated data
-      const { data: recipesData, error: fetchError } = await supabase
-        .from("saved_recipes")
-        .select("*")
-        .eq("user_id", user.id)
-        .ilike('name', `%${searchQuery}%`)
-        .order("created_at", { ascending: false })
-        .range(start, end);
+  const {
+    data: recipes,
+    isLoading: isLoadingRecipes,
+    error: recipesError,
+    totalItems: totalRecipes,
+    currentPage: currentRecipePage,
+    currentSearch: currentRecipeSearch,
+    loadData: loadRecipes,
+    ITEMS_PER_PAGE
+  } = useDataLoader<'recipes'>({ 
+    user, 
+    type: 'recipes'
+  });
 
-      if (fetchError) throw fetchError;
+  const {
+    data: mealPlans,
+    isLoading: isLoadingMealPlans,
+    error: mealPlansError,
+    totalItems: totalMealPlans,
+    currentPage: currentMealPlanPage,
+    currentSearch: currentMealPlanSearch,
+    loadData: loadMealPlans
+  } = useDataLoader<'meal-plans'>({ 
+    user, 
+    type: 'meal-plans'
+  });
 
-      setTotalRecipes(count || 0);
-
-      // Transform recipes data
-      const transformedRecipes = (recipesData || []).map(record => ({
-        id: record.id,
-        name: record.name || '',
-        description: record.description || '',
-        cookingTime: record.cooking_time || 0,
-        ingredients: Array.isArray(record.ingredients) ? record.ingredients : [],
-        instructions: Array.isArray(record.instructions) ? record.instructions : [],
-        nutritionalValue: record.nutritional_value || {
-          calories: 0,
-          protein: 0,
-          carbs: 0,
-          fat: 0
-        },
-        imageUrl: record.image_url || null,
-        cuisineType: record.cuisine_type || 'Mixed',
-        difficulty: (record.difficulty || 'medium').toLowerCase() as 'easy' | 'medium' | 'hard',
-        created_at: record.created_at,
-        updated_at: record.updated_at
-      }));
-
-      setRecipes(transformedRecipes);
-    } catch (error) {
-      console.error("Error loading recipes:", error);
-      setError("Failed to load recipes. Please try again.");
-      setRecipes([]);
-      setTotalRecipes(0);
-    } finally {
-      setIsLoadingRecipes(false);
-    }
-  }, [user]);
-
-  // Load initial recipes only once when the component mounts and user is available
+  // Load initial recipes only once
   useEffect(() => {
     if (user && !hasLoadedInitialRecipes) {
       loadRecipes(1);
@@ -194,30 +250,30 @@ const LoggedInView = () => {
     }
   }, [user, loadRecipes, hasLoadedInitialRecipes]);
 
-  // Memoize props to prevent unnecessary re-renders
-  const mealPlansProps = useMemo(() => ({
-    initialMealPlans: mealPlans,
-    totalItems: totalMealPlans,
-    itemsPerPage: ITEMS_PER_PAGE,
-    onPageChange: loadMealPlans,
-    onRefresh: () => loadMealPlans(1),
-    isLoading: isLoadingMealPlans,
-    error,
-    currentPage: currentMealPlanPage,
-    searchQuery: currentMealPlanSearch
-  }), [mealPlans, totalMealPlans, loadMealPlans, isLoadingMealPlans, error, currentMealPlanPage, currentMealPlanSearch]);
-
+  // Memoize props
   const recipesProps = useMemo(() => ({
-    initialRecipes: recipes,
+    initialRecipes: recipes as Recipe[],
     totalItems: totalRecipes,
     itemsPerPage: ITEMS_PER_PAGE,
     onPageChange: loadRecipes,
     onRefresh: () => loadRecipes(1),
     isLoading: isLoadingRecipes,
-    error,
+    error: recipesError,
     currentPage: currentRecipePage,
     searchQuery: currentRecipeSearch
-  }), [recipes, totalRecipes, loadRecipes, isLoadingRecipes, error, currentRecipePage, currentRecipeSearch]);
+  }), [recipes, totalRecipes, loadRecipes, isLoadingRecipes, recipesError, currentRecipePage, currentRecipeSearch]);
+
+  const mealPlansProps = useMemo(() => ({
+    initialMealPlans: mealPlans as SavedMealPlan[],
+    totalItems: totalMealPlans,
+    itemsPerPage: ITEMS_PER_PAGE,
+    onPageChange: loadMealPlans,
+    onRefresh: () => loadMealPlans(1),
+    isLoading: isLoadingMealPlans,
+    error: mealPlansError,
+    currentPage: currentMealPlanPage,
+    searchQuery: currentMealPlanSearch
+  }), [mealPlans, totalMealPlans, loadMealPlans, isLoadingMealPlans, mealPlansError, currentMealPlanPage, currentMealPlanSearch]);
 
   const quickActions = [
     {
@@ -280,7 +336,7 @@ const LoggedInView = () => {
               value={activeTab} 
               onValueChange={(value: "recipes" | "meal-plans") => {
                 setActiveTab(value);
-                if (value === "meal-plans" && mealPlans.length === 0 && !error) {
+                if (value === "meal-plans" && mealPlans.length === 0 && !mealPlansError) {
                   loadMealPlans(1);
                 }
               }}

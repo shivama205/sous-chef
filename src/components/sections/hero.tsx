@@ -8,16 +8,26 @@ export function Hero() {
     <div className="relative overflow-hidden min-h-[600px]">
       {/* Background Image */}
       <div className="absolute inset-0 bg-gray-50">
-        <img
-          src="/assets/hero-bg.jpg"
-          alt="Monstera leaf background"
-          className="absolute inset-0 w-full h-full object-cover opacity-[0.25]"
-          onError={(e) => {
-            console.error('Error loading image:', e);
-            e.currentTarget.style.display = 'none';
-          }}
-          onLoad={() => console.log('Image loaded successfully')}
-        />
+        <picture>
+          <source
+            srcSet="/assets/hero-bg.webp"
+            type="image/webp"
+          />
+          <img
+            src="/assets/hero-bg.jpg"
+            alt=""
+            role="presentation"
+            loading="eager"
+            decoding="async"
+            width="1920"
+            height="1080"
+            className="absolute inset-0 w-full h-full object-cover opacity-[0.25]"
+            onError={(e) => {
+              console.error('Error loading image:', e);
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        </picture>
       </div>
 
       <div className="relative container mx-auto px-4">
