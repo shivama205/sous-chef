@@ -12,11 +12,11 @@ interface SEOProps {
 }
 
 const defaults = {
-  title: 'MySideChef - Your AI Powered Meal Planning Assistant',
-  description: 'Get personalized meal plans, recipe suggestions, and healthy alternatives with AI. Save time and eat better with MySideChef.',
+  title: 'MySideChef - Your AI-Powered Kitchen Assistant',
+  description: 'Transform your cooking experience with AI-powered meal planning, instant recipe suggestions, and personalized healthy alternatives.',
   url: 'https://mysidechef.com',
   author: 'MySideChef Team',
-  language: 'en'
+  language: 'en_US'
 };
 
 export function SEO({ 
@@ -33,61 +33,45 @@ export function SEO({
   const url = canonical || defaults.url;
   const fullImage = image.startsWith('http') ? image : `${defaults.url}${image}`;
   const squareImage = image === '/og-image-compressed.jpg' 
-    ? `${defaults.url}/og-image-square.jpg`
+    ? `${defaults.url}/og-image-square-large.jpg`
     : fullImage;
 
   return (
     <Helmet>
       {/* Basic Meta Tags */}
-      <html lang={language} />
+      <html lang={language.split('_')[0]} />
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords} />
       <meta name="author" content={author} />
-      <link rel="canonical" href={canonical || url} />
+      <link rel="canonical" href={url} />
 
-      {/* Open Graph - Facebook & LinkedIn */}
+      {/* Open Graph Meta Tags (Facebook, WhatsApp, LinkedIn) */}
+      <meta property="og:type" content={type} />
+      <meta property="og:site_name" content="MySideChef" />
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
-      <meta property="og:type" content={type} />
       <meta property="og:url" content={url} />
       <meta property="og:image" content={fullImage} />
       <meta property="og:image:secure_url" content={fullImage} />
-      <meta property="og:image:alt" content={description} />
+      <meta property="og:image:type" content="image/jpeg" />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:image:type" content="image/jpeg" />
-      <meta property="og:site_name" content="MySideChef" />
+      <meta property="og:image:alt" content={fullTitle} />
       <meta property="og:locale" content={language} />
+
+      {/* WhatsApp specific */}
+      <meta property="og:image:secure_url" content={squareImage} />
+      <meta property="og:image:type" content="image/jpeg" />
+      <meta property="og:image:width" content="400" />
+      <meta property="og:image:height" content="400" />
 
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:site" content="@mysidechef" />
-      <meta name="twitter:creator" content="@mysidechef" />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={fullImage} />
-      <meta name="twitter:image:alt" content={description} />
-
-      {/* LinkedIn Specific */}
-      <meta property="linkedin:title" content={fullTitle} />
-      <meta property="linkedin:description" content={description} />
-      <meta property="linkedin:image" content={fullImage} />
-
-      {/* Square Image Variants */}
-      <meta property="og:image:square" content={squareImage} />
-      <meta name="twitter:image:square" content={squareImage} />
-      <meta property="linkedin:image:square" content={squareImage} />
-
-      {/* Additional Meta Tags */}
-      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-      <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
-      <meta name="robots" content="index, follow, max-image-preview:large" />
-      <meta name="theme-color" content="#22c55e" />
-      <meta name="mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-      <meta name="format-detection" content="telephone=no" />
     </Helmet>
   );
 } 
