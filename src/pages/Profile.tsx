@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
-import { ChefHat, Calendar, Target, Brain, Sparkles, Dumbbell, Loader2, ChevronLeft, ChevronRight, Scale } from "lucide-react";
+import { ChefHat, Calendar, Target, Brain, Sparkles, Dumbbell, Loader2, Scale } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Progress } from "@/components/ui/progress";
+import React from "react";
 
 interface UserMacros {
   calories: number;
@@ -27,12 +28,14 @@ const LoadingSpinner = () => (
   </div>
 );
 
-const MacroInput = ({ label, value, onChange, icon: Icon }: { 
-  label: string; 
-  value: number; 
+interface MacroInputProps {
+  label: string;
+  value: number;
   onChange: (value: number) => void;
-  icon: any;
-}) => (
+  icon: LucideIcon;
+}
+
+const MacroInput = React.memo(({ label, value, onChange, icon: Icon }: MacroInputProps) => (
   <div className="space-y-2">
     <Label className="flex items-center gap-2 text-sm font-medium">
       <Icon className="w-4 h-4 text-primary" />
@@ -50,30 +53,87 @@ const MacroInput = ({ label, value, onChange, icon: Icon }: {
       </div>
     </div>
   </div>
-);
+));
+
+MacroInput.displayName = 'MacroInput';
+
+// Memoize static content
+const SavedItemsPreview = React.memo(({ navigate }: { navigate: (path: string) => void }) => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    <Card className="p-6 bg-white border shadow-sm">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <ChefHat className="w-5 h-5 text-primary" />
+              Saved Recipes
+            </h2>
+            <p className="text-sm text-muted-foreground">Your recipe collection</p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => navigate("/")}
+            className="text-primary hover:text-primary hover:bg-primary/5"
+          >
+            View All
+          </Button>
+        </div>
+        <div className="text-sm text-muted-foreground">
+          Access all your saved recipes from the home page
+        </div>
+      </div>
+    </Card>
+
+    <Card className="p-6 bg-white border shadow-sm">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-primary" />
+              Meal Plans
+            </h2>
+            <p className="text-sm text-muted-foreground">Your saved meal plans</p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => navigate("/")}
+            className="text-primary hover:text-primary hover:bg-primary/5"
+          >
+            View All
+          </Button>
+        </div>
+        <div className="text-sm text-muted-foreground">
+          Access all your meal plans from the home page
+        </div>
+      </div>
+    </Card>
+  </div>
+));
+
+SavedItemsPreview.displayName = 'SavedItemsPreview';
 
 export default function Profile() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isLoadingStats, setIsLoadingStats] = useState(true);
-  const [isSavingMacros, setIsSavingMacros] = useState(false);
-  const [showGoalsDialog, setShowGoalsDialog] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [macros, setMacros] = useState<UserMacros>({
-    calories: 2000,
-    protein: 150,
-    carbs: 200,
-    fat: 65
+  const [profileState, setProfileState] = useState({
+    isLoadingStats: true,
+    isSavingMacros: false,
+    showGoalsDialog: false,
+    macros: {
+      calories: 2000,
+      protein: 150,
+      carbs: 200,
+      fat: 65
+    }
   });
 
-  // Load user macros
+  // Load user macros - using a single effect
   useEffect(() => {
+    if (!user) return;
+    
     const fetchData = async () => {
-      if (!user) return;
-      
       try {
-        setIsLoadingStats(true);
         const { data, error } = await supabase
           .from("user_macros")
           .select("*")
@@ -83,12 +143,16 @@ export default function Profile() {
         if (error) throw error;
 
         if (data) {
-          setMacros({
-            calories: data.calories || 2000,
-            protein: data.protein || 150,
-            carbs: data.carbs || 200,
-            fat: data.fat || 65
-          });
+          setProfileState(prev => ({
+            ...prev,
+            isLoadingStats: false,
+            macros: {
+              calories: data.calories || 2000,
+              protein: data.protein || 150,
+              carbs: data.carbs || 200,
+              fat: data.fat || 65
+            }
+          }));
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -97,51 +161,43 @@ export default function Profile() {
           description: "Failed to load profile data. Please try refreshing the page.",
           variant: "destructive"
         });
-      } finally {
-        setIsLoadingStats(false);
+        setProfileState(prev => ({ ...prev, isLoadingStats: false }));
       }
     };
 
     fetchData();
-  }, [user?.id]);
+  }, [user?.id, toast]);
 
   const handleSaveMacros = async () => {
     if (!user) return;
 
-    setIsSavingMacros(true);
+    setProfileState(prev => ({ ...prev, isSavingMacros: true }));
     try {
-      // First check if a record exists
       const { data: existingData } = await supabase
         .from("user_macros")
         .select("id")
         .eq("user_id", user.id)
         .single();
 
+      const macroData = {
+        calories: profileState.macros.calories,
+        protein: profileState.macros.protein,
+        carbs: profileState.macros.carbs,
+        fat: profileState.macros.fat,
+        updated_at: new Date().toISOString()
+      };
+
       let error;
       if (existingData) {
-        // Update existing record
         const { error: updateError } = await supabase
           .from("user_macros")
-          .update({
-            calories: macros.calories,
-            protein: macros.protein,
-            carbs: macros.carbs,
-            fat: macros.fat,
-            updated_at: new Date().toISOString()
-          })
+          .update(macroData)
           .eq("user_id", user.id);
         error = updateError;
       } else {
-        // Insert new record
         const { error: insertError } = await supabase
           .from("user_macros")
-          .insert({
-            user_id: user.id,
-            calories: macros.calories,
-            protein: macros.protein,
-            carbs: macros.carbs,
-            fat: macros.fat
-          });
+          .insert({ ...macroData, user_id: user.id });
         error = insertError;
       }
 
@@ -151,7 +207,7 @@ export default function Profile() {
         title: "Success",
         description: "Your nutritional goals have been updated.",
       });
-      setShowGoalsDialog(false);
+      setProfileState(prev => ({ ...prev, showGoalsDialog: false }));
     } catch (error) {
       console.error("Error saving macros:", error);
       toast({
@@ -160,9 +216,28 @@ export default function Profile() {
         variant: "destructive"
       });
     } finally {
-      setIsSavingMacros(false);
+      setProfileState(prev => ({ ...prev, isSavingMacros: false }));
     }
   };
+
+  const handleDialogChange = (open: boolean) => {
+    setProfileState(prev => ({ ...prev, showGoalsDialog: open }));
+  };
+
+  const handleMacroChange = (key: keyof UserMacros, value: number) => {
+    setProfileState(prev => ({
+      ...prev,
+      macros: { ...prev.macros, [key]: value }
+    }));
+  };
+
+  // Memoize the user metadata
+  const userMetadata = useMemo(() => ({
+    fullName: user?.user_metadata?.full_name || "Not set",
+    email: user?.email || "",
+    avatarUrl: user?.user_metadata?.avatar_url || "",
+    createdAt: user?.created_at || new Date().toISOString()
+  }), [user?.user_metadata, user?.email, user?.created_at]);
 
   const steps = [
     {
@@ -180,8 +255,8 @@ export default function Profile() {
           </div>
           <MacroInput
             label="Daily Calories"
-            value={macros.calories}
-            onChange={(value) => setMacros(prev => ({ ...prev, calories: value }))}
+            value={profileState.macros.calories}
+            onChange={(value) => handleMacroChange('calories', value)}
             icon={Target}
           />
         </div>
@@ -202,8 +277,8 @@ export default function Profile() {
           </div>
           <MacroInput
             label="Daily Protein (g)"
-            value={macros.protein}
-            onChange={(value) => setMacros(prev => ({ ...prev, protein: value }))}
+            value={profileState.macros.protein}
+            onChange={(value) => handleMacroChange('protein', value)}
             icon={Dumbbell}
           />
         </div>
@@ -225,14 +300,14 @@ export default function Profile() {
           <div className="grid grid-cols-2 gap-4">
             <MacroInput
               label="Daily Carbs (g)"
-              value={macros.carbs}
-              onChange={(value) => setMacros(prev => ({ ...prev, carbs: value }))}
+              value={profileState.macros.carbs}
+              onChange={(value) => handleMacroChange('carbs', value)}
               icon={Brain}
             />
             <MacroInput
               label="Daily Fat (g)"
-              value={macros.fat}
-              onChange={(value) => setMacros(prev => ({ ...prev, fat: value }))}
+              value={profileState.macros.fat}
+              onChange={(value) => handleMacroChange('fat', value)}
               icon={Scale}
             />
           </div>
@@ -250,7 +325,7 @@ export default function Profile() {
     <BaseLayout>
       <div className="min-h-screen bg-white">
         {/* Hero Section */}
-        {isLoadingStats ? (
+        {profileState.isLoadingStats ? (
           <div className="bg-gradient-to-b from-primary/5 to-background border-b">
             <div className="container mx-auto px-4 py-6 sm:py-12">
               <LoadingSpinner />
@@ -261,26 +336,26 @@ export default function Profile() {
             <div className="container mx-auto px-4 py-6 sm:py-12">
               <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-8">
                 <Avatar className="w-20 h-20 sm:w-32 sm:h-32 border-4 border-white shadow-lg bg-primary/10">
-                  {user.user_metadata?.avatar_url ? (
+                  {userMetadata.avatarUrl ? (
                     <AvatarImage 
-                      src={user.user_metadata.avatar_url} 
-                      alt={user.user_metadata?.full_name || user.email}
+                      src={userMetadata.avatarUrl} 
+                      alt={userMetadata.fullName}
                       className="object-cover"
                     />
                   ) : (
                     <AvatarFallback className="text-2xl font-semibold text-primary bg-primary/10">
-                      {(user.user_metadata?.full_name?.[0] || user.email?.[0] || '?').toUpperCase()}
+                      {(userMetadata.fullName?.[0] || userMetadata.email?.[0] || '?').toUpperCase()}
                     </AvatarFallback>
                   )}
                 </Avatar>
                 <div className="text-center sm:text-left flex-1 space-y-1 sm:space-y-2 pb-2">
                   <h1 className="text-xl sm:text-3xl font-bold">
-                    {user.user_metadata?.full_name || user.email}
+                    {userMetadata.fullName}
                   </h1>
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
-                      <span>Joined {format(new Date(user.created_at), 'MMM yyyy')}</span>
+                      <span>Joined {format(new Date(userMetadata.createdAt), 'MMM yyyy')}</span>
                     </div>
                   </div>
                 </div>
@@ -301,7 +376,7 @@ export default function Profile() {
                     <p className="text-sm text-muted-foreground">Your daily macro targets</p>
                   </div>
                   <Button
-                    onClick={() => setShowGoalsDialog(true)}
+                    onClick={() => handleDialogChange(true)}
                     className="bg-primary hover:bg-primary/90"
                   >
                     Update Goals
@@ -311,76 +386,26 @@ export default function Profile() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div className="bg-primary/5 p-4 rounded-lg text-center">
                     <div className="text-sm text-primary/60 font-medium">Calories</div>
-                    <div className="text-2xl font-bold text-primary">{macros.calories}</div>
+                    <div className="text-2xl font-bold text-primary">{profileState.macros.calories}</div>
                   </div>
                   <div className="bg-primary/5 p-4 rounded-lg text-center">
                     <div className="text-sm text-primary/60 font-medium">Protein</div>
-                    <div className="text-2xl font-bold text-primary">{macros.protein}g</div>
+                    <div className="text-2xl font-bold text-primary">{profileState.macros.protein}g</div>
                   </div>
                   <div className="bg-primary/5 p-4 rounded-lg text-center">
                     <div className="text-sm text-primary/60 font-medium">Carbs</div>
-                    <div className="text-2xl font-bold text-primary">{macros.carbs}g</div>
+                    <div className="text-2xl font-bold text-primary">{profileState.macros.carbs}g</div>
                   </div>
                   <div className="bg-primary/5 p-4 rounded-lg text-center">
                     <div className="text-sm text-primary/60 font-medium">Fat</div>
-                    <div className="text-2xl font-bold text-primary">{macros.fat}g</div>
+                    <div className="text-2xl font-bold text-primary">{profileState.macros.fat}g</div>
                   </div>
                 </div>
               </div>
             </Card>
 
-            {/* Saved Items Preview */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {/* Saved Recipes Preview */}
-              <Card className="p-6 bg-white border shadow-sm">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-lg font-semibold flex items-center gap-2">
-                        <ChefHat className="w-5 h-5 text-primary" />
-                        Saved Recipes
-                      </h2>
-                      <p className="text-sm text-muted-foreground">Your recipe collection</p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={() => navigate("/")}
-                      className="text-primary hover:text-primary hover:bg-primary/5"
-                    >
-                      View All
-                    </Button>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Access all your saved recipes from the home page
-                  </div>
-                </div>
-              </Card>
-
-              {/* Saved Meal Plans Preview */}
-              <Card className="p-6 bg-white border shadow-sm">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-lg font-semibold flex items-center gap-2">
-                        <Calendar className="w-5 h-5 text-primary" />
-                        Meal Plans
-                      </h2>
-                      <p className="text-sm text-muted-foreground">Your saved meal plans</p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={() => navigate("/")}
-                      className="text-primary hover:text-primary hover:bg-primary/5"
-                    >
-                      View All
-                    </Button>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Access all your meal plans from the home page
-                  </div>
-                </div>
-              </Card>
-            </div>
+            {/* Replace the saved items section with the memoized component */}
+            <SavedItemsPreview navigate={navigate} />
 
             {/* Account Info Card */}
             <Card className="p-6 bg-white border shadow-sm">
@@ -394,17 +419,17 @@ export default function Profile() {
                   <div>
                     <Label>Full Name</Label>
                     <div className="text-muted-foreground">
-                      {user.user_metadata?.full_name || "Not set"}
+                      {userMetadata.fullName}
                     </div>
                   </div>
                   <div>
                     <Label>Email</Label>
-                    <div className="text-muted-foreground">{user.email}</div>
+                    <div className="text-muted-foreground">{userMetadata.email}</div>
                   </div>
                   <div>
                     <Label>Member Since</Label>
                     <div className="text-muted-foreground">
-                      {format(new Date(user.created_at), 'MMMM d, yyyy')}
+                      {format(new Date(userMetadata.createdAt), 'MMMM d, yyyy')}
                     </div>
                   </div>
                 </div>
@@ -414,7 +439,10 @@ export default function Profile() {
         </main>
 
         {/* Nutritional Goals Dialog */}
-        <Dialog open={showGoalsDialog} onOpenChange={setShowGoalsDialog}>
+        <Dialog 
+          open={profileState.showGoalsDialog} 
+          onOpenChange={handleDialogChange}
+        >
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent flex items-center gap-2">
@@ -427,12 +455,11 @@ export default function Profile() {
             </DialogHeader>
 
             <div className="py-6 space-y-6">
-              {/* Daily Calories */}
               <div className="space-y-4">
                 <MacroInput
                   label="Daily Calories"
-                  value={macros.calories}
-                  onChange={(value) => setMacros(prev => ({ ...prev, calories: value }))}
+                  value={profileState.macros.calories}
+                  onChange={(value) => handleMacroChange('calories', value)}
                   icon={Target}
                 />
                 <div className="text-xs text-muted-foreground">
@@ -440,26 +467,25 @@ export default function Profile() {
                 </div>
               </div>
 
-              {/* Macronutrients */}
               <div className="space-y-4">
                 <h3 className="font-medium text-base">Macronutrients</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <MacroInput
                     label="Protein"
-                    value={macros.protein}
-                    onChange={(value) => setMacros(prev => ({ ...prev, protein: value }))}
+                    value={profileState.macros.protein}
+                    onChange={(value) => handleMacroChange('protein', value)}
                     icon={Dumbbell}
                   />
                   <MacroInput
                     label="Carbs"
-                    value={macros.carbs}
-                    onChange={(value) => setMacros(prev => ({ ...prev, carbs: value }))}
+                    value={profileState.macros.carbs}
+                    onChange={(value) => handleMacroChange('carbs', value)}
                     icon={Brain}
                   />
                   <MacroInput
                     label="Fat"
-                    value={macros.fat}
-                    onChange={(value) => setMacros(prev => ({ ...prev, fat: value }))}
+                    value={profileState.macros.fat}
+                    onChange={(value) => handleMacroChange('fat', value)}
                     icon={Scale}
                   />
                 </div>
@@ -471,10 +497,10 @@ export default function Profile() {
               <div className="pt-4 border-t">
                 <Button 
                   onClick={handleSaveMacros}
-                  disabled={isSavingMacros}
+                  disabled={profileState.isSavingMacros}
                   className="w-full bg-primary hover:bg-primary/90"
                 >
-                  {isSavingMacros ? (
+                  {profileState.isSavingMacros ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Saving...
