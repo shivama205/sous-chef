@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { Card } from "@/components/ui/card";
@@ -47,18 +47,6 @@ const QuickActionCard = ({ icon: Icon, title, description, to }: any) => (
   </Link>
 );
 
-const MobileQuickAction = ({ icon: Icon, title, to }: any) => (
-  <Link 
-    to={to}
-    className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
-  >
-    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-      <Icon className="w-5 h-5 text-primary" />
-    </div>
-    <span className="text-xs font-medium">{title}</span>
-  </Link>
-);
-
 interface SavedMealPlan {
   id: string;
   name: string;
@@ -70,62 +58,166 @@ const LoggedInView = () => {
   const { user } = useAuth();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [mealPlans, setMealPlans] = useState<SavedMealPlan[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingRecipes, setIsLoadingRecipes] = useState(false);
+  const [isLoadingMealPlans, setIsLoadingMealPlans] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"recipes" | "meal-plans">("recipes");
+  const [totalMealPlans, setTotalMealPlans] = useState(0);
+  const [totalRecipes, setTotalRecipes] = useState(0);
+  const [hasLoadedInitialRecipes, setHasLoadedInitialRecipes] = useState(false);
+  const [currentRecipePage, setCurrentRecipePage] = useState(1);
+  const [currentRecipeSearch, setCurrentRecipeSearch] = useState('');
+  const [currentMealPlanPage, setCurrentMealPlanPage] = useState(1);
+  const [currentMealPlanSearch, setCurrentMealPlanSearch] = useState('');
+  const ITEMS_PER_PAGE = 6;
 
-  useEffect(() => {
-    const loadUserData = async () => {
-      if (!user) return;
+  const loadMealPlans = useCallback(async (page: number = 1, searchQuery: string = '') => {
+    if (!user) return;
+    
+    try {
+      setIsLoadingMealPlans(true);
+      setError(null);
+      setCurrentMealPlanPage(page);
+      setCurrentMealPlanSearch(searchQuery);
       
-      try {
-        // Load user data in parallel
-        const [recipesData, plansData] = await Promise.all([
-          supabase
-            .from("saved_recipes")
-            .select("*")
-            .eq("user_id", user.id)
-            .order("created_at", { ascending: false }),
-          supabase
-            .from("saved_meal_plans")
-            .select("*")
-            .eq("user_id", user.id)
-            .order("created_at", { ascending: false })
-        ]);
+      const start = (page - 1) * ITEMS_PER_PAGE;
+      const end = start + ITEMS_PER_PAGE - 1;
 
-        // Transform recipes data
-        const transformedRecipes = (recipesData.data || []).map(record => ({
-          id: record.id,
-          name: record.name || '',
-          description: record.description || '',
-          cookingTime: record.cooking_time || 0,
-          ingredients: Array.isArray(record.ingredients) ? record.ingredients : [],
-          instructions: Array.isArray(record.instructions) ? record.instructions : [],
-          nutritionalValue: record.nutritional_value || {
-            calories: 0,
-            protein: 0,
-            carbs: 0,
-            fat: 0
-          },
-          imageUrl: record.image_url || null,
-          cuisineType: record.cuisine_type || 'Mixed',
-          difficulty: (record.difficulty || 'medium').toLowerCase() as 'easy' | 'medium' | 'hard',
-          created_at: record.created_at,
-          updated_at: record.updated_at
-        }));
+      // Get total count for pagination
+      const { count } = await supabase
+        .from('saved_meal_plans')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .ilike('name', `%${searchQuery}%`);
 
-        // Set data
-        setRecipes(transformedRecipes);
-        setMealPlans(plansData.data || []);
+      // Get paginated data
+      const { data: plansData, error: fetchError } = await supabase
+        .from('saved_meal_plans')
+        .select('id, name, created_at, plan')
+        .eq('user_id', user.id)
+        .ilike('name', `%${searchQuery}%`)
+        .order('created_at', { ascending: false })
+        .range(start, end);
 
-      } catch (error) {
-        console.error("Error loading user data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      if (fetchError) throw fetchError;
 
-    loadUserData();
+      setTotalMealPlans(count || 0);
+
+      // Transform meal plans data
+      const transformedMealPlans = (plansData || []).map(record => ({
+        id: record.id,
+        name: record.name || '',
+        plan: record.plan || { days: [] },
+        created_at: record.created_at
+      }));
+
+      setMealPlans(transformedMealPlans);
+    } catch (error) {
+      console.error("Error loading meal plans:", error);
+      setError("Failed to load meal plans. Please try again.");
+      setMealPlans([]);
+      setTotalMealPlans(0);
+    } finally {
+      setIsLoadingMealPlans(false);
+    }
   }, [user]);
+
+  const loadRecipes = useCallback(async (page: number = 1, searchQuery: string = '') => {
+    if (!user) return;
+    
+    try {
+      setIsLoadingRecipes(true);
+      setError(null);
+      setCurrentRecipePage(page);
+      setCurrentRecipeSearch(searchQuery);
+      
+      const start = (page - 1) * ITEMS_PER_PAGE;
+      const end = start + ITEMS_PER_PAGE - 1;
+
+      // Get total count for pagination
+      const { count } = await supabase
+        .from('saved_recipes')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .ilike('name', `%${searchQuery}%`);
+
+      // Get paginated data
+      const { data: recipesData, error: fetchError } = await supabase
+        .from("saved_recipes")
+        .select("*")
+        .eq("user_id", user.id)
+        .ilike('name', `%${searchQuery}%`)
+        .order("created_at", { ascending: false })
+        .range(start, end);
+
+      if (fetchError) throw fetchError;
+
+      setTotalRecipes(count || 0);
+
+      // Transform recipes data
+      const transformedRecipes = (recipesData || []).map(record => ({
+        id: record.id,
+        name: record.name || '',
+        description: record.description || '',
+        cookingTime: record.cooking_time || 0,
+        ingredients: Array.isArray(record.ingredients) ? record.ingredients : [],
+        instructions: Array.isArray(record.instructions) ? record.instructions : [],
+        nutritionalValue: record.nutritional_value || {
+          calories: 0,
+          protein: 0,
+          carbs: 0,
+          fat: 0
+        },
+        imageUrl: record.image_url || null,
+        cuisineType: record.cuisine_type || 'Mixed',
+        difficulty: (record.difficulty || 'medium').toLowerCase() as 'easy' | 'medium' | 'hard',
+        created_at: record.created_at,
+        updated_at: record.updated_at
+      }));
+
+      setRecipes(transformedRecipes);
+    } catch (error) {
+      console.error("Error loading recipes:", error);
+      setError("Failed to load recipes. Please try again.");
+      setRecipes([]);
+      setTotalRecipes(0);
+    } finally {
+      setIsLoadingRecipes(false);
+    }
+  }, [user]);
+
+  // Load initial recipes only once when the component mounts and user is available
+  useEffect(() => {
+    if (user && !hasLoadedInitialRecipes) {
+      loadRecipes(1);
+      setHasLoadedInitialRecipes(true);
+    }
+  }, [user, loadRecipes, hasLoadedInitialRecipes]);
+
+  // Memoize props to prevent unnecessary re-renders
+  const mealPlansProps = useMemo(() => ({
+    initialMealPlans: mealPlans,
+    totalItems: totalMealPlans,
+    itemsPerPage: ITEMS_PER_PAGE,
+    onPageChange: loadMealPlans,
+    onRefresh: () => loadMealPlans(1),
+    isLoading: isLoadingMealPlans,
+    error,
+    currentPage: currentMealPlanPage,
+    searchQuery: currentMealPlanSearch
+  }), [mealPlans, totalMealPlans, loadMealPlans, isLoadingMealPlans, error, currentMealPlanPage, currentMealPlanSearch]);
+
+  const recipesProps = useMemo(() => ({
+    initialRecipes: recipes,
+    totalItems: totalRecipes,
+    itemsPerPage: ITEMS_PER_PAGE,
+    onPageChange: loadRecipes,
+    onRefresh: () => loadRecipes(1),
+    isLoading: isLoadingRecipes,
+    error,
+    currentPage: currentRecipePage,
+    searchQuery: currentRecipeSearch
+  }), [recipes, totalRecipes, loadRecipes, isLoadingRecipes, error, currentRecipePage, currentRecipeSearch]);
 
   const quickActions = [
     {
@@ -183,7 +275,16 @@ const LoggedInView = () => {
 
           {/* Content Tabs */}
           <div className="space-y-6">
-            <Tabs defaultValue={activeTab} value={activeTab} onValueChange={(value: "recipes" | "meal-plans") => setActiveTab(value)}>
+            <Tabs 
+              defaultValue={activeTab} 
+              value={activeTab} 
+              onValueChange={(value: "recipes" | "meal-plans") => {
+                setActiveTab(value);
+                if (value === "meal-plans" && mealPlans.length === 0 && !error) {
+                  loadMealPlans(1);
+                }
+              }}
+            >
               <div className="flex items-center justify-center sm:justify-start">
                 <TabsList className="bg-white border w-full sm:w-auto">
                   <TabsTrigger 
@@ -205,24 +306,24 @@ const LoggedInView = () => {
 
               <TabsContent value="recipes">
                 <Card className="border bg-white">
-                  {isLoading ? (
+                  {isLoadingRecipes ? (
                     <div className="flex items-center justify-center p-8">
                       <Loader2 className="w-8 h-8 animate-spin text-primary" />
                     </div>
                   ) : (
-                    <SavedRecipes initialRecipes={recipes} />
+                    <SavedRecipes {...recipesProps} />
                   )}
                 </Card>
               </TabsContent>
 
               <TabsContent value="meal-plans">
                 <Card className="border bg-white">
-                  {isLoading ? (
+                  {isLoadingMealPlans ? (
                     <div className="flex items-center justify-center p-8">
                       <Loader2 className="w-8 h-8 animate-spin text-primary" />
                     </div>
                   ) : (
-                    <SavedMealPlans initialMealPlans={mealPlans} />
+                    <SavedMealPlans {...mealPlansProps} />
                   )}
                 </Card>
               </TabsContent>
