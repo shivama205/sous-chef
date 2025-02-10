@@ -329,6 +329,59 @@ export default function Profile() {
               </div>
             </Card>
 
+            {/* Saved Items Preview */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Saved Recipes Preview */}
+              <Card className="p-6 bg-white border shadow-sm">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-lg font-semibold flex items-center gap-2">
+                        <ChefHat className="w-5 h-5 text-primary" />
+                        Saved Recipes
+                      </h2>
+                      <p className="text-sm text-muted-foreground">Your recipe collection</p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate("/")}
+                      className="text-primary hover:text-primary hover:bg-primary/5"
+                    >
+                      View All
+                    </Button>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Access all your saved recipes from the home page
+                  </div>
+                </div>
+              </Card>
+
+              {/* Saved Meal Plans Preview */}
+              <Card className="p-6 bg-white border shadow-sm">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-lg font-semibold flex items-center gap-2">
+                        <Calendar className="w-5 h-5 text-primary" />
+                        Meal Plans
+                      </h2>
+                      <p className="text-sm text-muted-foreground">Your saved meal plans</p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate("/")}
+                      className="text-primary hover:text-primary hover:bg-primary/5"
+                    >
+                      View All
+                    </Button>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Access all your meal plans from the home page
+                  </div>
+                </div>
+              </Card>
+            </div>
+
             {/* Account Info Card */}
             <Card className="p-6 bg-white border shadow-sm">
               <div className="space-y-6">
