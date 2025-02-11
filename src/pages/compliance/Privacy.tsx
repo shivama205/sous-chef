@@ -62,7 +62,7 @@ export default function Privacy() {
             <h2 className="text-2xl font-semibold mb-4">3. Consent Management</h2>
             <div className="text-gray-600 space-y-4">
               <p>
-                You have an option to withdraw your consent that you have already provided by writing to us at support@souschef.in. Please mention "for withdrawal of consent" in the subject line of your communication.
+                You have an option to withdraw your consent that you have already provided by writing to us at support@mysidechef.com. Please mention "for withdrawal of consent" in the subject line of your communication.
               </p>
               <p>
                 We will verify such requests before acting upon your request. Please note, however, that withdrawal of consent:
@@ -164,7 +164,7 @@ export default function Privacy() {
                 For any privacy-related concerns or requests, please contact us at:
               </p>
               <ul className="list-none space-y-2">
-                <li><strong>Email:</strong> support@souschef.in</li>
+                <li><strong>Email:</strong> support@mysidechef.com</li>
                 <li><strong>Name:</strong> Shivam Aggarwal</li>
                 <li><strong>Subject Line for Consent Withdrawal:</strong> "For Withdrawal of Consent"</li>
                 <li><strong>Response Time:</strong> We aim to respond to all privacy-related requests within 48 hours</li>
