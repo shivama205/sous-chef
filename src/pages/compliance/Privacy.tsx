@@ -17,7 +17,7 @@ export default function Privacy() {
         <PageHeader
           icon={Shield}
           title="Privacy Policy"
-          description="Last updated: March 2024"
+          description="Last updated: February 2025"
         />
         
         <div className="prose prose-lg max-w-none space-y-6">

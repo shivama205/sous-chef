@@ -476,9 +476,9 @@ const LoggedInView = () => {
 
 const LoggedOutView = () => {
   return (
-    <div className="relative">
+    <div className="relative min-h-screen">
       {/* Background Image */}
-      <div className="fixed inset-0" style={{ zIndex: -1 }}>
+      <div className="fixed inset-0">
         <picture>
           <source
             srcSet="/assets/hero-bg.webp"
@@ -501,7 +501,8 @@ const LoggedOutView = () => {
         </picture>
       </div>
 
-      <div className="relative">
+      {/* Content */}
+      <div className="relative z-1">
         <Hero />
         <Features />
         <ProductHuntSupport />
