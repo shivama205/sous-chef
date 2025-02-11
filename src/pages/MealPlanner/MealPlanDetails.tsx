@@ -518,8 +518,8 @@ export const MealPlanDetails = () => {
                       Download
                     </Button>
                     <Button
-                      variant="outline"
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 text-primary border-primary/20 hover:border-primary/30"
+                      variant="default"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white"
                       onClick={handleShare}
                     >
                       <Share2 className="w-4 h-4" />
@@ -528,11 +528,11 @@ export const MealPlanDetails = () => {
                     <Button
                       onClick={() => setDeleteDialogOpen(true)}
                       variant="ghost"
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 hover:bg-destructive/5 text-muted-foreground hover:text-destructive/70"
+                      size="icon"
+                      className="text-muted-foreground hover:text-destructive"
                       disabled={isDeleting}
                     >
                       <Trash2 className="w-4 h-4" />
-                      {isDeleting ? "Deleting..." : "Delete"}
                     </Button>
                   </>
                 )}

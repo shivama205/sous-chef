@@ -460,10 +460,10 @@ export default function RecipeDetail() {
             ) : (
               <>
                 <Button
-                  variant="outline"
+                  variant="default"
                   size="sm"
                   onClick={handleShare}
-                  className="gap-2 hover:bg-primary/5"
+                  className="gap-2 bg-primary hover:bg-primary/90 text-white"
                 >
                   <Share2 className="w-4 h-4" />
                   Share
@@ -478,13 +478,12 @@ export default function RecipeDetail() {
                   Download
                 </Button>
                 <Button
-                  variant="destructive"
-                  size="sm"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setDeleteDialogOpen(true)}
-                  className="gap-2"
+                  className="text-muted-foreground hover:text-destructive"
                 >
                   <Trash2 className="w-4 h-4" />
-                  Delete
                 </Button>
               </>
             )}
