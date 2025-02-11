@@ -303,89 +303,115 @@ const LoggedInView = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-4 py-8 space-y-8">
-        {/* Welcome Message */}
-        <motion.div variants={item} className="text-center max-w-2xl mx-auto mb-8">
-          <span className="inline-block px-4 py-2 rounded-full bg-primary/10 text-primary text-sm mb-4">
-            Welcome Back
-          </span>
-          <h1 className="text-3xl font-bold mb-2">Ready to Cook Something Amazing?</h1>
-          <p className="text-lg text-muted-foreground">
-            Get started with quick actions or check your saved items
-          </p>
-        </motion.div>
+    <div className="min-h-screen bg-gray-50 relative">
+      {/* Background Image */}
+      <div className="fixed inset-0 z-0">
+        <picture>
+          <source
+            srcSet="/assets/hero-bg.webp"
+            type="image/webp"
+          />
+          <img
+            src="/assets/hero-bg.jpg"
+            alt=""
+            role="presentation"
+            loading="eager"
+            decoding="async"
+            width="1920"
+            height="1080"
+            className="absolute inset-0 w-full h-full object-cover opacity-[0.15]"
+            onError={(e) => {
+              console.error('Error loading image:', e);
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        </picture>
+      </div>
 
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
-          className="space-y-8"
-        >
-          {/* Quick Actions - Desktop */}
-          <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {quickActions.map((action, index) => (
-              <QuickActionCard key={index} {...action} />
-            ))}
+      <div className="relative z-10">
+        <div className="container mx-auto px-4 py-6 space-y-6">
+          {/* Welcome Message */}
+          <motion.div variants={item} className="text-center max-w-2xl mx-auto mb-6">
+            <span className="inline-block px-4 py-2 rounded-full bg-primary/10 text-primary text-sm mb-3">
+              Welcome Back
+            </span>
+            <h1 className="text-3xl font-bold mb-2">Ready to Cook Something Amazing?</h1>
+            <p className="text-lg text-muted-foreground">
+              Get started with quick actions or check your saved items
+            </p>
           </motion.div>
 
-          {/* Content Tabs */}
-          <div className="space-y-6">
-            <Tabs 
-              defaultValue={activeTab} 
-              value={activeTab} 
-              onValueChange={(value: "recipes" | "meal-plans") => {
-                setActiveTab(value);
-                if (value === "meal-plans" && mealPlans.length === 0 && !mealPlansError) {
-                  loadMealPlans(1);
-                }
-              }}
-            >
-              <div className="flex items-center justify-center sm:justify-start">
-                <TabsList className="bg-white border w-full sm:w-auto">
-                  <TabsTrigger 
-                    value="recipes" 
-                    className="flex-1 sm:flex-none data-[state=active]:bg-primary/5"
-                  >
-                    <ChefHat className="w-4 h-4 mr-2" />
-                    Saved Recipes
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="meal-plans" 
-                    className="flex-1 sm:flex-none data-[state=active]:bg-primary/5"
-                  >
-                    <Calendar className="w-4 h-4 mr-2" />
-                    Meal Plans
-                  </TabsTrigger>
-                </TabsList>
-              </div>
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="space-y-6"
+          >
+            {/* Quick Actions - Desktop */}
+            <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {quickActions.map((action, index) => (
+                <QuickActionCard key={index} {...action} />
+              ))}
+            </motion.div>
 
-              <TabsContent value="recipes">
-                <Card className="border bg-white">
-                  {isLoadingRecipes ? (
-                    <div className="flex items-center justify-center p-8">
-                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                    </div>
-                  ) : (
-                    <SavedRecipes {...recipesProps} />
-                  )}
-                </Card>
-              </TabsContent>
+            {/* Content Tabs */}
+            <div className="space-y-4">
+              <Tabs 
+                defaultValue={activeTab} 
+                value={activeTab} 
+                onValueChange={(value: "recipes" | "meal-plans") => {
+                  setActiveTab(value);
+                  if (value === "meal-plans" && mealPlans.length === 0 && !mealPlansError) {
+                    loadMealPlans(1);
+                  }
+                }}
+              >
+                <div className="flex items-center justify-center sm:justify-start">
+                  <TabsList className="bg-white border w-full sm:w-auto">
+                    <TabsTrigger 
+                      value="recipes" 
+                      className="flex-1 sm:flex-none data-[state=active]:bg-primary/5"
+                    >
+                      <ChefHat className="w-4 h-4 mr-2" />
+                      Saved Recipes
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="meal-plans" 
+                      className="flex-1 sm:flex-none data-[state=active]:bg-primary/5"
+                    >
+                      <Calendar className="w-4 h-4 mr-2" />
+                      Meal Plans
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
 
-              <TabsContent value="meal-plans">
-                <Card className="border bg-white">
-                  {isLoadingMealPlans ? (
-                    <div className="flex items-center justify-center p-8">
-                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                    </div>
-                  ) : (
-                    <SavedMealPlans {...mealPlansProps} />
-                  )}
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </motion.div>
+                <TabsContent value="recipes">
+                  <Card className="border bg-white">
+                    {isLoadingRecipes ? (
+                      <div className="flex items-center justify-center p-8">
+                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                      </div>
+                    ) : (
+                      <SavedRecipes {...recipesProps} />
+                    )}
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="meal-plans">
+                  <Card className="border bg-white">
+                    {isLoadingMealPlans ? (
+                      <div className="flex items-center justify-center p-8">
+                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                      </div>
+                    ) : (
+                      <SavedMealPlans {...mealPlansProps} />
+                    )}
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );
@@ -393,10 +419,36 @@ const LoggedInView = () => {
 
 const LoggedOutView = () => {
   return (
-    <div className="space-y-24">
-      <Hero />
-      <Features />
-      <SocialProof />
+    <div className="relative">
+      {/* Background Image */}
+      <div className="fixed inset-0 z-0">
+        <picture>
+          <source
+            srcSet="/assets/hero-bg.webp"
+            type="image/webp"
+          />
+          <img
+            src="/assets/hero-bg.jpg"
+            alt=""
+            role="presentation"
+            loading="eager"
+            decoding="async"
+            width="1920"
+            height="1080"
+            className="absolute inset-0 w-full h-full object-cover opacity-[0.15]"
+            onError={(e) => {
+              console.error('Error loading image:', e);
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        </picture>
+      </div>
+
+      <div className="relative z-10 space-y-8">
+        <Hero />
+        <Features />
+        <SocialProof />
+      </div>
     </div>
   );
 };
@@ -407,9 +459,9 @@ export default function Index() {
   return (
     <BaseLayout>
       <SEO 
-        title="MySideChef - Your AI-Powered Kitchen Assistant"
-        description="Transform your cooking experience with AI-powered meal planning, instant recipe suggestions, and personalized healthy alternatives. Save time, eat better, and enjoy cooking with MySideChef."
-        keywords="meal planning, recipe finder, healthy cooking, AI kitchen assistant, meal suggestions, cooking tips, personalized meals, diet planning, healthy recipes, smart meal planner"
+        title="MySideChef - Healthy Eating Made Simple, Fun, and Tailored Just for You"
+        description="Say goodbye to decision fatigue! Get personalized meal suggestions, healthy swaps, and easy recipes to kickstart your healthy eating journey. Transform your cooking experience with AI-powered meal planning and personalized healthy alternatives."
+        keywords="healthy eating, personalized meals, meal suggestions, healthy swaps, easy recipes, meal planning, healthy cooking, AI kitchen assistant, personalized nutrition, healthy alternatives"
         type="website"
         canonical="https://mysidechef.com"
         image="/og-image-compressed.jpg"

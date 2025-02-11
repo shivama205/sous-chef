@@ -5,33 +5,9 @@ import { ArrowRight } from "lucide-react"
 
 export function Hero() {
   return (
-    <div className="relative overflow-hidden min-h-[600px]">
-      {/* Background Image */}
-      <div className="absolute inset-0 bg-gray-50">
-        <picture>
-          <source
-            srcSet="/assets/hero-bg.webp"
-            type="image/webp"
-          />
-          <img
-            src="/assets/hero-bg.jpg"
-            alt=""
-            role="presentation"
-            loading="eager"
-            decoding="async"
-            width="1920"
-            height="1080"
-            className="absolute inset-0 w-full h-full object-cover opacity-[0.25]"
-            onError={(e) => {
-              console.error('Error loading image:', e);
-              e.currentTarget.style.display = 'none';
-            }}
-          />
-        </picture>
-      </div>
-
+    <div className="relative overflow-hidden min-h-[500px]">
       <div className="relative container mx-auto px-4">
-        <div className="relative py-24 sm:py-32">
+        <div className="relative py-12 sm:py-20">
           <div className="mx-auto max-w-2xl text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -49,9 +25,9 @@ export function Hero() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-4xl font-bold tracking-tight sm:text-6xl mb-6"
             >
-              Your Personal{" "}
+              Healthy Eating Made{" "}
               <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Chef Assistant
+                Simple, Fun & Tailored
               </span>
             </motion.h1>
 
@@ -61,8 +37,8 @@ export function Hero() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-lg text-muted-foreground mb-8"
             >
-              Get instant, personalized meal ideas based on your energy level and cravings.
-              Plan meals, find recipes, and discover healthy alternatives with your AI kitchen assistant.
+              Say goodbye to decision fatigue! Get personalized meal suggestions, healthy swaps, 
+              and easy recipes to kickstart your healthy eating journey.
             </motion.p>
 
             <motion.div

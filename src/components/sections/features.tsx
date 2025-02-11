@@ -1,4 +1,3 @@
-import * as React from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -95,32 +94,13 @@ const colorVariants = {
 
 export function Features() {
   return (
-    <section className="relative py-24 overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-b from-accent/30 via-transparent to-transparent -z-10" />
-      <div className="absolute inset-0 bg-[url('/assets/pattern.png')] opacity-30 -z-10" />
+    <section className="relative py-12">
+      {/* Layered background with subtle patterns and gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-50 to-transparent" />
+      <div className="absolute inset-0 opacity-[0.15] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-[url('/assets/pattern.png')] opacity-[0.03]" />
       
-      <div className="container mx-auto px-4">
-        <div className="text-center max-w-3xl mx-auto mb-24">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="space-y-4"
-          >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm border border-primary/20">
-              <Sparkles className="w-4 h-4" />
-              Features You'll Love
-            </span>
-            <h2 className="text-4xl lg:text-5xl font-bold">
-              Your AI-Powered Kitchen Assistant
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              From finding the perfect recipe to planning your meals, we've got your cooking journey covered
-            </p>
-          </motion.div>
-        </div>
-
+      <div className="container relative mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {features.map((feature, index) => {
             const colors = colorVariants[feature.color as keyof typeof colorVariants];
@@ -130,11 +110,11 @@ export function Features() {
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ delay: index * 0.1, duration: 0.5 }}
                 className="h-full"
               >
-                <Card className={`h-full p-8 backdrop-blur-sm bg-white/80 hover:shadow-lg transition-all duration-300 ${colors.card}`}>
+                <Card className={`h-full p-8 bg-white/95 backdrop-blur-sm hover:shadow-lg hover:bg-white transition-all duration-300 ${colors.card}`}>
                   <div className="flex flex-col h-full">
                     {/* Content wrapper */}
                     <div className="flex-1 space-y-6">
