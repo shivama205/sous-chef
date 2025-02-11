@@ -35,6 +35,8 @@ When suggesting 2 cook-at-home meals, ensure the ingredients are easily accessib
 When suggesting 2 order-in meals, ensure not to mention specific restaurants or delivery services.
 When suggesting 2 eat-out meals, ensure not to mention specific restaurants or locations.
 
+Be clear and informative for the cooking instructions. Consider that the user may not have any cooking experience.
+
 Format the response as a JSON array of objects with these EXACT properties:
 {
   "name": string,

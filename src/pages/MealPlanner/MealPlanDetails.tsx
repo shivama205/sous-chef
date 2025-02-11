@@ -602,7 +602,43 @@ export const MealPlanDetails = () => {
               {/* Grocery List Section */}
               <div className="mt-8">
                 {isSaved ? (
-                  <GroceryList mealPlan={mealPlan} />
+                  <Card className="w-full backdrop-blur-sm bg-white/80 border-0 shadow-xl rounded-2xl p-6">
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                      className="text-center space-y-4 relative opacity-75"
+                    >
+                      <div className="absolute -right-1 top-0 transform translate-y-[-50%] z-10">
+                        <div className="bg-[#2B513D] text-white text-xs font-medium px-4 py-1.5 rounded-full shadow-sm">
+                          Coming Soon
+                        </div>
+                      </div>
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                        <ShoppingCart className="w-6 h-6 text-primary/50" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-primary/75 mb-1">Grocery List</h3>
+                        <p className="text-muted-foreground">
+                          We're working on making your shopping experience easier! Soon you'll be able to generate a comprehensive grocery list from your meal plan.
+                        </p>
+                      </div>
+                      <Button 
+                        disabled
+                        className="bg-primary/20 text-primary hover:bg-primary/20 cursor-not-allowed flex items-center gap-2"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          toast({
+                            title: "Coming Soon",
+                            description: "Grocery list feature is not yet available. Stay tuned!",
+                          });
+                        }}
+                      >
+                        <ShoppingCart className="w-4 h-4" />
+                        Generate Grocery List
+                      </Button>
+                    </motion.div>
+                  </Card>
                 ) : (
                   <Card className="w-full backdrop-blur-sm bg-white/80 border-0 shadow-xl rounded-2xl p-6">
                     <motion.div
@@ -617,7 +653,7 @@ export const MealPlanDetails = () => {
                       <div>
                         <h3 className="text-lg font-semibold text-primary mb-1">Save to View Grocery List</h3>
                         <p className="text-muted-foreground">
-                          Save your meal plan to generate a comprehensive grocery list with all the ingredients you'll need.
+                          Save your meal plan first to access the grocery list feature.
                         </p>
                       </div>
                       <Button 

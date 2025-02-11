@@ -46,7 +46,8 @@ function generatePrompt(request: HealthyAlternativeRequest): string {
   3. Cooking method modifications to make it healthier
   4. Nutritional benefits of the suggested alternatives
   5. Cooking time of the suggested alternatives
-
+  6. Be clear and informative for the cooking instructions. Consider that the user may not have any cooking experience.
+  
   Format the response as JSON with alternatives array.
   If no alternatives are found, return an empty array.
 

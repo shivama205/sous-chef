@@ -67,6 +67,8 @@ function generatePrompt(request: RecipeFinderRequest): string {
       ${formattedRequest.additional_instructions ? `\nAdditional instructions: ${formattedRequest.additional_instructions}` : ''}
       ${formattedRequest.macros ? `\nTarget macros: Protein: ${formattedRequest.macros.protein}g, Carbs: ${formattedRequest.macros.carbs}g, Fat: ${formattedRequest.macros.fat}g` : ''}
       
+      Be clear and informative for the cooking instructions. Consider that the user may not have any cooking experience.
+
       Please provide the recipes in this exact JSON format:
       {
         "recipes": [{

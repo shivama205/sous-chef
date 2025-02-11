@@ -96,29 +96,12 @@ export default function RecipeFinder() {
   const [recentRecipes, setRecentRecipes] = useState<Recipe[]>([]);
   const navigate = useNavigate();
   const onDrop = async (acceptedFiles: File[]) => {
-    if (acceptedFiles.length === 0) {
-      toast({
-        title: "No files selected",
-        description: "Please select an image file to upload.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const file = acceptedFiles[0];
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Invalid file type",
-        description: "Please upload an image file.",
-        variant: "destructive"
-      });
-      return;
-    }
-
+    // Disable functionality
     toast({
       title: "Coming Soon",
-      description: "Image recognition feature will be available soon!",
+      description: "Image recognition feature is not yet available. Stay tuned!",
     });
+    return;
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -128,7 +111,8 @@ export default function RecipeFinder() {
     },
     maxFiles: 1,
     noClick: false,
-    noKeyboard: false
+    noKeyboard: false,
+    disabled: true // Disable the dropzone
   });
 
   // Combine user data loading into a single useEffect
@@ -360,20 +344,25 @@ export default function RecipeFinder() {
                       <div 
                         {...getRootProps()} 
                         className={`
-                          border-2 border-dashed rounded-lg p-6 text-center cursor-pointer
-                          transition-colors duration-200 bg-white
-                          ${isDragActive ? 'border-primary bg-primary/5' : 'border-input hover:border-primary/50'}
+                          relative border-2 border-dashed rounded-lg p-6 text-center
+                          transition-colors duration-200 bg-white/50
+                          ${isDragActive ? 'border-primary/30' : 'border-input'}
+                          cursor-not-allowed opacity-75
                         `}
                       >
-                        <input {...getInputProps()} />
-                        <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground">
+                        <div className="absolute -right-1 top-0 transform translate-y-[-50%]">
+                          <div className="bg-[#2B513D] text-white text-xs font-medium px-4 py-1.5 rounded-full shadow-sm">
+                            Coming Soon
+                          </div>
+                        </div>
+                        <input {...getInputProps()} disabled />
+                        <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
+                        <p className="text-sm text-muted-foreground/75">
                           {isDragActive ? 
                             "Drop your image here..." : 
                             "Drag & drop an image of your ingredients, or click to select"
                           }
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1">Coming soon!</p>
                       </div>
 
                       <Button 
