@@ -11,7 +11,7 @@ import { MealPlanLoadingOverlay } from "@/components/MealPlanLoadingOverlay";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { FeatureCard } from "@/components/ui/FeatureCard";
 import { Camera, ChefHat, Sparkles, History, Star, Utensils, Scale, Upload, Timer, UtensilsCrossed, ListChecks, Dumbbell, Clock, ArrowRight, Apple, Brain } from "lucide-react";
-import { BaseLayout } from "@/components/layouts/BaseLayout";
+import { ServiceLayout } from "@/components/layouts/ServiceLayout";
 import { useAuth } from "@/providers/AuthProvider";
 import { useDropzone } from "react-dropzone";
 import { UserMacros } from "@/types/macros";
@@ -291,11 +291,11 @@ export default function RecipeFinder() {
   };
 
   return (
-    <BaseLayout>
+    <ServiceLayout>
       <SEO 
-        title="Recipe Finder"
-        description="Find the perfect recipe for any occasion. Search by ingredients, cuisine, or dietary requirements and discover delicious, healthy recipes."
-        keywords="recipe search, recipe finder, cooking recipes, meal recipes, ingredient search, cuisine finder, dietary recipes"
+        title="Recipe Finder - Cook with What You Have"
+        description="Find delicious recipes using ingredients you already have. Our AI-powered recipe finder suggests personalized recipes based on your available ingredients and dietary preferences."
+        keywords="recipe finder, ingredient-based recipes, cooking suggestions, recipe search, AI recipe finder"
         type="website"
         canonical="https://mysidechef.com/recipe-finder"
       />
@@ -567,6 +567,6 @@ export default function RecipeFinder() {
         onOpenChange={setLoginDialogOpen}
       />
       {isLoading && <MealPlanLoadingOverlay isLoading={isLoading} />}
-    </BaseLayout>
+    </ServiceLayout>
   );
 }

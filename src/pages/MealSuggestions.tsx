@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { BaseLayout } from "@/components/layouts/BaseLayout";
+import { ServiceLayout } from "@/components/layouts/ServiceLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -188,7 +188,7 @@ export function MealSuggestions() {
   };
 
   return (
-    <BaseLayout>
+    <ServiceLayout>
       <SEO 
         title="Quick Meal Suggestions"
         description="Get instant meal ideas based on your mood and energy level. Our AI suggests personalized meal options whether you want to cook, order in, or eat out."
@@ -706,6 +706,6 @@ export function MealSuggestions() {
         onOpenChange={setShowSignIn}
       />
       {isLoading && <MealPlanLoadingOverlay isLoading={isLoading} />}
-    </BaseLayout>
+    </ServiceLayout>
   );
 } 

@@ -6,7 +6,7 @@ import { Apple, Heart, Brain, Scale, ChefHat, Leaf, Star, Clock, Utensils, ListO
 import { generateHealthyAlternative } from "@/services/healthyAlternative";
 import type { HealthyAlternative } from "@/types/healthyAlternative";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { BaseLayout } from "@/components/layouts/BaseLayout";
+import { ServiceLayout } from "@/components/layouts/ServiceLayout";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -132,7 +132,7 @@ export default function HealthyAlternative() {
   };
 
   return (
-    <BaseLayout>
+    <ServiceLayout>
       <SEO 
         title="Healthy Food Alternatives"
         description="Discover healthier alternatives to your favorite foods. Get AI-powered suggestions for ingredient swaps and cooking modifications to make your meals healthier."
@@ -418,6 +418,6 @@ export default function HealthyAlternative() {
 
       <LoginDialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
       {isLoading && <MealPlanLoadingOverlay isLoading={isLoading} />}
-    </BaseLayout>
+    </ServiceLayout>
   );
 }

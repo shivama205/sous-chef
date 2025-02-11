@@ -7,7 +7,7 @@ import { LoginDialog } from "@/components/LoginDialog";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Sparkles, ChefHat, Loader2, Calendar, Brain, UtensilsCrossed, ArrowRight, Salad } from "lucide-react";
-import { BaseLayout } from "@/components/layouts/BaseLayout";
+import { ServiceLayout } from "@/components/layouts/ServiceLayout";
 import { generateMealPlan } from "@/services/mealPlan";
 import { mealPlanLoadingMessages } from "@/lib/loadingMessages";
 import type { Preferences, Cuisine } from "@/types/preferences";
@@ -237,7 +237,7 @@ export function MealPlan() {
 
   if (!user) {
     return (
-      <BaseLayout>
+      <ServiceLayout>
         <SEO 
           title="Weekly Meal Planner - MySideChef"
           description="Plan your weekly meals with our AI-powered meal planner. Get personalized meal combinations that match your nutritional goals and dietary preferences."
@@ -292,12 +292,12 @@ export function MealPlan() {
         </div>
 
         <LoginDialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
-      </BaseLayout>
+      </ServiceLayout>
     );
   }
 
   return (
-    <BaseLayout>
+    <ServiceLayout>
       <SEO 
         title="Weekly Meal Planner - MySideChef"
         description="Plan your weekly meals with our AI-powered meal planner. Get personalized meal combinations that match your nutritional goals and dietary preferences."
@@ -417,6 +417,6 @@ export function MealPlan() {
         onOpenChange={setLoginDialogOpen}
       />
       {isGenerating && <LoadingOverlay isLoading={isGenerating} messages={mealPlanLoadingMessages} />}
-    </BaseLayout>
+    </ServiceLayout>
   );
 }
