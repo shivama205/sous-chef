@@ -15,6 +15,8 @@ import type { MealPlan } from "@/types/mealPlan";
 import { SavedRecipes } from "@/components/profile/SavedRecipes";
 import { SavedMealPlans } from "@/components/profile/SavedMealPlans";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { ArrowUpRight } from "lucide-react";
 
 const container = {
   hidden: { opacity: 0 },
@@ -208,6 +210,61 @@ const useDataLoader = <T extends 'recipes' | 'meal-plans'>({
     loadData,
     ITEMS_PER_PAGE
   };
+};
+
+const ProductHuntSupport = () => {
+  return (
+    <section className="relative py-16">
+      {/* Consistent background styling */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-50/50 to-transparent" />
+      <div className="absolute inset-0 opacity-[0.15] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-[url('/assets/pattern.png')] opacity-[0.03]" />
+
+      <div className="container relative mx-auto px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="space-y-6"
+          >
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm">
+              We're on Product Hunt! 🚀
+            </span>
+            
+            <h2 className="text-3xl font-bold">
+              Support Our Journey on{" "}
+              <span className="bg-gradient-to-r from-[#EA532A] to-orange-600 bg-clip-text text-transparent">
+                Product Hunt
+              </span>
+            </h2>
+            
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              We're excited to share MySideChef with the Product Hunt community. Your support means the world to us!
+            </p>
+
+            <div className="pt-4">
+              <Button
+                asChild
+                size="lg"
+                className="bg-[#EA532A] hover:bg-[#EA532A]/90 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <a 
+                  href="https://www.producthunt.com/posts/mysidechef"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2"
+                >
+                  Support us on Product Hunt
+                  <ArrowUpRight className="w-5 h-5" />
+                </a>
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
 };
 
 const LoggedInView = () => {
@@ -447,6 +504,7 @@ const LoggedOutView = () => {
       <div className="relative z-10 space-y-8">
         <Hero />
         <Features />
+        <ProductHuntSupport />
         <SocialProof />
       </div>
     </div>
