@@ -229,22 +229,39 @@ const ProductHuntSupport = () => {
             className="space-y-6"
           >
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm">
-              We're on Product Hunt! 🚀
+              Featured on Product Hunt! 🚀
             </span>
             
             <h2 className="text-3xl font-bold">
-              Support Our Journey on{" "}
+              Find Us on{" "}
               <span className="bg-gradient-to-r from-[#EA532A] to-orange-600 bg-clip-text text-transparent">
                 Product Hunt
               </span>
             </h2>
             
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              We're excited to share MySideChef with the Product Hunt community. Your support means the world to us!
+              We're excited to be featured on Product Hunt! Check out our page and join the conversation.
             </p>
 
-            <div className="pt-4">
-              <Button
+            <div className="flex flex-col items-center gap-4">
+              {/* Product Hunt Badge */}
+              <a 
+                href="https://www.producthunt.com/posts/mysidechef?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-mysidechef" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:opacity-90 transition-opacity"
+              >
+                <img 
+                  src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=866073&theme=light&t=1739279240445" 
+                  alt="MySideChef - Healthy Eating Made Simple, and Tailored Just for You | Product Hunt" 
+                  width="250" 
+                  height="54" 
+                  loading="lazy"
+                />
+              </a>
+
+              {/* Visit Button */}
+              {/* <Button
                 asChild
                 size="lg"
                 className="bg-[#EA532A] hover:bg-[#EA532A]/90 text-white shadow-lg hover:shadow-xl transition-all duration-300"
@@ -255,10 +272,10 @@ const ProductHuntSupport = () => {
                   rel="noopener noreferrer"
                   className="flex items-center gap-2"
                 >
-                  Support us on Product Hunt
+                  Visit us on Product Hunt
                   <ArrowUpRight className="w-5 h-5" />
                 </a>
-              </Button>
+              </Button> */}
             </div>
           </motion.div>
         </div>
