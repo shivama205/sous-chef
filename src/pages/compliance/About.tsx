@@ -83,7 +83,7 @@ export default function About() {
                 Start your journey to healthier eating with MySideChef today. Whether you're looking to maintain a balanced diet, achieve specific health goals, or simply make meal planning easier, we're here to help.
               </p>
               <p>
-                Have questions or suggestions? We'd love to hear from you at support@souschef.in
+                Have questions or suggestions? We'd love to hear from you at support@mysidechef.com
               </p>
             </div>
           </section>

@@ -132,7 +132,7 @@ export default function Terms() {
                 For any questions about these Terms & Conditions, please contact us at:
               </p>
               <ul className="list-none space-y-2">
-                <li><strong>Email:</strong> support@souschef.in</li>
+                <li><strong>Email:</strong> support@mysidechef.com</li>
                 <li><strong>Response Time:</strong> We aim to respond to all inquiries within 48 hours</li>
               </ul>
             </div>

@@ -165,7 +165,7 @@ export default function Privacy() {
               </p>
               <ul className="list-none space-y-2">
                 <li><strong>Email:</strong> support@mysidechef.com</li>
-                <li><strong>Name:</strong> Shivam Aggarwal</li>
+                <li><strong>Name:</strong> SHIVAM AGGARWAL</li>
                 <li><strong>Subject Line for Consent Withdrawal:</strong> "For Withdrawal of Consent"</li>
                 <li><strong>Response Time:</strong> We aim to respond to all privacy-related requests within 48 hours</li>
               </ul>
