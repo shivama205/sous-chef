@@ -43,10 +43,13 @@ export default function Terms() {
                 MySideChef provides a number of Internet-based services through the Platform. Our services include meal planning, recipe management, and nutritional analysis tools (collectively, "Services"). The Services can be accessed through the Platform through various subscription plans offered.
               </p>
               <p>
-                The use of Services shall be governed by specific policies, including but not limited to subscription policy, payment policy, and cancellation policy (which are found on the FAQ tab on the Platform and all of which are incorporated here by reference).
+                The use of Services shall be governed by specific policies, including subscription policy, payment policy, and cancellation policy. All purchases and subscription payments made on the Platform are final and non-refundable.
               </p>
               <p>
-                It is clarified that for any subscription cancellation request, users are required to follow the cancellation procedure outlined in our FAQ section. Please note that cancellation of a subscription will stop future billing but will not result in a refund for the current billing period.
+                For subscription cancellations, you may cancel your subscription at any time. However, please note that cancellation of a subscription will only stop future billing and will not result in a refund for the current billing period or any previous payments. All charges are final and non-refundable under any circumstances.
+              </p>
+              <p>
+                By subscribing to or purchasing any of our Services, you explicitly acknowledge and agree that you will not be entitled to a refund for any purchase under any circumstances. This strict no-refund policy applies to all services, features, and subscription plans offered through the Platform.
               </p>
               <p>
                 MySideChef does not warrant that Service descriptions or other content on the Platform is accurate, complete, reliable, current, or error-free and assumes no liability in this regard.
