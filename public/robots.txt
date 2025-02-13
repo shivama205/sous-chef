@@ -1,8 +1,9 @@
 # MySideChef robots.txt
 
-# Allow all bots to access these paths
 User-agent: *
 Allow: /
+
+# Allow crawling of all public content
 Allow: /meal-suggestions
 Allow: /recipe-finder
 Allow: /healthy-alternative
@@ -11,6 +12,8 @@ Allow: /blog
 Allow: /about
 Allow: /privacy
 Allow: /terms
+
+# Allow static assets
 Allow: /*.js
 Allow: /*.css
 Allow: /*.png
@@ -19,6 +22,7 @@ Allow: /*.jpeg
 Allow: /*.gif
 Allow: /*.svg
 Allow: /*.ico
+Allow: /*.webp
 
 # Block access to private routes
 Disallow: /dashboard
@@ -27,24 +31,16 @@ Disallow: /profile
 Disallow: /api/
 Disallow: /auth/
 Disallow: /admin/
-Disallow: /*?*
-Disallow: /*?
 
-# Block access to development/test routes
+# Block development routes
 Disallow: /dev/
 Disallow: /test/
 Disallow: /staging/
-
-# Block specific file types
-Disallow: /*.json$
-Disallow: /*.xml$
-Disallow: /*.txt$
 
 # Allow Sitemap
 Allow: /sitemap.xml
 
 # Sitemap location
-Sitemap: https://mysidechef.com/sitemap.xml
+Sitemap: https://www.mysidechef.com/sitemap.xml
 
-# Crawl-delay for heavy crawlers
-Crawl-delay: 10
+# Removed overly restrictive crawl-delay and query parameter blocks
